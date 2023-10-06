@@ -34,6 +34,20 @@ Coming soon...
 ### Dashboard
 Coming soon...
 
-## Helpful Docs
+## Coding Instructions
+Logging will be managed by the python package "logging". Therefore there are 5 different logging levels defined:
+- info
+- warning
+- critical
+- error
+- debug
+
+These have to be used in the expected places in order to get information about the program and to debug it in case.
+
+Here are examples for establishing the logger and using it afterwards in the code:
+
+Coming soon...
+
+### Helpful Docs
 For pymongo help:
 https://pymongo.readthedocs.io/en/stable/api/pymongo/collection.html#pymongo.collection.Collection
