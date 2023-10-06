@@ -19,7 +19,7 @@ import urllib
 from bson.objectid import ObjectId
 
 # Imports for verifying
-from verification.verify_env import verify_all
+from app.verification.verify_env import verify_all
 
 # ===== Exception Classes =====
 class DBConnectionError(Exception):
@@ -45,9 +45,9 @@ def set_logger(logger:logging.Logger, format:logging.Formatter, log_level:str="D
     elif log_level == 'INFO':
         logger.setLevel(logging.INFO)
     elif log_level == 'WARNING':
-        logger.setLevel(logging.INFO)
+        logger.setLevel(logging.WARNING)
     elif log_level == 'CRITICAL':
-        logger.setLevel(logging.INFO)
+        logger.setLevel(logging.CRITICAL)
     elif log_level == 'DEBUG':
         logger.setLevel(logging.DEBUG)
     else:
@@ -57,7 +57,7 @@ def set_logger(logger:logging.Logger, format:logging.Formatter, log_level:str="D
     consoleHandler = logging.StreamHandler(sys.stdout)
     consoleHandler.setFormatter(format)
     logger.addHandler(consoleHandler)
-    logger.debug('###  Started chainsaw_wrapper.py  ###')
+    logger.debug('###  Started Webanwendung  ###')
     return logger
 
 # Establish logging
@@ -84,7 +84,7 @@ def DB_connect(logger:logging.Logger) -> pymongo.database.Database:
     except Exception as e:
         logger.error("DB connection Error: ", e)
         raise DBConnectionError
-        sys.exit()
+    
     logger.info("DB connection established")
     db = client.get_database('webapp')
     return db
@@ -97,6 +97,4 @@ db = DB_connect(logger=logger)
 #login_manager.login_view = 'login'
 #TODO
 
-verify_configs()
-
-#from app import routes
+from app import routes
