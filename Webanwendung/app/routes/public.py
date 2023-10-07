@@ -1,5 +1,5 @@
 from flask import request, render_template, redirect, url_for, flash
-from app import app, bcrypt, logger
+from app import app, bcrypt, logger, db
 from app.models.user import User
 
 #TODO: logger
@@ -17,7 +17,7 @@ def register():
         hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
         user_data = {'username': username, 'password': hashed_password}
         user = User(user_data)
-        user.save()
+        user.save(db)
         flash('Your account has been created!', 'success')
         logger.debug("User Account has been created successfully")
         return redirect(url_for('login'))
@@ -36,7 +36,7 @@ def login():
         hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
         user_data = {'username': username, 'password': hashed_password}
         user = User(user_data)
-        user.save()
+        user.save(db)
         flash('You have been logged in successfully!', 'success')
         logger.debug("User Account has logged in successfully")
         return redirect(url_for('home'))

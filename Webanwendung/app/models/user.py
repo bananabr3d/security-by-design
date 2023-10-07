@@ -4,8 +4,8 @@ from bson.objectid import ObjectId
 
 #TODO: logger, db commands
 @login_manager.user_loader
-def load_user(user_id):
-    return User(mongo.db.users.find_one({'_id': ObjectId(user_id)}))
+def load_user(db, user_id):
+    return User(db.db.users.find_one({'_id': ObjectId(user_id)}))
 
 class User(UserMixin): # Add more details to user
     def __init__(self, user_data):
@@ -14,12 +14,12 @@ class User(UserMixin): # Add more details to user
     def get_id(self):
         return str(self.user_data['_id'])
 
-    def find_by_username(self, username):
-        user_data = mongo.db.users.find_one({'username': username})
+    def find_by_username(self, db, username):
+        user_data = db.db.users.find_one({'username': username})
         return User(user_data) if user_data else None
 
-    def save(self):
-        mongo.db.users.insert_one(self.user_data)
+    def save(self, db):
+        db.db.users.insert_one(self.user_data)
 
     # Define other user-related methods here
 
