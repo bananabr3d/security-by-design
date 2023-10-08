@@ -30,6 +30,10 @@ class ConfigurationError(Exception):
     "Raised when an error occures on the configurations (.env)"
     pass
 
+class UserAlreadyExists(Exception):
+    "Raised when an user provides a username that is already in the database"
+    pass
+
 class WrongPassword(Exception):
     "Raised when an user provides a wrong password to its username during the login"
     pass
