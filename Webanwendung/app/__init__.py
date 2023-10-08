@@ -17,9 +17,17 @@ from flask_pymongo import pymongo
 import urllib
 from bson.objectid import ObjectId
 
+# Packages for testing the .env file
+from tests.unit import verify_env
+
+
 # ===== Exception Classes =====
 class DBConnectionError(Exception):
     "Raised when an error occures while connecting to the MongoDB"
+    pass
+
+class ConfigurationError(Exception):
+    "Raised when an error occures on the configurations (.env)"
     pass
 
 # ===== Getter and Setter =====
@@ -53,6 +61,17 @@ logger = logging.getLogger(__name__)
 
 # set self.logger level
 logger = set_logger(logger=logger, format=format, log_level="DEBUG")
+
+
+# Test .env variables
+expected_environment_variables = ["SECRET_KEY", "MONGODB_USER", "MONGODB_PW", "MONGODB_CLUSTER"]
+
+try:
+    assert verify_env.verify_all(expected_environment_variables=expected_environment_variables) == True
+    logger.info(".env file verified")
+except:
+    logger.error(".env file could not be verified")
+    raise ConfigurationError
 
 # Configure the flask app
 app = Flask(__name__)
