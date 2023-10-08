@@ -23,6 +23,7 @@ In the Beginning, we decided on the chosen stack. But there were also other idea
 
 ## Structure
 ### Folder Structure
+```
 security-by-design/
     ├── Anwendung/
     ├── Webanwendung/
@@ -44,16 +45,16 @@ security-by-design/
         ├── requirements.txt
         ├── .env
         ├── Dockerfile
-
+```
 
 ### Webpage Structure
-
+```
 http://coming.soon/
     ├── register/
     ├── login/
     ├── dashboard/
     |    ├── < electricity-meter-ID >/
-
+```
 
 ## Installation and Usage
 ### Docker
@@ -65,10 +66,10 @@ The web-app and the app have been dockerized. Both of them can be deployed with 
 In order to register a user you need the following information:
 - username
 - password
-(- 2fa app)
-(- birthday date)
-(- gender)
-(- ...)
+- (2fa app)
+- (birthday date)
+- (gender)
+- (...)
 
 With these information you can go to the website: "http://coming.soon/register" and register your user. Afterwards, you will be forwarded to the Login Page.
 
@@ -76,7 +77,7 @@ With these information you can go to the website: "http://coming.soon/register" 
 In order to login with a user you need the following information:
 - username
 - password
-(- 2fa)
+- (2fa)
 
 With these information you can go to the website: "http://coming.soon/login" and login. Afterwards, you will be forwarded to the Dashboard.
 
@@ -103,7 +104,7 @@ These have to be used in the expected places in order to get information about t
 
 Here are examples for establishing the logger and using it afterwards in the code:
 
-'''python
+```python
 # ===== Set Logger in the beginning =====
 # (preferred in the __init__.py of the app folder)
 
@@ -136,9 +137,9 @@ logger = logging.getLogger(__name__)
 
 # set self.logger (+level)
 logger = set_logger(logger=logger, format=format, log_level="DEBUG")
-'''
+```
 
-'''python
+```python
 # ===== Using the logger in code =====
 
 # import the logger from the app (module)
@@ -153,7 +154,9 @@ xyz(logger=logger)
 
 # If you dont call a function, you can simply use the logger as follows:
 logger.info("i love logging <3")
-'''
+```
+
+
 
 ### Helpful Docs
 For pymongo help:

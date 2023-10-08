@@ -27,15 +27,14 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         if [ -f Webanwendung/requirements.txt ]; then pip install -r Webanwendung/requirements.txt; fi
+        if [ -f Anwendung/requirements.txt ]; then pip install -r Anwendung/requirements.txt; fi
     - name: Test with pytest
       run: |
         pip install pytest
-        pytest Webanwendung/tests/conftests.py --doctest-modules --junitxml=jnuit/test-results.xml
+        pytest --doctest-modules --junitxml=jnuit/test-results.xml
     - name: Upload pytest test results
       uses: actions/upload-artifact@v3
       with:
         name: pytest-results
         path: junit/test-results.xml
       if: ${{ always() }}
-
-# Add the application testing here as the upper one

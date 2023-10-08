@@ -17,9 +17,6 @@ from flask_pymongo import pymongo
 import urllib
 from bson.objectid import ObjectId
 
-# Imports for verifying
-from Webanwendung.tests.unit.verify_env import verify_all
-
 # ===== Exception Classes =====
 class DBConnectionError(Exception):
     "Raised when an error occures while connecting to the MongoDB"
