@@ -5,10 +5,8 @@ from app.models.user import User
 #TODO: logger
 @app.route('/')
 def home():
-    logger.info("test")
     return render_template('index.html')
 
-logger.info("test")
 
 @app.route('/register', methods=['GET', 'POST']) # Add more details to user
 def register():
