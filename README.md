@@ -62,6 +62,48 @@ The web-app and the app have been dockerized. Both of them can be deployed with 
 
 (Code representation will be added later)
 
+#### Build and run the containers
+
+In order to then build and deploy the containers, you have to create a .env file in the following directory:
+
+```
+Webanwendung/app/.env
+```
+
+and with the following environment variables (values are examples):
+
+```
+SECRET_KEY=secret-key
+    MONGODB_USER=user
+    MONGODB_PW=password
+    MONGODB_CLUSTER=cluster
+    MONGODB_SUBDOMAIN=gc5y7mr
+```
+
+The keys are being used as a part of the uri as following:
+
+```
+mongodb+srv://<MONGODB_USER>:<MONGODB_PW>@<MONGODB_CLUSTER>.<MONGODB_SUBDOMAIN>.mongodb.net/?retryWrites=true&w=majority
+```
+
+Now the containers can be build with the following command executed in the root directory (and docker + docker-compose installed):
+
+```
+docker-compose build
+```
+
+Finally the containers can be started by:
+
+```
+docker-compose up
+```
+
+And the frontend of the web-app is visible on port 5000 (http://localhost:5000).
+
+#### Debug with Logs
+If the docker container does not work or has to be troubleshooted, the debug logs are in the docker container. As long as the docker container was not restartet, the logs are inspectable inside the docker container in the debug.log (in the root directory). The content can be displayed when executing "cat debug.log" inside the docker container cli.
+
+
 ### Register a user
 In order to register a user you need the following information:
 - username
