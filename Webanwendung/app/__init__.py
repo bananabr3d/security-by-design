@@ -30,6 +30,18 @@ class ConfigurationError(Exception):
     "Raised when an error occures on the configurations (.env)"
     pass
 
+class WrongPassword(Exception):
+    "Raised when an user provides a wrong password to its username during the login"
+    pass
+
+class DifferentPasswords(Exception):
+    "Raised when an user provides different passwords during the registration"
+    pass
+
+class WrongElectricityMeterID(Exception):
+    "Raised when a user provides a electricity meter ID that is not available in the DB"
+    pass
+
 # ===== Getter and Setter =====
 
 
