@@ -1,11 +1,14 @@
 from flask import request, render_template, redirect, url_for, flash
-from app import app, bcrypt, logger, db
+from app import app, logger, db, bcrypt
 from app.models.user import User
 
 #TODO: logger
 @app.route('/')
 def home():
-    return render_template('public/home.html')
+    logger.info("test")
+    return render_template('index.html')
+
+logger.info("test")
 
 @app.route('/register', methods=['GET', 'POST']) # Add more details to user
 def register():
@@ -44,3 +47,8 @@ def login():
         return render_template('../static/login.html')
     else:
         logger.warning("Request Warning, Method: On /login: " + request.method)
+
+
+#Check on how to establish protected routing with middleware
+# => Flask_jwt-extended
+# https://flask-jwt-extended.readthedocs.io/en/stable/optional_endpoints.html

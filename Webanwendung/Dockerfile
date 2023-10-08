@@ -6,4 +6,4 @@ COPY ./ ./
 ENV PYTHONUNBUFFERED=1
 RUN pip3 install -r requirements.txt
 
-CMD [ "python", "-m", "flask", "--app", "run", "run" ]
+CMD [ "python", "-m", "flask", "run" ]

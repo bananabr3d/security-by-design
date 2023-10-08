@@ -28,24 +28,21 @@ security-by-design/
     ├── Webanwendung/
         ├── app/
         |    ├── __init__.py
-        |    ├── routes/
-        |    |    ├── __init__.py
-        |    |    ├── public.py
-        |    |    ├── protected.py
+        |    ├── routes.py
         |    ├── models/
         |    |    ├── __init__.py
+        |    |    ├── electricity_meter.py
         |    |    ├── user.py
         |    ├── templates/
-        |    ├── static/
         |    |    ├── ...
+        |    ├── static/
+        |    |    ├── style.css
         |    ├── verification/
         |    |    ├── verify_env.py
         |    |    ├── ...
-        ├── config.py
         ├── run.py
         ├── requirements.txt
         ├── .env
-        ├── tests.py
         ├── Dockerfile
 
 
@@ -60,7 +57,7 @@ http://coming.soon/
 
 ## Installation and Usage
 ### Docker
-The web-app and the app have been dockerized. Both of them can be deployed with the docker-compose.yml. Therefore it is important to edit the amount of deployed applications, as they represent the Electricity meter (a electricity meter is only available to add, if the application is deployed):
+The web-app and the app have been dockerized. Both of them can be deployed with the docker-compose.yml. Therefore it is important to edit the amount of deployed applications, as they represent the Electricity meter (a electricity meter is only available to add to a user, if the application is deployed):
 
 (Code representation will be added later)
 
@@ -84,7 +81,7 @@ In order to login with a user you need the following information:
 With these information you can go to the website: "http://coming.soon/login" and login. Afterwards, you will be forwarded to the Dashboard.
 
 ### Dashboard
-The Dasboard is a fully representation of your current Electricity Meters status and your energy consumption.
+The Dasboard is a fully representation of your current Electricity Meters status and your energy consumption. If you want to get into a more detailed overview or maintainance of a electricity meter you can click on it's ID.
 
 Screenshots coming soon...
 
@@ -102,11 +99,61 @@ Logging will be managed by the python package "logging". Therefore there are 5 d
 - error
 - debug
 
-These have to be used in the expected places in order to get information about the program and to debug it in case.
+These have to be used in the expected places in order to get information about the program and to debug it in case. The logs are going to be logged into the "debug.log" file. After restarting the application, the debug.log will be overwritten!
 
 Here are examples for establishing the logger and using it afterwards in the code:
 
-Coming soon...
+'''python
+# ===== Set Logger in the beginning =====
+# (preferred in the __init__.py of the app folder)
+
+# import logger
+import logging
+
+# set logger function
+def set_logger(logger:logging.Logger, format:logging.Formatter, log_level:str="DEBUG") -> logging.Logger:
+    if log_level == 'ERROR':
+        logger.setLevel(logging.ERROR)
+    elif log_level == 'INFO':
+        logger.setLevel(logging.INFO)
+    elif log_level == 'WARNING':
+        logger.setLevel(logging.WARNING)
+    elif log_level == 'CRITICAL':
+        logger.setLevel(logging.CRITICAL)
+    elif log_level == 'DEBUG':
+        logger.setLevel(logging.DEBUG)
+    else:
+        print('Log level couldnt be recognized given. Example: "INFO"')
+        print('Defaulting to DEBUG logging.')
+        logger.setLevel(logging.DEBUG)
+    logging.basicConfig(filename='debug.log', filemode='w', encoding='utf-8', level=logger.level)
+    logger.debug('###  Started Webanwendung  ###')
+    return logger
+
+# Establish logger
+format = logging.Formatter("%(asctime)s [%(levelname)-5.5s]  %(message)s \n")
+logger = logging.getLogger(__name__)
+
+# set self.logger (+level)
+logger = set_logger(logger=logger, format=format, log_level="DEBUG")
+'''
+
+'''python
+# ===== Using the logger in code =====
+
+# import the logger from the app (module)
+from app import logger
+
+# If you want to use it inside functions:
+def xyz(logger:logging.logger): # Here you have to import the logging module as well
+    logger.info("xyz has been called") # info can be changed with the logging levels, mentioned above
+
+# If you call the function, dont forget to give the logger to it as a parameter
+xyz(logger=logger)
+
+# If you dont call a function, you can simply use the logger as follows:
+logger.info("i love logging <3")
+'''
 
 ### Helpful Docs
 For pymongo help:
