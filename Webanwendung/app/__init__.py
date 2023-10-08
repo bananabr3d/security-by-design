@@ -18,15 +18,12 @@ import urllib
 from bson.objectid import ObjectId
 
 # Imports for verifying
-from app.verification.verify_env import verify_all
+from Webanwendung.tests.unit.verify_env import verify_all
 
 # ===== Exception Classes =====
 class DBConnectionError(Exception):
     "Raised when an error occures while connecting to the MongoDB"
     pass
-
-class ConfigurationError(Exception):
-    "Raised when an error occures while verifying the configurations"
 
 # ===== Getter and Setter =====
 
@@ -64,15 +61,7 @@ logger = set_logger(logger=logger, format=format, log_level="DEBUG")
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv("SECRET_KEY")
 
-# ===== Program start =====
-
-# Verify environment variables
-try:
-    assert verify_all() == True
-except AssertionError as e:
-    logger.error("Configuration Error: ", e)
-    raise ConfigurationError
-        
+# ===== Program start =====        
 
 # MongoDB Atlas configuration and connection
 try:

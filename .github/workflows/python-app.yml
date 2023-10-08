@@ -26,11 +26,11 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        if [ -f Webanwendung/requirements.txt ]; then pip install -r Webandwendung/requirements.txt; fi
+        if [ -f Webanwendung/requirements.txt ]; then pip install -r Webanwendung/requirements.txt; fi
     - name: Test with pytest
       run: |
         pip install pytest
-        pytest Webanwendung/tests.py --doctest-modules --junitxml=jnuit/test-results.xml
+        pytest Webanwendung/tests/conftests.py --doctest-modules --junitxml=jnuit/test-results.xml
     - name: Upload pytest test results
       uses: actions/upload-artifact@v3
       with:
