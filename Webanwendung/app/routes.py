@@ -23,9 +23,7 @@ def register():
         logger.debug("User Account has been created successfully")
         return redirect(url_for('login'))
     elif request.method =='GET':
-        return render_template('../static/register.html')
-    else:
-        logger.warning("Request Warning, Method: On /register: " + request.method)
+        return render_template('register.html')
 
 @app.route('/login', methods=['GET', 'POST']) # Add more details to user
 def login():
@@ -40,11 +38,9 @@ def login():
         user.save(db)
         flash('You have been logged in successfully!', 'success')
         logger.debug("User Account has logged in successfully")
-        return redirect(url_for('home'))
+        return redirect(url_for('dashboard'))
     elif request.method =='GET':
-        return render_template('../static/login.html')
-    else:
-        logger.warning("Request Warning, Method: On /login: " + request.method)
+        return render_template('login.html')
 
 
 #Check on how to establish protected routing with middleware

@@ -3,29 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Anmeldung</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Login</title>
+    <link rel="stylesheet" href="../static/style.css">
 </head>
 <body>
     <header>
-        <h1>Willkommen auf unserer Webseite</h1>
+        <h1>Welcome on our page!</h1>
     </header>
     <nav>
         <ul>
-            <li><a href="index.html">Startseite</a></li>
-            <li><a href="anmeldung.html">Anmeldung</a></li>
-            <li><a href="messdaten.html">Messdaten</a></li>
+            <li><a href="/">Start</a></li>
+            <li><a href="/register">Register</a></li>
+            <li><a href="/login">Login</a></li>
+            <li><a href="/dashboard">Dashboard</a></li>
         </ul>
     </nav>
     <main>
         <section>
-            <h2>Anmeldung</h2>
+            <h2>login</h2>
             <form>
-                <label for="username">Benutzername:</label>
+                <label for="username">Username:</label>
                 <input type="text" id="username" name="username" required>
-                <label for="password">Passwort:</label>
+                <label for="password">Password:</label>
                 <input type="password" id="password" name="password" required>
-                <button type="submit">Anmelden</button>
+                <button type="submit">Login</button>
             </form>
         </section>
     </main>
