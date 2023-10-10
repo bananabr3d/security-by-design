@@ -10,7 +10,8 @@ import logging
 # Packages for Flask
 from flask import Flask
 from flask_bcrypt import Bcrypt
-from flask_login import LoginManager
+#from flask_login import LoginManager #TODO
+from flask_jwt_extended import JWTManager
 
 # Packages for MongoDB
 from flask_pymongo import pymongo
@@ -46,7 +47,6 @@ class WrongElectricityMeterID(Exception):
     "Raised when a user provides a electricity meter ID that is not available in the DB"
     pass
 
-# ===== Getter and Setter =====
 
 
 # ===== Program configs =====
@@ -82,32 +82,52 @@ logger = set_logger(logger=logger, format=format, log_level="DEBUG")
 # Test .env variables
 expected_environment_variables = ["SECRET_KEY", "MONGODB_USER", "MONGODB_PW", "MONGODB_CLUSTER", "MONGODB_SUBDOMAIN"]
 
+# Online Mode is the default mode, offline cuts the connection to the MongoDB and then only basic functionality is enabled.
+offline_mode = False
+
 try:
     assert verify_env.verify_all(expected_environment_variables=expected_environment_variables) == True
     logger.info(".env file verified")
 except:
     logger.error(".env file could not be verified")
-    raise ConfigurationError
+    logger.info("Offline Mode activated...")
+    offline_mode = True
+    #raise ConfigurationError
 
 # Configure the flask app
 app = Flask(__name__)
-app.config['SECRET_KEY'] = os.getenv("SECRET_KEY")
+app.config['SECRET_KEY'] = os.getenv("SECRET_KEY") # not used?
+app.config['JWT_SECRET_KEY'] = os.getenv("SECRET_KEY")
+
+app.config['JWT_TOKEN_LOCATION'] = ['cookies']
+app.config['JWT_COOKIE_SECURE'] = False #Only allow JWT cookies sent with https
+
+# set cookie paths: Refresh and Access Cookies
+app.config['JWT_ACCESS_COOKIE_PATH'] = '/'
+
+# Enable CSRF Protection
+app.config['JWT_COOKIE_SCRF_PROTECT'] = True
+app.config['JWT_CSRF_CHECK_FORM'] = True
+
+jwt = JWTManager(app)
 
 # ===== Program start =====        
 
-# MongoDB Atlas configuration and connection
-try:
-    client = pymongo.MongoClient("mongodb+srv://" + os.getenv("MONGODB_USER") + ":" + urllib.parse.quote_plus(os.getenv("MONGODB_PW")) + "@" + os.getenv("MONGODB_CLUSTER") + "." + os.getenv("MONGODB_SUBDOMAIN") + ".mongodb.net/?retryWrites=true&w=majority")
-except Exception as e:
-    logger.error("DB connection Error: ", e)
-    raise DBConnectionError
+# MongoDB Atlas configuration and 
+if not offline_mode:
+    try:
+        client = pymongo.MongoClient("mongodb+srv://" + os.getenv("MONGODB_USER") + ":" + urllib.parse.quote_plus(os.getenv("MONGODB_PW")) + "@" + os.getenv("MONGODB_CLUSTER") + "." + os.getenv("MONGODB_SUBDOMAIN") + ".mongodb.net/?retryWrites=true&w=majority")
+        logger.info("DB connection established")
+        db = client.get_database('webapp')
+    except Exception as e:
+        logger.error("DB connection Error: ", e)
+        raise DBConnectionError
+else:
+    db = 1
 
-logger.info("DB connection established")
-db = client.get_database('webapp')
 
-#TODO
 bcrypt = Bcrypt(app)
-login_manager = LoginManager(app)
-login_manager.login_view = 'login'
 
-from app import routes
+from app.routes import routes
+from app.routes import electricity_meter_routes
+from app.routes import jwt_cookie_routes

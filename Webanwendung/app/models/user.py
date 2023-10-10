@@ -1,9 +1,9 @@
-from app import login_manager, logger
+from app import logger #, login_manager
 from flask_login import UserMixin
 from bson.objectid import ObjectId
 
 #TODO: logger, db commands
-@login_manager.user_loader
+#@login_manager.user_loader
 def load_user(db, user_id):
     return User(db.db.users.find_one({'_id': ObjectId(user_id)}))
 

@@ -198,6 +198,11 @@ xyz(logger=logger)
 logger.info("i love logging <3")
 ```
 
+### Offline Mode
+If the .env file is incomplete, a offline mode of the web-app will be deployed. The online functions are not available in this mode.
+
+### Swagger Documentation
+A swagger documentation is available on each app in its directory.
 
 
 ### Helpful Docs

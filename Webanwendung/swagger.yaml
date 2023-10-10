@@ -1,0 +1,52 @@
+swagger: '2.0'
+info:
+  version: v1
+  title: DILLIGAF (Security-by-Design)
+  description: Web-app API
+host: localhost:5000
+schemes:
+  - http
+  - https
+paths:
+  /:
+    get:
+      summary: GET index.html
+      responses:
+        '200':
+          description: Returned on success.
+  /register/:
+    get:
+      summary: GET register.html
+      responses:
+        '200':
+          description: Returned on success.
+    post:
+      summary: Register a user
+      description: Register a user with username and password in the user db.
+      responses:
+        '200':
+          description: Returned on success. A user has been successfully created.
+          schema:
+            type: object
+        '000':
+          description: Add more codes.
+  /login:
+    get:
+      summary: GET login.html
+      responses:
+        '200':
+          description: Returned on success.
+    post:
+      summary: Login a user
+      description: Login a user with username and password and get the JWT Token for authorization.
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+  /dashboard/:
+    get:
+      summary: GET register.html
+      responses:
+        '200':
+          description: Returned on success.
