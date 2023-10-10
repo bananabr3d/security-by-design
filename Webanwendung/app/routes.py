@@ -94,6 +94,11 @@ def verify2fa():
     else:
         flash('User could not be verified', 'failed')
 
+@app.errorhandler(404)
+def page_not_found(e):
+    logger.info('Page Not Found')
+    return render_template('PageNotFound.html'), 404
+
 #TODO protected route
 @app.route('/dashboard', methods=['GET'])
 def dashboard():
