@@ -1,6 +1,7 @@
 from flask import request, render_template, redirect, url_for, flash
 from app import app, logger, db, bcrypt
 from app.models.user import User
+import pyotp
 
 
 @app.route('/')
@@ -59,6 +60,16 @@ def login():
         return redirect(url_for('dashboard'))
     elif request.method =='GET':
         return render_template('login.html')
+
+
+@app.route('/activate2fa', methods=['POST'])
+def activate2fa():
+    secret = pyotp.random_base32()
+    user_id = get_curent_userid() # vitali fragen wegen jwt
+    db.users.update_one({"_id": user_id}, {"$set": {"2fa_secret": secret}})
+
+@app.route('/verify2fa', methods=['POST'])
+
 
 #TODO protected route
 @app.route('/dashboard', methods=['GET'])
