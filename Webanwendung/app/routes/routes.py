@@ -5,6 +5,7 @@ from flask_jwt_extended import (
 from app import app, logger, db, bcrypt, offline_mode
 from app.models.user import User
 from app.models.electricity_meter import Electricity_meter
+import pyotp
 
 # TODO more comments
 
@@ -97,6 +98,43 @@ def dashboard():
     logger.info("Get-Request: Dashboard displayed")
     currentUser = get_jwt_identity()
     return render_template('dashboard.html')
+
+# @app.route('/activate2fa', methods=['POST'])
+# def activate2fa():
+#     secret = pyotp.random_base32()
+#     user_id = get_curent_userid() # vitali fragen wegen jwt
+#     db.db.users.update_one({"_id": user_id}, {"$set": {"2fa_secret": secret}})
+
+# @app.route('/verify2fa', methods=['POST'])
+# def verify2fa():
+
+#     user_2fa_code = request.json.get('2fa_code')
+
+#     user_id = get_current_user_id()
+#     user = db.db.users.find_one({"_id": user_id}, allow_partial_results=False)
+
+#     if not user:
+#         flash('User not found', 'failed')
+#         return render_template('verify2fa.html')
+    
+#     secret = user.get('2fa_secret')
+
+#     if not secret:
+#         flash('User has no 2fa',  'failed')
+#         return redirect(url_for('index'))
+    
+#     totp = pyotp.TOTP(secret)
+
+#     if totp.verify(user_2fa_code):
+#         token = generate_jwt_token(user_id)
+#         flash('Verification Successfull', 'Success')
+#     else:
+#         flash('User could not be verified', 'failed')
+
+@app.errorhandler(404)
+def page_not_found(e):
+    logger.info('Request on Page Not Found')
+    return render_template('PageNotFound.html'), 404
 
 # => Flask_jwt-extended
 # https://flask-jwt-extended.readthedocs.io/en/stable/optional_endpoints.html
