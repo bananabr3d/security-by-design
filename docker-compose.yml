@@ -1,0 +1,19 @@
+version: '3'
+services:
+  web:
+    build: ./Webanwendung
+    ports:
+      - "5000:5000"
+    networks:
+      - secbydesign
+  # app:
+  #   build: ./Anwendung
+  #   deploy:
+  #     replicas: 3
+  #   depends_on:
+  #     - web
+  #   networks:
+  #     - secbydesign
+
+networks:
+  secbydesign:
