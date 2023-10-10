@@ -66,10 +66,33 @@ def login():
 def activate2fa():
     secret = pyotp.random_base32()
     user_id = get_curent_userid() # vitali fragen wegen jwt
-    db.users.update_one({"_id": user_id}, {"$set": {"2fa_secret": secret}})
+    db.db.users.update_one({"_id": user_id}, {"$set": {"2fa_secret": secret}})
 
 @app.route('/verify2fa', methods=['POST'])
+def verify2fa():
 
+    user_2fa_code = request.json.get('2fa_code')
+
+    user_id = get_current_user_id()
+    user = db.db.users.find_one({"_id": user_id}, allow_partial_results=False)
+
+    if not user:
+        flash('User not found', 'failed')
+        return render_template('verify2fa.html')
+    
+    secret = user.get('2fa_secret')
+
+    if not secret:
+        flash('User has no 2fa',  'failed')
+        return redirect(url_for('index'))
+    
+    totp = pyotp.TOTP(secret)
+
+    if totp.verify(user_2fa_code):
+        token = generate_jwt_token(user_id)
+        flash('Verification Successfull', 'Success')
+    else:
+        flash('User could not be verified', 'failed')
 
 #TODO protected route
 @app.route('/dashboard', methods=['GET'])
