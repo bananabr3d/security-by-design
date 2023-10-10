@@ -1,0 +1,40 @@
+# This workflow will install Python dependencies, run tests and lint with a single version of Python
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
+
+name: Python application
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python 3.x
+      uses: actions/setup-python@v3
+      with:
+        python-version: "3.x"
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        if [ -f Webanwendung/requirements.txt ]; then pip install -r Webanwendung/requirements.txt; fi
+        if [ -f Anwendung/requirements.txt ]; then pip install -r Anwendung/requirements.txt; fi
+    - name: Test with pytest
+      run: |
+        pip install pytest
+        pytest --doctest-modules --junitxml=jnuit/test-results.xml
+    - name: Upload pytest test results
+      uses: actions/upload-artifact@v3
+      with:
+        name: pytest-results
+        path: junit/test-results.xml
+      if: ${{ always() }}
