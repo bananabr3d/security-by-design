@@ -100,5 +100,8 @@ img {
     display: block;
     margin-left: auto;
     margin-right: auto;
-    width: 40%;
   }
+
+.index_image {
+    width:40%;
+}

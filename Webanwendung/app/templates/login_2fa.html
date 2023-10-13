@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DILLIGAF</title>
+    <title>Register 2fa</title>
     <link rel="stylesheet" href="../static/style.css">
 </head>
 <body>
@@ -18,13 +18,25 @@
             <li><a href="/dashboard">Dashboard</a></li>
         </ul>
     </nav>
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <ul class=flashes>
+            {% for message in messages %}
+            <li>{{ message }}</li>
+            {% endfor %}
+            </ul>
+        {% endif %}
+    {% endwith %}
     <main>
-        <h2>Start</h2>
-        <p>Welcome on our page! Please choose an option on the navigation bar above.</p>
+        <section>
+            <h2>login with 2fa</h2>
+            <form method="post">
+                <label for="otp">OTP / 2FA Code:</label>
+                <input type="number" id="otp" name="otp" required>
+                <button type="submit">Login</button>
+            </form>
+        </section>
     </main>
-    <a href="https://imgflip.com/i/81na2x">
-        <img class="index_image" src="https://i.imgflip.com/81na2x.jpg" title="made at imgflip.com"/>
-    </a>
     <footer>
         <p>&copy; 2023 DILLIGAF GMBH und CO KG AG</p>
     </footer>

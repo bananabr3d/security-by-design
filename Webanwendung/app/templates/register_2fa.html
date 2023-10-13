@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register</title>
+    <title>Register 2fa</title>
     <link rel="stylesheet" href="../static/style.css">
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
 </head>
 <body>
     <header>
@@ -29,18 +30,22 @@
     {% endwith %}
     <main>
         <section>
-            <h2>Register</h2>
+            <h2>Register your 2fa</h2>
+            <p>Scan the QR code with your 2fa app and enter the code below.</p>
             <form method="post">
-                <label for="username">Username:</label>
-                <input type="text" id="username" name="username" required>
-                <label for="password">Password:</label>
-                <input type="password" id="password" name="password" required>
-                <label for="password2">Password again:</label>
-                <input type="password" id="password2" name="password2" required>
-                <div>
+                <label for="secret">Secret Token</label>
+                <input type="text" class="form-control" id="secret" value="{{ secret }}" readonly onblur='generateBarCode();'>
+                
+                <label for="otp">OTP / 2FA Code:</label>
+                <input type="text" id="otp" name="otp" required>
                 <button type="submit">Register</button>
             </form>
+            <img id='barcode' 
+            src="data:image/png;base64,{{ img_qrcode_data }}"
+            alt="" 
+            title="QR Code 2fa"/>
         </section>
+        
     </main>
     <footer>
         <p>&copy; 2023 DILLIGAF GMBH und CO KG AG</p>

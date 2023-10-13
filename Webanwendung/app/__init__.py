@@ -21,6 +21,9 @@ from bson.objectid import ObjectId
 # Packages for testing the .env file
 from app.tests.unit import verify_env
 
+# For cookie expiration handling
+from datetime import timedelta
+
 
 # ===== Exception Classes =====
 class DBConnectionError(Exception):
@@ -102,12 +105,19 @@ app.config['JWT_SECRET_KEY'] = os.getenv("SECRET_KEY")
 app.config['JWT_TOKEN_LOCATION'] = ['cookies']
 app.config['JWT_COOKIE_SECURE'] = False #Only allow JWT cookies sent with https
 
+app.config['JWT_BLACKLIST_ENABLED'] = True
+app.config['JWT_BLACKLIST_TOKEN_CHECKS'] = ['access']# , 'refresh']
+
 # set cookie paths: Refresh and Access Cookies
 app.config['JWT_ACCESS_COOKIE_PATH'] = '/'
 
 # Enable CSRF Protection
-app.config['JWT_COOKIE_SCRF_PROTECT'] = True
+app.config['JWT_COOKIE_CSRF_PROTECT'] = False
 app.config['JWT_CSRF_CHECK_FORM'] = True
+
+# Set cookie expiration
+app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(hours=1)
+#app.config["JWT_REFRESH_TOKEN_EXPIRES"] = timedelta(days=30)
 
 jwt = JWTManager(app)
 
@@ -129,5 +139,5 @@ else:
 bcrypt = Bcrypt(app)
 
 from app.routes import routes
-from app.routes import electricity_meter_routes
-from app.routes import jwt_cookie_routes
+from app.routes import contract_routes
+from app.routes import auth_routes
