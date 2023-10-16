@@ -249,5 +249,10 @@ def my_expired_token_callback(jwt_header, jwt_payload):
     unset_jwt_cookies(response=resp)
     return resp
 
+@jwt.unauthorized_loader
+def custom_unauthorized_response(callback):
+    # Customize the error response -> render Unauthorized.html -> button available to redirect to login
+    return redirect(url_for('login'))
+
 # => Flask_jwt-extended
 # https://flask-jwt-extended.readthedocs.io/en/stable/optional_endpoints.html

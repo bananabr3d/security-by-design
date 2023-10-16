@@ -123,18 +123,31 @@ jwt = JWTManager(app)
 
 # ===== Program start =====        
 
-# MongoDB Atlas configuration and 
-if not offline_mode:
-    try:
-        client = pymongo.MongoClient("mongodb+srv://" + os.getenv("MONGODB_USER") + ":" + urllib.parse.quote_plus(os.getenv("MONGODB_PW")) + "@" + os.getenv("MONGODB_CLUSTER") + "." + os.getenv("MONGODB_SUBDOMAIN") + ".mongodb.net/?retryWrites=true&w=majority")
-        logger.info("DB connection established")
-        db = client.get_database('webapp')
-    except Exception as e:
-        logger.error("DB connection Error: ", e)
-        raise DBConnectionError
-else:
-    db = 1
+def db_connection() -> pymongo.database.Database or None:
+    # MongoDB Atlas configuration and test connection 
+    if not offline_mode:
+        try:
+            client = pymongo.MongoClient("mongodb+srv://" + os.getenv("MONGODB_USER") + ":" + urllib.parse.quote_plus(os.getenv("MONGODB_PW")) + "@" + os.getenv("MONGODB_CLUSTER") + "." + os.getenv("MONGODB_SUBDOMAIN") + ".mongodb.net/?retryWrites=true&w=majority")
+            db = client.get_database('webapp')
+            
+            test_document = db.db.test.find_one()
+        except Exception as e:
+            return None
+    else:
+        db = 1
+    return db
 
+# Try to connect to the MongoDB 5 times with 5 seconds delay
+for i in range(5):
+    try:
+        db = db_connection()
+        if db == None:
+            raise DBConnectionError
+        else:
+            logger.info("DB connection established")
+            break
+    except:
+        logger.error("DB connection Error. Try another " + str(5-i) + " times...")
 
 bcrypt = Bcrypt(app)
 
