@@ -8,10 +8,16 @@ services:
       - secbydesign
   # app:
   #   build: ./Anwendung
+  #   depends_on:
+  #     - web
+  #   networks:
+  #     - secbydesign
+  # em:
+  #   build: ./Electricity-Meter
   #   deploy:
   #     replicas: 3
   #   depends_on:
-  #     - web
+  #     - app
   #   networks:
   #     - secbydesign
 
