@@ -123,7 +123,7 @@ for i in range(5):
     except:
         logger.error("DB connection Error. Try another " + str(5-i) + " times...")
         
-    if i == 5:
+    if i == 4:
         raise DBConnectionError
 
 
