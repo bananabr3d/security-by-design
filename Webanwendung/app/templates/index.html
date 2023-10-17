@@ -1,32 +1,13 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DILLIGAF</title>
-    <link rel="stylesheet" href="../static/style.css">
-</head>
-<body>
-    <header>
-        <h1>Welcome on our page!</h1>
-    </header>
-    <nav>
-        <ul>
-            <li><a href="/">Start</a></li>
-            <li><a href="/register">Register</a></li>
-            <li><a href="/login">Login</a></li>
-            <li><a href="/dashboard">Dashboard</a></li>
-        </ul>
-    </nav>
-    <main>
-        <h2>Start</h2>
-        <p>Welcome on our page! Please choose an option on the navigation bar above.</p>
-    </main>
-    <a href="https://imgflip.com/i/81na2x">
-        <img class="index_image" src="https://i.imgflip.com/81na2x.jpg" title="made at imgflip.com"/>
-    </a>
-    <footer>
-        <p>&copy; 2023 DILLIGAF GMBH und CO KG AG</p>
-    </footer>
-</body>
-</html>
+{% extends "base.html" %}
+
+{% block header_title %}
+{% block title %}
+Start Page
+{% endblock %}
+{% endblock %}
+
+{% block content %}
+<a href="https://imgflip.com/i/81na2x">
+    <img class="index_image" src="https://i.imgflip.com/81na2x.jpg" title="made at imgflip.com"/>
+</a>
+{% endblock %}

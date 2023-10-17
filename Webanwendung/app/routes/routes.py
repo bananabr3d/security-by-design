@@ -8,9 +8,14 @@ from datetime import datetime, timedelta
 # TODO more comments
 
 @app.route('/')
+@jwt_required(optional=True)
 def home():
-    logger.info("Get-Request: Starting Page displayed")
-    return render_template('index.html')
+    if get_jwt_identity():
+        logger.info("Get-Request: Starting Page displayed for logged in user")
+        return render_template('index.html', loggedin=True)
+    else:
+        logger.info("Get-Request: Starting Page displayed for not logged in user")
+        return render_template('index.html')
 
 
 
@@ -46,7 +51,7 @@ def dashboard():
 
     
     #render_template with contract objects for each contract
-    return render_template('dashboard.html')
+    return render_template('dashboard.html', loggedin=True)
 
 @app.errorhandler(404)
 def page_not_found(e):

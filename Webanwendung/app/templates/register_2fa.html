@@ -1,55 +1,27 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register 2fa</title>
-    <link rel="stylesheet" href="../static/style.css">
-    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
-</head>
-<body>
-    <header>
-        <h1>Welcome on our page!</h1>
-    </header>
-    <nav>
-        <ul>
-            <li><a href="/">Start</a></li>
-            <li><a href="/register">Register</a></li>
-            <li><a href="/login">Login</a></li>
-            <li><a href="/dashboard">Dashboard</a></li>
-            <li><a href="/logout">Logout</a></li>
-        </ul>
-    </nav>
-    {% with messages = get_flashed_messages() %}
-        {% if messages %}
-            <ul class=flashes>
-            {% for message in messages %}
-            <li>{{ message }}</li>
-            {% endfor %}
-            </ul>
-        {% endif %}
-    {% endwith %}
-    <main>
-        <section>
-            <h2>Register your 2fa</h2>
-            <p>Scan the QR code with your 2fa app and enter the code below.</p>
-            <form method="post">
-                <label for="secret">Secret Token</label>
-                <input type="text" class="form-control" id="secret" value="{{ secret }}" readonly onblur='generateBarCode();'>
-                
-                <label for="otp">OTP / 2FA Code:</label>
-                <input type="text" id="otp" name="otp" required>
-                <button type="submit">Register</button>
-            </form>
-            <img id='barcode' 
-            src="data:image/png;base64,{{ img_qrcode_data }}"
-            alt="" 
-            title="QR Code 2fa"/>
-        </section>
+{% extends "base.html" %}
+
+{% block title %}
+2 FA Registration
+{% endblock %}
+{% block header_title %}
+2 Factor Authentication Registration
+{% endblock %}
+
+{% block content %}
+<section>
+    <h2>Register your 2fa</h2>
+    <p>Scan the QR code with your 2fa app and enter the code below.</p>
+    <form method="post">
+        <label for="secret">Secret Token</label>
+        <input type="text" class="form-control" id="secret" value="{{ secret }}" readonly onblur='generateBarCode();'>
         
-    </main>
-    <footer>
-        <p>&copy; 2023 DILLIGAF GMBH und CO KG AG</p>
-    </footer>
-</body>
-</html>
+        <label for="otp">OTP / 2FA Code:</label>
+        <input type="text" id="otp" name="otp" required>
+        <button type="submit">Register your 2 FA</button>
+    </form>
+    <img id='barcode' 
+    src="data:image/png;base64,{{ img_qrcode_data }}"
+    alt="" 
+    title="QR Code 2fa"/>
+</section>
+{% endblock %}

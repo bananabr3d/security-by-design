@@ -1,49 +1,24 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register</title>
-    <link rel="stylesheet" href="../static/style.css">
-</head>
-<body>
-    <header>
-        <h1>Welcome on our page!</h1>
-    </header>
-    <nav>
-        <ul>
-            <li><a href="/">Start</a></li>
-            <li><a href="/register">Register</a></li>
-            <li><a href="/login">Login</a></li>
-            <li><a href="/dashboard">Dashboard</a></li>
-        </ul>
-    </nav>
-    {% with messages = get_flashed_messages() %}
-        {% if messages %}
-            <ul class=flashes>
-            {% for message in messages %}
-            <li>{{ message }}</li>
-            {% endfor %}
-            </ul>
-        {% endif %}
-    {% endwith %}
-    <main>
-        <section>
-            <h2>Register</h2>
-            <form method="post">
-                <label for="username">Username:</label>
-                <input type="text" id="username" name="username" required>
-                <label for="password">Password:</label>
-                <input type="password" id="password" name="password" required>
-                <label for="password2">Password again:</label>
-                <input type="password" id="password2" name="password2" required>
-                <div>
-                <button type="submit">Register</button>
-            </form>
-        </section>
-    </main>
-    <footer>
-        <p>&copy; 2023 DILLIGAF GMBH und CO KG AG</p>
-    </footer>
-</body>
-</html>
+{% extends "base.html" %}
+
+{% block title %}
+Registration
+{% endblock %}
+{% block header_title %}
+User Registration
+{% endblock %}
+
+{% block content %}
+<section>
+    <h2>Register</h2>
+    <form method="post">
+        <label for="username">Username:</label>
+        <input type="text" id="username" name="username" required>
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" required>
+        <label for="password2">Password again:</label>
+        <input type="password" id="password2" name="password2" required>
+        <div>
+        <button type="submit">Register</button>
+    </form>
+</section>
+{% endblock %}

@@ -128,9 +128,8 @@ def register_2fa():
     # Check if the user 2fa is already authenticated
     try:
         if get_jwt()["2fa_timestamp"] != None and (datetime.now() - get_jwt()["2fa_timestamp"]) < timedelta(minutes=5):
-            resp = make_response(redirect(url_for('dashboard')))
             flash("You are already 2FA authenticated", "success")
-            return resp
+            return redirect(url_for('dashboard'))
     except:
         logger.error("User: '" + user.get_attribute("username") + "' is not 2fa authenticated")
 
@@ -140,7 +139,7 @@ def register_2fa():
         user.update_attribute(db, attribute="twofa_secret", value=secret)
 
         # Generate the OTP URI for the QR code
-        otp_uri = pyotp.TOTP(secret).provisioning_uri(user.get_attribute("username"), issuer_name="DILLIGAF")
+        otp_uri = pyotp.TOTP(secret).provisioning_uri(user.get_attribute("username"), issuer_name="DILLIGAF") #TODO issuer_name
 
         # Generate a QR code image
         qr = qrcode.QRCode(
@@ -162,7 +161,8 @@ def register_2fa():
         # Encode the image as a base64 data URI
         img_qrcode_data = b64encode(img_bytes_io.read()).decode()
 
-        return render_template('register_2fa.html', secret=secret, img_qrcode_data=img_qrcode_data)
+        return render_template('register_2fa.html', secret=secret, img_qrcode_data=img_qrcode_data, loggedin=True)
+    
     elif request.method =='POST':
         otp = request.form['otp']
 
@@ -200,14 +200,14 @@ def login_2fa():
         date_now = datetime.strptime(str(datetime.now())[:19], '%Y-%m-%d %H:%M:%S')
         date_2fa = datetime.strptime((get_jwt()["2fa_timestamp"]), '%a, %d %b %Y %H:%M:%S %Z')
         if (date_now - date_2fa) < timedelta(hours=1):
-            resp = make_response(redirect(url_for('dashboard')))
             flash("You are already 2FA authenticated", "success")
-            return resp
+            return redirect(url_for('dashboard'))
     except:
         logger.error("User: '" + user.get_attribute("username") + "' is not 2fa authenticated")
 
     if request.method =='GET':
-        return render_template('login_2fa.html')
+        return render_template('login_2fa.html', loggedin=True)
+    
     elif request.method =='POST':
         otp = request.form['otp']
 

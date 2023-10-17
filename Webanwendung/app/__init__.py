@@ -46,10 +46,6 @@ class DifferentPasswords(Exception):
     "Raised when an user provides different passwords during the registration"
     pass
 
-class WrongElectricityMeterID(Exception):
-    "Raised when a user provides a electricity meter ID that is not available in the DB"
-    pass
-
 
 
 # ===== Program configs =====
@@ -130,8 +126,9 @@ def db_connection() -> pymongo.database.Database or None:
             client = pymongo.MongoClient("mongodb+srv://" + os.getenv("MONGODB_USER") + ":" + urllib.parse.quote_plus(os.getenv("MONGODB_PW")) + "@" + os.getenv("MONGODB_CLUSTER") + "." + os.getenv("MONGODB_SUBDOMAIN") + ".mongodb.net/?retryWrites=true&w=majority")
             db = client.get_database('webapp')
             
-            test_document = db.db.test.find_one()
+            db.db.test.find_one()
         except Exception as e:
+            logger.debug("Error: " + str(e))
             return None
     else:
         db = 1
