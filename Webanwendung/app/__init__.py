@@ -16,7 +16,6 @@ from flask_jwt_extended import JWTManager
 # Packages for MongoDB
 from flask_pymongo import pymongo
 import urllib
-from bson.objectid import ObjectId
 
 # Packages for testing the .env file
 from app.tests.unit import verify_env
@@ -33,20 +32,6 @@ class DBConnectionError(Exception):
 class ConfigurationError(Exception):
     "Raised when an error occures on the configurations (.env)"
     pass
-
-class UserAlreadyExists(Exception):
-    "Raised when an user provides a username that is already in the database"
-    pass
-
-class WrongPassword(Exception):
-    "Raised when an user provides a wrong password to its username during the login"
-    pass
-
-class DifferentPasswords(Exception):
-    "Raised when an user provides different passwords during the registration"
-    pass
-
-
 
 # ===== Program configs =====
 
@@ -81,17 +66,13 @@ logger = set_logger(logger=logger, format=format, log_level="DEBUG")
 # Test .env variables
 expected_environment_variables = ["SECRET_KEY", "MONGODB_USER", "MONGODB_PW", "MONGODB_CLUSTER", "MONGODB_SUBDOMAIN"]
 
-# Online Mode is the default mode, offline cuts the connection to the MongoDB and then only basic functionality is enabled.
-offline_mode = False
-
 try:
     assert verify_env.verify_all(expected_environment_variables=expected_environment_variables) == True
     logger.info(".env file verified")
 except:
     logger.error(".env file could not be verified")
-    logger.info("Offline Mode activated...")
-    offline_mode = True
-    #raise ConfigurationError
+    raise ConfigurationError
+
 
 # Configure the flask app
 app = Flask(__name__)
@@ -121,18 +102,14 @@ jwt = JWTManager(app)
 
 def db_connection() -> pymongo.database.Database or None:
     # MongoDB Atlas configuration and test connection 
-    if not offline_mode:
-        try:
-            client = pymongo.MongoClient("mongodb+srv://" + os.getenv("MONGODB_USER") + ":" + urllib.parse.quote_plus(os.getenv("MONGODB_PW")) + "@" + os.getenv("MONGODB_CLUSTER") + "." + os.getenv("MONGODB_SUBDOMAIN") + ".mongodb.net/?retryWrites=true&w=majority")
-            db = client.get_database('webapp')
-            
-            db.db.test.find_one()
-        except Exception as e:
-            logger.debug("Error: " + str(e))
-            return None
-    else:
-        db = 1
-    return db
+    try:
+        client = pymongo.MongoClient("mongodb+srv://" + os.getenv("MONGODB_USER") + ":" + urllib.parse.quote_plus(os.getenv("MONGODB_PW")) + "@" + os.getenv("MONGODB_CLUSTER") + "." + os.getenv("MONGODB_SUBDOMAIN") + ".mongodb.net/?retryWrites=true&w=majority")
+        db = client.get_database('webapp')
+        
+        db.db.test.find_one()
+    except Exception as e:
+        logger.debug("Error: " + str(e))
+        return None
 
 # Try to connect to the MongoDB 5 times with 5 seconds delay
 for i in range(5):
@@ -145,6 +122,10 @@ for i in range(5):
             break
     except:
         logger.error("DB connection Error. Try another " + str(5-i) + " times...")
+        
+    if i == 5:
+        raise DBConnectionError
+
 
 bcrypt = Bcrypt(app)
 

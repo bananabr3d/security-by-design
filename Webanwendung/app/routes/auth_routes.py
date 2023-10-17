@@ -1,6 +1,6 @@
-from app import app, logger, db, bcrypt, offline_mode, jwt
+from app import app, logger, db, bcrypt, jwt
 from app.models.user import User, load_user
-from flask import request, render_template, redirect, url_for, flash, make_response, jsonify
+from flask import request, render_template, redirect, url_for, flash, make_response
 from flask_jwt_extended import (
     create_access_token, get_jwt_identity, jwt_required, set_access_cookies, unset_jwt_cookies, get_jwt)
 from flask_jwt_extended.exceptions import JWTExtendedException
@@ -17,7 +17,7 @@ from base64 import b64encode
 def register():
     logger.info(str(request.method) + "-Request on " + request.path)
 
-    if request.method == 'POST' and not offline_mode and get_jwt_identity() == None:
+    if request.method == 'POST' and get_jwt_identity() == None:
         username = request.form['username']
         if User.find_by_username(db, username) != None:
             logger.warning("User already exists")
@@ -58,7 +58,7 @@ def register():
 def login():
     logger.info(str(request.method) + "-Request on " + request.path)
 
-    if request.method == 'POST' and not offline_mode and get_jwt_identity() == None:
+    if request.method == 'POST' and get_jwt_identity() == None:
         logger.info(request.form)
         username = request.form['username']
         password = request.form['password']
