@@ -1,4 +1,5 @@
-from flask_login import UserMixin
+from app import DBConnectionError
+from flask_pymongo import pymongo
 from bson.objectid import ObjectId
 
 #TODO: more information about user

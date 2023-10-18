@@ -11,11 +11,10 @@ from sys import stderr
 # Packages for Flask
 from flask import Flask
 from flask_bcrypt import Bcrypt
-#from flask_login import LoginManager #TODO
 from flask_jwt_extended import JWTManager
 
 # Packages for MongoDB
-from flask_pymongo import pymongo, PyMongo
+from flask_pymongo import pymongo
 import urllib
 from time import sleep
 
@@ -68,7 +67,7 @@ logger = set_logger(logger=logger, format=format, log_level=os.getenv("LOGGING_L
 
 
 # Test .env variables
-expected_environment_variables = ["SECRET_KEY", "MONGODB_USER", "MONGODB_PW", "MONGODB_CLUSTER", "MONGODB_SUBDOMAIN"] #Add more
+expected_environment_variables = ["SECRET_KEY", "JWT_SECRET_KEY", "MONGODB_USER", "MONGODB_PW", "MONGODB_CLUSTER", "MONGODB_SUBDOMAIN"]
 
 try:
     assert verify_env.verify_all(expected_environment_variables=expected_environment_variables) == True
@@ -94,7 +93,7 @@ app.config['JWT_BLACKLIST_TOKEN_CHECKS'] = ['access']# , 'refresh']
 app.config['JWT_ACCESS_COOKIE_PATH'] = '/'
 
 # Enable CSRF Protection
-app.config['JWT_COOKIE_CSRF_PROTECT'] = False
+app.config['JWT_COOKIE_CSRF_PROTECT'] = False #TODO
 #app.config['JWT_CSRF_IN_COOKIES'] = True
 app.config['JWT_CSRF_CHECK_FORM'] = True
 
@@ -111,9 +110,6 @@ def db_connection() -> pymongo.database.Database or None:
     try:
         client = pymongo.MongoClient("mongodb+srv://" + os.getenv("MONGODB_USER") + ":" + urllib.parse.quote_plus(os.getenv("MONGODB_PW")) + "@" + os.getenv("MONGODB_CLUSTER") + "." + os.getenv("MONGODB_SUBDOMAIN") + ".mongodb.net/?retryWrites=true&w=majority")
         db = client.get_database('webapp')
-
-        # app.config["MONGO_URI"] = 'mongodb://' + os.environ['MONGODB_USER'] + ':' + os.environ['MONGODB_PASSWORD'] + '@' + os.environ['MONGODB_HOSTNAME'] + ':27017/' + os.environ['MONGODB_DATABASE']
-        # db = PyMongo(app=app)
 
         db.db.test.find_one()
 
