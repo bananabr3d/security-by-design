@@ -59,7 +59,6 @@ def login():
     logger.info(str(request.method) + "-Request on " + request.path)
 
     if request.method == 'POST' and get_jwt_identity() == None:
-        logger.info(request.form)
         username = request.form['username']
         password = request.form['password']
         user = User.find_by_username(db = db, username = username)
@@ -119,7 +118,6 @@ def register_2fa():
         user = load_user(db=db, user_id=get_jwt_identity())
 
     # Check if the user has already a 2fa activated
-    logger.info(user.get_attribute('twofa_activated'))
     if user.get_attribute('twofa_activated') == "True":
         logger.warning("User: '" + user.get_attribute("username") + "' has already a 2fa activated")
         flash('You have already a 2-Factor-Authentification activated!',  'failed')
@@ -212,7 +210,7 @@ def login_2fa():
         otp = request.form['otp']
 
         if verify2fa(user=user, otp=otp):
-            flash('2FA Authentication Successfull', 'success')
+            flash('2FA Authentication Successful', 'success')
             logger.debug("User: '" + user.get_attribute("username") + "' has successfully authenticated with 2fa")
             resp = make_response(redirect(url_for('dashboard')))
             access_token = create_access_token(identity=user.get_id(), additional_claims={'2fa_timestamp': datetime.now()})
