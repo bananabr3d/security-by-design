@@ -8,6 +8,7 @@ In this project, we are going to create a Dashboard-Website with a user manageme
 The website and the application will be written in python. Therefore we use Flask for both and additionally MongoDB (+HTML, CSS (+Bootstrap), JS) for the website.
 
 The group of 4 people will be devided in half in order to create both components:
+
 Web-App:
 - Vitali Bier
 - Julian Flock
@@ -198,12 +199,14 @@ xyz(logger=logger)
 logger.info("i love logging <3")
 ```
 
-### Offline Mode
-If the .env file is incomplete, a offline mode of the web-app will be deployed. The online functions are not available in this mode.
-
 ### Swagger Documentation
 A swagger documentation is available on each app in its directory.
 
+
+### Web App HTTPS
+https://stackoverflow.com/questions/29458548/can-you-add-https-functionality-to-a-python-flask-web-server
+-> openssl req -x509 -newkey rsa:4096 -nodes -out cert.pem -keyout key.pem -days 365
+into "Webanwendung" folder
 
 ### Helpful Docs
 For pymongo help:

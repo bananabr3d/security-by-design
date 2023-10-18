@@ -6,6 +6,7 @@ load_dotenv()
 
 # Packages for logging
 import logging
+from sys import stderr
 
 # Packages for Flask
 from flask import Flask
@@ -14,7 +15,7 @@ from flask_bcrypt import Bcrypt
 from flask_jwt_extended import JWTManager
 
 # Packages for MongoDB
-from flask_pymongo import pymongo
+from flask_pymongo import pymongo, PyMongo
 import urllib
 from time import sleep
 
@@ -67,7 +68,7 @@ logger = set_logger(logger=logger, format=format, log_level=os.getenv("LOGGING_L
 
 
 # Test .env variables
-expected_environment_variables = ["SECRET_KEY", "MONGODB_USER", "MONGODB_PW", "MONGODB_CLUSTER", "MONGODB_SUBDOMAIN"]
+expected_environment_variables = ["SECRET_KEY", "MONGODB_USER", "MONGODB_PW", "MONGODB_CLUSTER", "MONGODB_SUBDOMAIN"] #Add more
 
 try:
     assert verify_env.verify_all(expected_environment_variables=expected_environment_variables) == True
@@ -79,11 +80,12 @@ except:
 
 # Configure the flask app
 app = Flask(__name__)
+
 app.config['SECRET_KEY'] = os.getenv("SECRET_KEY") # not used?
 app.config['JWT_SECRET_KEY'] = os.getenv("JWT_SECRET_KEY")
 
 app.config['JWT_TOKEN_LOCATION'] = ['cookies']
-app.config['JWT_COOKIE_SECURE'] = False #Only allow JWT cookies sent with https
+app.config['JWT_COOKIE_SECURE'] = True # If True: Only allow JWT cookies sent with https
 
 app.config['JWT_BLACKLIST_ENABLED'] = True
 app.config['JWT_BLACKLIST_TOKEN_CHECKS'] = ['access']# , 'refresh']
@@ -93,6 +95,7 @@ app.config['JWT_ACCESS_COOKIE_PATH'] = '/'
 
 # Enable CSRF Protection
 app.config['JWT_COOKIE_CSRF_PROTECT'] = False
+#app.config['JWT_CSRF_IN_COOKIES'] = True
 app.config['JWT_CSRF_CHECK_FORM'] = True
 
 # Set cookie expiration
@@ -108,13 +111,17 @@ def db_connection() -> pymongo.database.Database or None:
     try:
         client = pymongo.MongoClient("mongodb+srv://" + os.getenv("MONGODB_USER") + ":" + urllib.parse.quote_plus(os.getenv("MONGODB_PW")) + "@" + os.getenv("MONGODB_CLUSTER") + "." + os.getenv("MONGODB_SUBDOMAIN") + ".mongodb.net/?retryWrites=true&w=majority")
         db = client.get_database('webapp')
-        
+
+        # app.config["MONGO_URI"] = 'mongodb://' + os.environ['MONGODB_USER'] + ':' + os.environ['MONGODB_PASSWORD'] + '@' + os.environ['MONGODB_HOSTNAME'] + ':27017/' + os.environ['MONGODB_DATABASE']
+        # db = PyMongo(app=app)
+
         db.db.test.find_one()
 
         return db
     except Exception as e:
         logger.debug("Error: " + str(e))
         return None
+
 
 # Try to connect to the MongoDB 5 times with 5 seconds delay
 for i in range(5):

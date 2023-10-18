@@ -3,50 +3,88 @@ from app.models.user import User, load_user
 from flask import request, render_template, redirect, url_for, flash, make_response
 from flask_jwt_extended import (
     create_access_token, get_jwt_identity, jwt_required, set_access_cookies, unset_jwt_cookies, get_jwt)
-from flask_jwt_extended.exceptions import JWTExtendedException
 import pyotp
 from datetime import datetime, timedelta
 import pyotp
 import io
 import qrcode
 from base64 import b64encode
+import re
 
+regex_email = re.compile(r'([A-Za-z0-9]+[.-_])*[A-Za-z0-9]+@[A-Za-z0-9-]+(\.[A-Z|a-z]{2,})+')
+regex_username = re.compile(r'^[a-zA-Z0-9]+([_ -]?[a-zA-Z0-9])*$')
+regex_password = re.compile(r'^.*(?=.{8,})(?=.*[a-zA-Z])(?=.*\d)(?=.*[!#$%&?"]).*$')
 
-@app.route('/register', methods=['GET', 'POST']) # Add more details to user
+@app.route('/register', methods=['GET', 'POST'])
 @jwt_required(optional=True)
 def register():
     logger.info(str(request.method) + "-Request on " + request.path)
 
     if request.method == 'POST' and get_jwt_identity() == None:
+        # === Input Validation ===
+        # Email address and password
+
+        if not re.fullmatch(regex_email, request.form['email']):
+            logger.warning("User provided a invalid email input")
+            flash('Invalid input on "E-Mail"', 'failed')
+            return render_template('register.html')
+        
+        if not re.fullmatch(regex_username, request.form['username']):
+            logger.warning("User provided a invalid username input")
+            flash('Invalid input on "Username"', 'failed')
+            return render_template('register.html')
+        
+        if not re.fullmatch(regex_password, request.form['password']) or not re.fullmatch(regex_password, request.form['password2']):
+            logger.warning("User provided a invalid password input")
+            flash('Invalid input on "Password"', 'failed')
+            return render_template('register.html')
+        
+        
+        email = request.form['email']
         username = request.form['username']
+
+        # Check if Email already exists
+        if User.find_by_email(db, email) != None:
+            logger.warning("E-Mail already exists")
+            flash('E-Mail already exists', 'failed')
+            # Add JSON Response for APIs? make_response(render_template('register.html'))?
+            return render_template('register.html')
+
+        # Check if User already exists
         if User.find_by_username(db, username) != None:
             logger.warning("User already exists")
             flash('Username already exists', 'failed')
             # Add JSON Response for APIs? make_response(render_template('register.html'))?
             return render_template('register.html')
+        
+        # Compare passwords
         password = request.form['password']
         password2 = request.form['password2']
+
         if password != password2:
             logger.warning("Different passwords provided during the registration")
             logger.debug("User: " + username + "provided different passwords during the registration")
             flash('Passwords dont match', 'failed')
             # Add JSON Response for APIs?
             return render_template('register.html')
+        
+        # hash pw and save user
         hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
-
-        user_data = {'username': username, 'password': hashed_password, 'twofa_secret': None, "twofa_activated": False} #TODO Add more information about user
-        user = User(user_data)
-        user.save(db)
+        user = User(db=db, email=email, username=username, password=hashed_password)
+        user.save(db=db)
 
         flash('Your account has been created!', 'success')
         logger.debug("User Account has been created successfully")
         # Add JSON Response for APIs?
         return redirect(url_for('login'))
+    
     elif request.method =='GET' and get_jwt_identity() == None:       
         return render_template('register.html')
+    
     elif request.method =='GET' and get_jwt_identity() != None:
         flash('You are already logged in!', 'success')
         return redirect(url_for('dashboard'))
+    
     else:
         logger.warning("Unknown Request, unset jwt cookies...")
         resp = make_response(redirect(url_for('register')))
@@ -59,8 +97,20 @@ def login():
     logger.info(str(request.method) + "-Request on " + request.path)
 
     if request.method == 'POST' and get_jwt_identity() == None:
+
+        if not re.fullmatch(regex_username, request.form['username']):
+            logger.warning("User provided a invalid username input")
+            flash('Invalid input on "Username"', 'failed')
+            return render_template('login.html')
+        
+        if not re.fullmatch(regex_password, request.form['password']):
+            logger.warning("User provided a invalid password input")
+            flash('Invalid input on "Password"', 'failed')
+            return render_template('login.html')
+
         username = request.form['username']
         password = request.form['password']
+
         user = User.find_by_username(db = db, username = username)
         if user != None: # if username found
             password_hash = user.get_attribute('password')

@@ -13,6 +13,7 @@ services:
   #     - web
   #   networks:
   #     - secbydesign
+
   # em:
   #   build: ./Electricity-Meter
   #   deploy:
@@ -23,5 +24,6 @@ services:
   #     - secbydesign
 
 networks:
+  secbydesign:
     driver: bridge
   # web-backend:
