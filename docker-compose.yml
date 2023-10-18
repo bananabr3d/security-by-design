@@ -4,6 +4,7 @@ services:
     build: ./Webanwendung
     ports:
       - "5000:5000"
+    restart: unless-stopped
     networks:
       - secbydesign
   # app:
@@ -22,4 +23,5 @@ services:
   #     - secbydesign
 
 networks:
-  secbydesign:
+    driver: bridge
+  # web-backend:
