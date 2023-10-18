@@ -16,6 +16,7 @@ from flask_jwt_extended import JWTManager
 # Packages for MongoDB
 from flask_pymongo import pymongo
 import urllib
+from time import sleep
 
 # Packages for testing the .env file
 from app.tests.unit import verify_env
@@ -107,6 +108,8 @@ def db_connection() -> pymongo.database.Database or None:
         db = client.get_database('webapp')
         
         db.db.test.find_one()
+
+        return db
     except Exception as e:
         logger.debug("Error: " + str(e))
         return None
@@ -122,6 +125,7 @@ for i in range(5):
             break
     except:
         logger.error("DB connection Error. Try another " + str(5-i) + " times...")
+        sleep(5)
         
     if i == 4:
         raise DBConnectionError
