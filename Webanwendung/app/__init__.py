@@ -52,7 +52,9 @@ def set_logger(logger:logging.Logger, format:logging.Formatter, log_level:str="D
         print('Log level couldnt be recognized given. Example: "INFO"')
         print('Defaulting to DEBUG logging.')
         logger.setLevel(logging.DEBUG)
-    logging.basicConfig(filename='debug.log', filemode='w', encoding='utf-8', level=logger.level)
+    consoleHandler = logging.StreamHandler(stderr)
+    consoleHandler.setFormatter(format)
+    logger.addHandler(consoleHandler)
     logger.debug('###  Started Webanwendung  ###')
     return logger
 
@@ -61,7 +63,7 @@ format = logging.Formatter("%(asctime)s [%(levelname)-5.5s]  %(message)s \n")
 logger = logging.getLogger(__name__)
 
 # set self.logger level
-logger = set_logger(logger=logger, format=format, log_level="DEBUG")
+logger = set_logger(logger=logger, format=format, log_level=os.getenv("LOGGING_LEVEL"))
 
 
 # Test .env variables
@@ -78,7 +80,7 @@ except:
 # Configure the flask app
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv("SECRET_KEY") # not used?
-app.config['JWT_SECRET_KEY'] = os.getenv("SECRET_KEY")
+app.config['JWT_SECRET_KEY'] = os.getenv("JWT_SECRET_KEY")
 
 app.config['JWT_TOKEN_LOCATION'] = ['cookies']
 app.config['JWT_COOKIE_SECURE'] = False #Only allow JWT cookies sent with https
