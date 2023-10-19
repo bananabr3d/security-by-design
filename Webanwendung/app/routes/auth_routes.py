@@ -4,7 +4,7 @@ from flask import request, render_template, redirect, url_for, flash, make_respo
 from flask_jwt_extended import (
     create_access_token, get_jwt_identity, jwt_required, set_access_cookies, unset_jwt_cookies, get_jwt)
 import pyotp
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import pyotp
 import io
 import qrcode
@@ -86,7 +86,7 @@ def register():
         return redirect(url_for('dashboard'))
     
     else:
-        logger.warning("Unknown Request, unset jwt cookies...")
+        logger.warning("Unknown Request, unset cookies...")
         resp = make_response(redirect(url_for('register')))
         unset_jwt_cookies(resp)
         return resp
@@ -129,7 +129,8 @@ def login():
             # Add JSON Response for APIs?
             return render_template('login.html')
         
-        access_token = create_access_token(identity=user.get_id())
+        access_token = create_access_token(identity=user.get_id(), fresh=timedelta(minutes=15))
+
         flash('You have been logged in successfully!', 'success')
         logger.debug("User Account has logged in successfully")
         # Add JSON Response for APIs?
@@ -187,7 +188,7 @@ def register_2fa():
         user.update_attribute(db, attribute="twofa_secret", value=secret)
 
         # Generate the OTP URI for the QR code
-        otp_uri = pyotp.TOTP(secret).provisioning_uri(user.get_attribute("username"), issuer_name="DILLIGAF") #TODO issuer_name
+        otp_uri = pyotp.TOTP(secret).provisioning_uri(user.get_attribute("username"), issuer_name="VoltWave") #TODO issuer_name
 
         # Generate a QR code image
         qr = qrcode.QRCode(
@@ -263,7 +264,7 @@ def login_2fa():
             flash('2FA Authentication Successful', 'success')
             logger.debug("User: '" + user.get_attribute("username") + "' has successfully authenticated with 2fa")
             resp = make_response(redirect(url_for('dashboard')))
-            access_token = create_access_token(identity=user.get_id(), additional_claims={'2fa_timestamp': datetime.now()})
+            access_token = create_access_token(identity=user.get_id(), fresh=timedelta(minutes=15), additional_claims={'2fa_timestamp': datetime.now()})
             set_access_cookies(response=resp, encoded_access_token=access_token)
             return resp
         else:
@@ -291,6 +292,24 @@ def verify2fa(user: User, otp: str) -> bool:
         else:
             return False
 
+
+# Using an `after_request` callback, we refresh the access_token token that is within 15minutes of expiring.
+@app.after_request #TODO
+def refresh_expiring_jwts(response):
+    try:
+        exp_timestamp = get_jwt()["exp"]
+        print(exp_timestamp)
+        now = datetime.now(timezone.utc)
+        target_timestamp = datetime.timestamp(now + timedelta(minutes=15))
+        if (target_timestamp > exp_timestamp):
+            access_token = create_access_token(identity=get_jwt_identity(), fresh=False)
+            set_access_cookies(response=response, encoded_access_token=access_token)
+        return response
+    except (RuntimeError, KeyError):
+        # Case where there is not a valid JWT. Just return the original response
+        return response
+
+
 @jwt.expired_token_loader
 def my_expired_token_callback(jwt_header, jwt_payload):
     resp = make_response(redirect(url_for('login')))
@@ -301,6 +320,14 @@ def my_expired_token_callback(jwt_header, jwt_payload):
 def custom_unauthorized_response(callback):
     # Customize the error response -> render Unauthorized.html -> button available to redirect to login
     return redirect(url_for('login'))
+
+@jwt.needs_fresh_token_loader #TODO
+def token_not_fresh_callback(jwt_header, jwt_payload):
+    flash('You have to log in again in order to do this', 'error')
+    logger.debug("User has a unfresh token, but needs a fresh one")
+    resp = make_response(redirect(url_for('login')))
+    unset_jwt_cookies(response=resp)
+    return resp
 
 # => Flask_jwt-extended
 # https://flask-jwt-extended.readthedocs.io/en/stable/optional_endpoints.html
