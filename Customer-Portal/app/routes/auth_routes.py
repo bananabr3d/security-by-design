@@ -40,18 +40,18 @@ def register():
             return render_template('register.html')
         
         
-        email = request.form['email']
+        email = request.form['email'].lower()
         username = request.form['username']
 
         # Check if Email already exists
-        if User.find_by_email(db, email) != None:
+        if User.find_by_email(db=db, email=email) != None:
             logger.warning("E-Mail already exists")
             flash('E-Mail already exists', 'failed')
             # Add JSON Response for APIs? make_response(render_template('register.html'))?
             return render_template('register.html')
 
         # Check if User already exists
-        if User.find_by_username(db, username) != None:
+        if User.find_by_username(db=db, username=username) != None:
             logger.warning("User already exists")
             flash('Username already exists', 'failed')
             # Add JSON Response for APIs? make_response(render_template('register.html'))?

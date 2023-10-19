@@ -51,7 +51,7 @@ def dashboard():
 
     
     #render_template with contract objects for each contract
-    return render_template('dashboard.html', loggedin=True)
+    return render_template('dashboard.html', loggedin=True, username=user.get_attribute('username'))
 
 @app.errorhandler(404)
 def page_not_found(e):
