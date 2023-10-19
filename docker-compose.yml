@@ -1,7 +1,7 @@
 version: '3'
 services:
   customer-portal:
-    build: ./Webanwendung
+    build: ./Customer-Portal
     ports:
       - "5000:5000"
     restart: unless-stopped
@@ -13,7 +13,7 @@ services:
 
 
   # metering-point-operator:
-  #   build: ./Anwendung
+  #   build: ./Metering-Point-Operator
   #   depends_on:
   #     - customer-portal
   #   networks:
