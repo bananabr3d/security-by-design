@@ -1,29 +1,33 @@
 version: '3'
 services:
-  web:
+  customer-portal:
     build: ./Webanwendung
     ports:
       - "5000:5000"
     restart: unless-stopped
+    environment:
+      - LOGGING_LEVEL=DEBUG
+      - FLASK_DEBUG=True
     networks:
       - secbydesign
-  # app:
+
+
+  # metering-point-operator:
   #   build: ./Anwendung
   #   depends_on:
-  #     - web
+  #     - customer-portal
   #   networks:
   #     - secbydesign
 
-  # em:
+  # electricity-meter:
   #   build: ./Electricity-Meter
   #   deploy:
   #     replicas: 3
   #   depends_on:
-  #     - app
+  #     - metering-point-operator
   #   networks:
   #     - secbydesign
 
 networks:
   secbydesign:
     driver: bridge
-  # web-backend:
