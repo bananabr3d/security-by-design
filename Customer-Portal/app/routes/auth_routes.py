@@ -13,7 +13,7 @@ import re
 
 regex_email = re.compile(r'([A-Za-z0-9]+[.-_])*[A-Za-z0-9]+@[A-Za-z0-9-]+(\.[A-Z|a-z]{2,})+')
 regex_username = re.compile(r'^[a-zA-Z0-9]+([_ -]?[a-zA-Z0-9])*$')
-regex_password = re.compile(r'^.*(?=.{8,})(?=.*[a-zA-Z])(?=.*\d)(?=.*[!#$%&?"]).*$')
+regex_password = re.compile(r'^.*(?=.{12,})(?=.*[a-zA-Z])(?=.*\d)(?=.*[!#$%&?"]).*$')
 
 @app.route('/register', methods=['GET', 'POST'])
 @jwt_required(optional=True)
