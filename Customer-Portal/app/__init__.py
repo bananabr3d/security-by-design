@@ -38,6 +38,10 @@ class ConfigurationError(Exception):
     "Raised when an error occures on the configurations (.env)"
     pass
 
+class UnknownRequest(Exception):
+    "Raised when an unknown request is made"
+    pass
+
 # ===== Program configurations =====
 
 # === Logger ===
