@@ -3,21 +3,21 @@
 ## Introduction
 Hi, and welcome!
 
-In this project, we are going to create a Dashboard-Website with a user management in order to monitor and control the Electricity meter of a user. The Electricity meters are going to be simulated by another application.
+In this project, we are going to create a Customer-Portal-Website with a user management in order to monitor and control the contracts for Electricity meter of a user. The Electricity meters are going to be simulated by another application and send their information to the central Metering-Point-Operator.
 
-The website and the application will be written in python. Therefore we use Flask for both and additionally MongoDB (+HTML, CSS (+Bootstrap), JS) for the website.
+The website and the application will be written in python. Therefore we use Flask for both the customer portal and the metering point operator and additionally MongoDB (+HTML, CSS (+Bootstrap), JS) for the website.
 
-The group of 4 people will be devided in half in order to create both components:
+The group of 4 people will be devided in half in order to create the components:
 
-Web-App:
+Customer-Portal:
 - Vitali Bier
 - Julian Flock
 
-App:
+Metering-Point-Operator + Electricity Meter:
 - Ellen Kistner
 - Andrey Dubilyer
 
-Thereby is Vitali Bier the project leader.
+Thereby is **Vitali Bier** the project leader.
 
 ### Ideas
 In the Beginning, we decided on the chosen stack. But there were also other ideas, like the MERN Stack for the web-app, as we have collected a lot of experience with it, or a easy-to-use wordpress site. In the end, the python stack won for the usability, flexibility and our experience in its usage.
@@ -54,7 +54,7 @@ http://coming.soon/
     ├── register/
     ├── login/
     ├── dashboard/
-    |    ├── < electricity-meter-ID >/
+    |    ├── ...
 ```
 
 ## Installation and Usage
@@ -75,13 +75,16 @@ and with the following environment variables (values are examples):
 
 ```
 SECRET_KEY=secret-key
-    MONGODB_USER=user
-    MONGODB_PW=password
-    MONGODB_CLUSTER=cluster
-    MONGODB_SUBDOMAIN=gc5y7mr
+JWT_SECRET_KEY=jwt-secret-key
+MONGODB_USER=user
+MONGODB_PW=password
+MONGODB_CLUSTER=clustername
+MONGODB_SUBDOMAIN=fc6x7lr
+JWT_ACCESS_TOKEN_EXPIRATION_MINUTES=30
+2FA_EXPIRATION_MINUTES=60
 ```
 
-The keys are being used as a part of the uri as following:
+The db keys are being used as a part of the uri as following:
 
 ```
 mongodb+srv://<MONGODB_USER>:<MONGODB_PW>@<MONGODB_CLUSTER>.<MONGODB_SUBDOMAIN>.mongodb.net/?retryWrites=true&w=majority
@@ -102,14 +105,13 @@ docker-compose up
 And the frontend of the web-app is visible on port 5000 (http://localhost:5000).
 
 #### Debug with Logs
-If the docker container does not work or has to be troubleshooted, the debug logs are in the docker container. As long as the docker container was not restartet, the logs are inspectable inside the docker container in the debug.log (in the root directory). The content can be displayed when executing "cat debug.log" inside the docker container cli.
+If the docker container does not work or has to be troubleshooted, the debug logs are displayed in the docker container console in "stderr" and logged in the debug.log (in the root directory), too. As long as the docker container was not restartet, the logs are inspectable inside the docker container. The content can be displayed when executing "cat debug.log" inside the docker container cli or new content can be displayed contiously with "tail -F debug.log".
 
 
 ### Register a user
 In order to register a user you need the following information:
 - username
 - password
-- (2fa app)
 - (birthday date)
 - (gender)
 - (...)
@@ -120,22 +122,29 @@ With these information you can go to the website: "http://coming.soon/register" 
 In order to login with a user you need the following information:
 - username
 - password
-- (2fa)
 
 With these information you can go to the website: "http://coming.soon/login" and login. Afterwards, you will be forwarded to the Dashboard.
+
+### Register your 2FA
+...
+
+### Login with your 2FA
+..
 
 ### Dashboard
 The Dasboard is a fully representation of your current Electricity Meters status and your energy consumption. If you want to get into a more detailed overview or maintainance of a electricity meter you can click on it's ID.
 
 Screenshots coming soon...
 
-### Add a Electricity Meter to your Dashboard / Bind it to your user
+### Add a Contract to your Dashboard / Bind it to your user
 Coming soon...
 
 ### Maintain your Electricity Meter
 Coming soon...
 
+
 ## Coding Instructions
+### Logging
 Logging will be managed by the python package "logging". Therefore there are 5 different logging levels defined:
 - info
 - warning
@@ -198,6 +207,20 @@ xyz(logger=logger)
 # If you dont call a function, you can simply use the logger as follows:
 logger.info("i love logging <3")
 ```
+
+### Secure Coding Instructions
+In order to code securely, there are some rules to follow. These are:
+- Implement Error and Exception Handling by using try-except blocks ("last resort error handling")
+- Use the logging module for logging
+- Use the python package "dotenv" for environment variables
+- Document your code and your functions
+- Use functions for handling repetitive code
+- Update your requirements.txt file after installing new packages
+- Check the needed imported packages, if they are really needed and only import the used functions and variables from them
+- Update the date on the contribution in the header of the files.
+- ...
+
+
 
 ### Swagger Documentation
 A swagger documentation is available on each app in its directory.
