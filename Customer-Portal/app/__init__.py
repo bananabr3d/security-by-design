@@ -1,5 +1,9 @@
+# Contributions by: Vitali Bier, Julian Flock
+# Description: This file is the main file of the web application. It contains the configuration of the Flask app, the MongoDB connection and the logger.
+# Last update: 23.10.2023
+
 # ===== Packages =====
-# Package for environment variables
+# Packages for environment variables
 import os
 from dotenv import load_dotenv
 load_dotenv()
@@ -34,9 +38,10 @@ class ConfigurationError(Exception):
     "Raised when an error occures on the configurations (.env)"
     pass
 
-# ===== Program configs =====
+# ===== Program configurations =====
 
-# logger
+# === Logger ===
+# Set logger function
 def set_logger(logger:logging.Logger, format:logging.Formatter, log_level:str="DEBUG") -> logging.Logger:
     if log_level == 'ERROR':
         logger.setLevel(logging.ERROR)
@@ -62,12 +67,12 @@ def set_logger(logger:logging.Logger, format:logging.Formatter, log_level:str="D
 format = logging.Formatter("%(asctime)s [%(levelname)-5.5s]  %(message)s \n")
 logger = logging.getLogger(__name__)
 
-# set self.logger level
+# set logger with level from environment variable
 logger = set_logger(logger=logger, format=format, log_level=os.getenv("LOGGING_LEVEL"))
 
-
+# === Verify .env file ===
 # Test .env variables
-expected_environment_variables = ["SECRET_KEY", "JWT_SECRET_KEY", "MONGODB_USER", "MONGODB_PW", "MONGODB_CLUSTER", "MONGODB_SUBDOMAIN"]
+expected_environment_variables = ["SECRET_KEY", "JWT_SECRET_KEY", "MONGODB_USER", "MONGODB_PW", "MONGODB_CLUSTER", "MONGODB_SUBDOMAIN", "JWT_ACCESS_TOKEN_EXPIRATION_MINUTES", "2FA_EXPIRATION_MINUTES"]
 
 try:
     assert verify_env.verify_all(expected_environment_variables=expected_environment_variables) == True
@@ -76,17 +81,18 @@ except:
     logger.error(".env file could not be verified")
     raise ConfigurationError
 
-
-# Configure the flask app
+# === Flask app configurations ===
 app = Flask(__name__)
 
+# Set secret keys for the app and the JWT Token
 app.config['SECRET_KEY'] = os.getenv("SECRET_KEY") # Used for flashing messages
 app.config['JWT_SECRET_KEY'] = os.getenv("JWT_SECRET_KEY") # Used for the JWT Token
 
+# Set JWT Token location and security
 app.config['JWT_TOKEN_LOCATION'] = ['cookies']
 app.config['JWT_COOKIE_SECURE'] = True # If True: Only allow JWT cookies sent with https
 
-# set cookie paths: Refresh and Access Cookies
+# set cookie paths: Access Cookie
 app.config['JWT_ACCESS_COOKIE_PATH'] = '/'
 
 # Enable CSRF Protection
@@ -98,12 +104,13 @@ app.config['JWT_CSRF_CHECK_FORM'] = True
 app.config['JWT_COOKIE_SAMESITE'] = "Strict"
 
 # Set cookie expiration
-app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(minutes=30) # Set to 30min, afterwards the access_token is invalid.
+app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(minutes=int(os.getenv("JWT_ACCESS_TOKEN_EXPIRATION_MINUTES"))) # Set to 30min, afterwards the access_token is invalid.
 
 jwt = JWTManager(app)
 
 # ===== Program start =====        
 
+# === MongoDB connection ===
 def db_connection() -> pymongo.database.Database or None:
     # MongoDB Atlas configuration and test connection 
     try:
@@ -117,8 +124,7 @@ def db_connection() -> pymongo.database.Database or None:
         logger.debug("Error: " + str(e))
         return None
 
-
-# Try to connect to the MongoDB 5 times with 5 seconds delay
+# Try to connect to the MongoDB 5 times with 5 seconds delay after a error
 for i in range(5):
     try:
         db = db_connection()
@@ -134,9 +140,10 @@ for i in range(5):
     if i == 4:
         raise DBConnectionError
 
-
+# Create Bcrypt object
 bcrypt = Bcrypt(app)
 
+# === Import routes ===
 from app.routes import routes
 from app.routes import contract_routes
 from app.routes import auth_routes

@@ -1,16 +1,35 @@
-from app import app, logger, db, bcrypt, jwt
-from app.models.user import User, load_user
-from flask import request, render_template, redirect, url_for, flash, make_response
+# Contributions by: Vitali Bier, Julian Flock
+# Description: This file contains the auth routes of the web application.
+# Last update: 23.10.2023
+
+# ===== Packages =====
+# Package for environment variables
+import os
+
+# Packages for Flask
+from flask import request, render_template, redirect, url_for, flash, make_response, Response
 from flask_jwt_extended import (
     create_access_token, get_jwt_identity, jwt_required, set_access_cookies, unset_jwt_cookies, get_jwt)
-import pyotp
-from datetime import datetime, timedelta, timezone
+
+# Import app, logger, db, bcrypt object, jwt object and UnknownRequest Exception from app package
+from app import app, logger, db, bcrypt, jwt, UnknownRequest
+
+# Import models
+from app.models.user import User, load_user
+
+# Import pyotp for 2fa and io, qrcode, base64 for QR code generation
 import pyotp
 import io
 import qrcode
 from base64 import b64encode
+
+# Import datetime for cookie expiration handling
+from datetime import datetime, timedelta, timezone
+
+# Import regex for input validation
 import re
 
+# Regex for input validation
 regex_email = re.compile(r'([A-Za-z0-9]+[.-_])*[A-Za-z0-9]+@[A-Za-z0-9-]+(\.[A-Z|a-z]{2,})+')
 regex_username = re.compile(r'^[a-zA-Z0-9]+([_ -]?[a-zA-Z0-9])*$')
 regex_password = re.compile(r'^.*(?=.{12,128})(?=.*[a-zA-Z])(?=.*\d)(?=.*[!#$%&?"]).*$')

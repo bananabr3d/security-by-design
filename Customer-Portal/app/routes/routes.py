@@ -1,14 +1,29 @@
-from flask import request, render_template, make_response, url_for, redirect, flash
+# Contributions by: Vitali Bier, Julian Flock
+# Description: This file contains the regular routes of the web application.
+# Last update: 23.10.2023
+
+# ===== Packages =====
+# Packages for Flask
+from flask import request, render_template, url_for, redirect, flash
+
+# Packages for JWT
 from flask_jwt_extended import get_jwt_identity, jwt_required, get_jwt, unset_jwt_cookies
+
+# Import app, logger and db object from app package
 from app import app, logger, db
+
+# Import check_2fa function 
+from app.routes.auth_routes import check_2fa
+
+# Import models
 from app.models.user import load_user
 from app.models.contract import load_contract
-from datetime import datetime, timedelta
 
-# TODO more comments
+# ===== Routes =====
 
+# === Home / Index ===
 @app.route('/')
-@jwt_required(optional=True)
+@jwt_required(optional=True) # optional=True allows to access the route without a valid JWT, but checks it if it is present
 def home():
     if get_jwt_identity():
         logger.info("Get-Request: Starting Page displayed for logged in user")
@@ -19,8 +34,9 @@ def home():
 
 
 
+# === Dashboard ===
 @app.route('/dashboard', methods=['GET'])
-@jwt_required()
+@jwt_required() # jwt_required() requires a valid JWT to access the route
 def dashboard():
     logger.info(str(request.method) + "-Request on " + request.path)
 
@@ -53,6 +69,7 @@ def dashboard():
     #render_template with contract objects for each contract
     return render_template('dashboard.html', loggedin=True, username=user.get_attribute('username'))
 
+# === Error handling ===
 @app.errorhandler(404)
 def page_not_found(e):
     logger.info(str(request.method) + "-Request on " + request.path)
