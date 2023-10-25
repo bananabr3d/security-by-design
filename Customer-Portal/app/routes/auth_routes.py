@@ -1,6 +1,6 @@
 # Contributions by: Vitali Bier, Julian Flock
 # Description: This file contains the auth routes of the web application.
-# Last update: 23.10.2023
+# Last update: 25.10.2023
 
 # ===== Packages =====
 # Package for environment variables
@@ -40,8 +40,14 @@ jwt_token_refresh_expiration = int(int(os.getenv("JWT_ACCESS_TOKEN_EXPIRATION_MI
 
 # ===== Help Functions =====
 
-# Validate email input
 def validate_email(email: str) -> bool:
+    '''
+    This function validates the email input with a regex.
+
+    email: str
+
+    Returns True if the email is valid, else False.
+    '''
     if re.fullmatch(regex_email, email):
         return True
     else:
@@ -49,8 +55,14 @@ def validate_email(email: str) -> bool:
         flash('Invalid input on "E-Mail"', 'failed')
         return False
 
-# Validate username input
 def validate_username(username: str) -> bool:
+    '''
+    This function validates the username input with a regex.
+
+    username: str
+
+    Returns True if the username is valid, else False.
+    '''
     if re.fullmatch(regex_username, username):
         return True
     else:
@@ -58,8 +70,14 @@ def validate_username(username: str) -> bool:
         flash('Invalid input on "Username"', 'failed')
         return False
 
-# Validate password input
 def validate_password(password: str) -> bool:
+    '''
+    This function validates the password input with a regex.
+
+    password: str
+
+    Returns True if the password is valid, else False.
+    '''
     if re.fullmatch(regex_password, password):
         return True
     else:
@@ -67,8 +85,14 @@ def validate_password(password: str) -> bool:
         flash('Invalid input on "Password"', 'failed')
         return False
     
-# Validate otp input
 def validate_otp(otp: str) -> bool:
+    '''
+    This function validates the otp input with a regex.
+
+    otp: str
+
+    Returns True if the otp is valid, else False.    
+    '''
     if re.fullmatch(regex_otp, otp):
         return True
     else:
@@ -77,8 +101,14 @@ def validate_otp(otp: str) -> bool:
         return False
 
 
-# Check if user has 2fa activated
 def check_2fa_activated(twofa_activated: str) -> bool:
+    '''
+    This function checks if the user has 2fa activated.
+
+    twofa_activated: str
+
+    Returns True if the user has 2fa activated, else False.
+    '''
     try:
         if twofa_activated == "True":
             return True
@@ -87,11 +117,20 @@ def check_2fa_activated(twofa_activated: str) -> bool:
     except:
         return False
 
-# Check if user has 2fa activated and if the 2fa timestamp is not older than the time specified in the environment variable
-# Return None if user is 2fa authenticated
-# Return Response redirect to register_2fa if user has no 2fa activated
-# Return Response redirect to login_2fa if the 2fa timestamp is older than the time specified in the environment variable
 def check_2fa(twofa_activated: str, jwt_token: dict) -> None or Response:
+    '''
+    This function checks if the user has 2fa activated and if the 2fa timestamp is not older than the time specified in the environment variable.
+
+    twofa_activated: str
+
+    jwt_token: dict
+
+    Returns None if the user is 2fa authenticated, 
+
+    else return a Response redirect to register_2fa if the user has no 2fa activated
+
+    or return a Response redirect to login_2fa if the 2fa timestamp is older than the time specified in the environment variable.
+    '''
     try: # check if 2fa is activated
         if twofa_activated != "True":
             resp = make_response(redirect(url_for('register_2fa')))
@@ -123,6 +162,15 @@ def check_2fa(twofa_activated: str, jwt_token: dict) -> None or Response:
 
 # Verify 2fa
 def verify2fa(user: User, otp: str) -> bool:
+    '''
+    This function verifies the otp with the user secret.
+
+    user: User
+
+    otp: str
+
+    Returns True if the otp is valid, else False.
+    '''
     secret = user.get_attribute('twofa_secret')
 
     if secret == None:
@@ -142,6 +190,15 @@ def verify2fa(user: User, otp: str) -> bool:
 @app.route('/register', methods=['GET', 'POST'])
 @jwt_required(optional=True)
 def register():
+    '''
+    This function handles the register route.
+
+    Returns redirect to dashboard if user is logged in (JWT is present).
+
+    Returns the register.html template if the request method is GET and the user is not logged in (JWT is not present).
+
+    Returns redirect to login if the request method is POST and the user is not logged in (JWT is not present) and the registration was successful. (+ Creates a new user in the database)
+    '''
     logger.info(str(request.method) + "-Request on " + request.path)
 
     try: # last resort error handling
@@ -220,6 +277,15 @@ def register():
 @app.route('/login', methods=['GET', 'POST']) # Add more details to user
 @jwt_required(optional=True)
 def login():
+    '''
+    This function handles the login route.
+
+    Returns redirect to dashboard if user is logged in (JWT is present).
+
+    Returns the login.html template if the request method is GET and the user is not logged in (JWT is not present).
+
+    Returns redirect to login_2fa if the request method is POST and the user is not logged in (JWT is not present) and the login was successful. (+ Creates a new JWT and sets the JWT access cookies)
+    '''
     logger.info(str(request.method) + "-Request on " + request.path)
 
     try: # last resort error handling
@@ -293,6 +359,11 @@ def login():
 @app.route('/logout', methods=['GET'])
 @jwt_required()
 def logout():
+    '''
+    This function handles the logout route and can only be accessed with a JWT Token.
+
+    Returns redirect to login and unsets the JWT access cookies
+    '''
     logger.info(str(request.method) + "-Request on " + request.path)
 
     try: # last resort error handling
@@ -314,6 +385,15 @@ def logout():
 @app.route('/register/2fa', methods=['GET', 'POST'])
 @jwt_required()
 def register_2fa():
+    '''
+    This function handles the register_2fa route and can only be accessed with a JWT Token.
+
+    Returns redirect to login_2fa if the user has already 2fa activated.
+
+    Returns the register_2fa.html template if the request method is GET and the user has not already 2fa activated.
+
+    Returns redirect to login_2fa if the request method is POST and the user has not already 2fa activated and the 2fa verification was successful. (+ Sets the user attribute 2fa activated to True)
+    '''
     logger.info(str(request.method) + "-Request on " + request.path)
 
     try: # last resort error handling
@@ -395,6 +475,17 @@ def register_2fa():
 @app.route('/login/2fa', methods=['GET', 'POST'])
 @jwt_required()
 def login_2fa():
+    '''
+    This function handles the login_2fa route and can only be accessed with a JWT Token.
+
+    Returns redirect to dashboard if the user is already 2fa authenticated.
+
+    Returns redirect to register_2fa if the user has no 2fa activated.
+
+    Returns the login_2fa.html template if the request method is GET and the user is not already 2fa authenticated.
+
+    Returns redirect to dashboard if the request method is POST and the user is not already 2fa authenticated and the 2fa authentication was successful. (+ Creates a new JWT and sets the JWT access cookies)
+    '''
     logger.info(str(request.method) + "-Request on " + request.path)
 
     try: # last resort error handling
@@ -453,9 +544,13 @@ def login_2fa():
 
 
 # === Refresh JWT ===
-# Using an `after_request` callback, we refresh the access_token token that is within 15minutes of expiring.
 @app.after_request
 def refresh_expiring_jwts(response):
+    '''
+    This function is called after every request and is used to refresh the JWT access token.
+
+    This function refreshes the JWT access token if the JWT is expiring in less than half of the JWT_ACCESS_TOKEN_EXPIRATION_MINUTES time.
+    '''
     try:
         # Get the timestamp of the current JWT
         exp_timestamp = get_jwt()["exp"]
@@ -499,6 +594,11 @@ def refresh_expiring_jwts(response):
 # Error handler for expired JWT
 @jwt.expired_token_loader
 def expired_token_callback(jwt_header, jwt_payload):
+    '''
+    This function handles the expired_token_callback.
+
+    This function redirects the user to the login page and flashes a error message.
+    '''
     resp = make_response(redirect(url_for('login')))
     flash('Your session token has expired, please log in again', 'error')
     logger.debug("User has a expired token")
@@ -506,14 +606,24 @@ def expired_token_callback(jwt_header, jwt_payload):
     return resp
 
 # Error handler for invalid JWT
-@jwt.unauthorized_loader
+@jwt.unauthorized_loader #TODO
 def custom_unauthorized_response(callback):
+    '''
+    This function handles the custom_unauthorized_response.
+
+    This function renders the Unauthorized.html template and flashes a error message.
+    '''
     #TODO Customize the error response -> render Unauthorized.html -> button available to redirect to login
     return redirect(url_for('login'))
 
 # Error handler for fresh JWT needed
 @jwt.needs_fresh_token_loader #TODO
 def token_not_fresh_callback(jwt_header, jwt_payload):
+    '''
+    This function handles the token_not_fresh_callback, so the user needs a fresh access token to to this action.
+
+    This function redirects the user to the login page in order to log in again and flashes a error message.
+    '''
     flash('You have to log in again in order to do this', 'error')
     logger.debug("User has a unfresh token, but needs a fresh one")
     resp = make_response(redirect(url_for('login')))

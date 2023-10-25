@@ -1,6 +1,6 @@
 # Contributions by: Vitali Bier, Julian Flock
 # Description: This file is the main file of the web application. It contains the configuration of the Flask app, the MongoDB connection and the logger.
-# Last update: 23.10.2023
+# Last update: 25.10.2023
 
 # ===== Packages =====
 # Packages for environment variables
@@ -45,8 +45,10 @@ class UnknownRequest(Exception):
 # ===== Program configurations =====
 
 # === Logger ===
-# Set logger function
 def set_logger(logger:logging.Logger, format:logging.Formatter, log_level:str="DEBUG") -> logging.Logger:
+    '''
+    This function sets the logger with the given log level and format.
+    '''
     if log_level == 'ERROR':
         logger.setLevel(logging.ERROR)
     elif log_level == 'INFO':
@@ -63,7 +65,10 @@ def set_logger(logger:logging.Logger, format:logging.Formatter, log_level:str="D
         logger.setLevel(logging.DEBUG)
     consoleHandler = logging.StreamHandler(stderr)
     consoleHandler.setFormatter(format)
+    file_handler = logging.FileHandler('app.log')
+    file_handler.setFormatter(format)
     logger.addHandler(consoleHandler)
+    logger.addHandler(file_handler)
     logger.debug('###  Started Webanwendung  ###')
     return logger
 
@@ -116,6 +121,10 @@ jwt = JWTManager(app)
 
 # === MongoDB connection ===
 def db_connection() -> pymongo.database.Database or None:
+    '''
+    This function establishes a connection to the MongoDB Atlas and returns the database object.
+    '''
+
     # MongoDB Atlas configuration and test connection 
     try:
         client = pymongo.MongoClient("mongodb+srv://" + os.getenv("MONGODB_USER") + ":" + urllib.parse.quote_plus(os.getenv("MONGODB_PW")) + "@" + os.getenv("MONGODB_CLUSTER") + "." + os.getenv("MONGODB_SUBDOMAIN") + ".mongodb.net/?retryWrites=true&w=majority")

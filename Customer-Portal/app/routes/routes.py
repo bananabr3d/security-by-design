@@ -1,6 +1,6 @@
 # Contributions by: Vitali Bier, Julian Flock
 # Description: This file contains the regular routes of the web application.
-# Last update: 23.10.2023
+# Last update: 25.10.2023
 
 # ===== Packages =====
 # Packages for Flask
@@ -25,6 +25,11 @@ from app.models.contract import load_contract
 @app.route('/')
 @jwt_required(optional=True) # optional=True allows to access the route without a valid JWT, but checks it if it is present
 def home():
+    '''
+    This function handles the home page of the web application.
+
+    The JWT Token is checked and the home page is displayed accordingly.
+    '''
     logger.info(str(request.method) + "-Request on " + request.path)
 
     try: # last resort error handling
@@ -45,6 +50,11 @@ def home():
 @app.route('/dashboard', methods=['GET'])
 @jwt_required() # jwt_required() requires a valid JWT to access the route
 def dashboard():
+    '''
+    This function handles the dashboard page of the web application.
+
+    The JWT Token is required and the 2fa is checked. Then the dashboard page is displayed accordingly.
+    '''
     logger.info(str(request.method) + "-Request on " + request.path)
 
     try: # last resort error handling
@@ -80,16 +90,21 @@ def dashboard():
 @app.errorhandler(404)
 @jwt_required(optional=True)
 def page_not_found(errorhandler_error):
+    '''
+    This function handles the error page of the web application.
+
+    The JWT Token is checked and the error page is displayed accordingly.
+    '''
     logger.info(str(request.method) + "-Request on " + request.path)
     logger.debug("Error from errorhandler: " + str(errorhandler_error))
 
     try: # last resort error handling
 
-        # # Check if user has a valid JWT and display the error page accordingly
-        # if get_jwt_identity() and check_2fa(twofa_activated=load_user(db=db, user_id=get_jwt_identity()).get_attribute('twofa_activated'), jwt_token=get_jwt()) == None:
-        #     logger.debug("Error Page displayed for logged in user")
-        #     return render_template('PageNotFound.html', loggedin=True), 404
-        # else:
+        # Check if user has a valid JWT and display the error page accordingly
+        if get_jwt_identity() and check_2fa(twofa_activated=load_user(db=db, user_id=get_jwt_identity()).get_attribute('twofa_activated'), jwt_token=get_jwt()) == None:
+            logger.debug("Error Page displayed for logged in user")
+            return render_template('PageNotFound.html', loggedin=True), 404
+        else:
             logger.debug("Error Page displayed for not logged in user")
             return render_template('PageNotFound.html'), 404
     except Exception as e:
