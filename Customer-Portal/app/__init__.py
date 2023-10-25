@@ -127,7 +127,7 @@ def db_connection() -> pymongo.database.Database or None:
 
     # MongoDB Atlas configuration and test connection 
     try:
-        client = pymongo.MongoClient("mongodb+srv://" + os.getenv("MONGODB_USER") + ":" + urllib.parse.quote_plus(os.getenv("MONGODB_PW")) + "@" + os.getenv("MONGODB_CLUSTER") + "." + os.getenv("MONGODB_SUBDOMAIN") + ".mongodb.net/?retryWrites=true&w=majority")
+        client = pymongo.MongoClient("mongodb://" + os.getenv("MONGODB_USER") + ":" + urllib.parse.quote_plus(os.getenv("MONGODB_PW")) + "@mongodb:27017/")
         db = client.get_database('webapp')
 
         db.db.test.find_one()

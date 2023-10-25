@@ -78,8 +78,6 @@ SECRET_KEY=secret-key
 JWT_SECRET_KEY=jwt-secret-key
 MONGODB_USER=user
 MONGODB_PW=password
-MONGODB_CLUSTER=clustername
-MONGODB_SUBDOMAIN=fc6x7lr
 JWT_ACCESS_TOKEN_EXPIRATION_MINUTES=30
 2FA_EXPIRATION_MINUTES=60
 ```
@@ -87,7 +85,14 @@ JWT_ACCESS_TOKEN_EXPIRATION_MINUTES=30
 The db keys are being used as a part of the uri as following:
 
 ```
-mongodb+srv://<MONGODB_USER>:<MONGODB_PW>@<MONGODB_CLUSTER>.<MONGODB_SUBDOMAIN>.mongodb.net/?retryWrites=true&w=majority
+mongodb://<MONGODB_USER>:<MONGODB_PW>@mongodb:27017/
+```
+
+And you also need a mongodb.env in the root directory (the same as the docker-compose.yml file) with the following content:
+
+```
+MONGO_INITDB_ROOT_USERNAME=user
+MONGO_INITDB_ROOT_PASSWORD=password
 ```
 
 Now the containers can be build with the following command executed in the root directory (and docker + docker-compose installed):
