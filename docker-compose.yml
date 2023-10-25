@@ -1,6 +1,8 @@
 version: '3'
 services:
   customer-portal:
+    depends_on:
+      - mongodb
     build: ./Customer-Portal
     ports:
       - "5000:5000"
