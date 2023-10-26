@@ -95,6 +95,9 @@ MONGO_INITDB_ROOT_USERNAME=user
 MONGO_INITDB_ROOT_PASSWORD=password
 ```
 
+For the ssl certificate, you either have to insert a provided one or generate a self-signed key and cert (see Coding Instructions > Web App HTTPS). The key and cert have to be named "key.pem" and "cert.pem" and have to be placed in the "Customer-Portal" directory.
+
+
 Now the containers can be build with the following command executed in the root directory (and docker + docker-compose installed):
 
 ```
