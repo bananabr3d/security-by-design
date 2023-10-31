@@ -1,6 +1,6 @@
 # Contributions by: Vitali Bier, Julian Flock
 # Description: This file is the main file of the web application. It contains the configuration of the Flask app, the MongoDB connection and the logger.
-# Last update: 25.10.2023
+# Last update: 31.10.2023
 
 # ===== Packages =====
 # Packages for environment variables
@@ -127,7 +127,13 @@ def db_connection() -> pymongo.database.Database or None:
 
     # MongoDB Atlas configuration and test connection 
     try:
-        client = pymongo.MongoClient("mongodb://" + os.getenv("MONGODB_USER") + ":" + urllib.parse.quote_plus(os.getenv("MONGODB_PW")) + "@mongodb:27017/")
+        if os.getenv("LOCALDB") == "True":
+            logger.info("Connecting to local MongoDB...")
+            client = pymongo.MongoClient("mongodb://" + os.getenv("MONGODB_USER") + ":" + urllib.parse.quote_plus(os.getenv("MONGODB_PW")) + "@mongodb:27017/")
+        else:
+            logger.info("Connecting to MongoDB Atlas...")
+            client = pymongo.MongoClient("mongodb+srv://" + os.getenv("MONGODB_USER") + ":" + urllib.parse.quote_plus(os.getenv("MONGODB_PW")) + "@" + os.getenv("MONGODB_CLUSTER") + "." + os.getenv("MONGODB_SUBDOMAIN") + ".mongodb.net/?retryWrites=true&w=majority")
+
         db = client.get_database('webapp')
 
         db.db.test.find_one()

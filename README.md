@@ -78,17 +78,23 @@ SECRET_KEY=secret-key
 JWT_SECRET_KEY=jwt-secret-key
 MONGODB_USER=user
 MONGODB_PW=password
+MONGODB_CLUSTER=security-by-design  <-- Only used in MongoDB Atlas
+MONGODB_SUBDOMAIN=f3vvcc5           <-- Only used in MongoDB Atlas
 JWT_ACCESS_TOKEN_EXPIRATION_MINUTES=30
 2FA_EXPIRATION_MINUTES=60
 ```
 
-The db keys are being used as a part of the uri as following:
+As there are 2 versions on how to deploy this app (local MongoDB / MongoDB Atlas) the keys are used as a part of the uri as following:
 
 ```
+Local MongoDB:
 mongodb://<MONGODB_USER>:<MONGODB_PW>@mongodb:27017/
+
+MongoDB Atlas:
+mongodb+srv://<MONGODB_USER>:<MONGODB_PW>@<MONGODB_CLUSTER>.<MONGODB_SUBDOMAIN>.mongodb.net/?retryWrites=true&w=majority
 ```
 
-And you also need a mongodb.env in the root directory (the same as the docker-compose.yml file) with the following content:
+If the local DB version is used, you also need a mongodb.env in the root directory (the same as the docker-compose.yml file) with the following content:
 
 ```
 MONGO_INITDB_ROOT_USERNAME=user
@@ -101,16 +107,20 @@ For the ssl certificate, you either have to insert a provided one or generate a 
 Now the containers can be build with the following command executed in the root directory (and docker + docker-compose installed):
 
 ```
-docker-compose build
+docker-compose -f docker-compose.yml build
+or:
+docker-compose -f docker-compose-localdb.yml build
 ```
 
 Finally the containers can be started by:
 
 ```
-docker-compose up
+docker-compose -f docker-compose.yml up
+or:
+docker-compose -f docker-compose-localdb.yml up
 ```
 
-And the frontend of the web-app is visible on port 5000 (http://localhost:5000).
+And the frontend of the web-app is visible on port 443 (https://localhost:443).
 
 #### Debug with Logs
 If the docker container does not work or has to be troubleshooted, the debug logs are displayed in the docker container console in "stderr" and logged in the debug.log (in the root directory), too. As long as the docker container was not restartet, the logs are inspectable inside the docker container. The content can be displayed when executing "cat debug.log" inside the docker container cli or new content can be displayed contiously with "tail -F debug.log".

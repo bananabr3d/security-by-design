@@ -1,14 +1,25 @@
 version: '3'
 services:
   customer-portal:
+    depends_on:
+      - mongodb
     build: ./Customer-Portal
     ports:
       - "443:443"
     restart: unless-stopped
     environment:
       - LOGGING_LEVEL=DEBUG
-      - FLASK_DEBUG=False
-      - LOCALDB=False
+      - FLASK_DEBUG=True
+      - LOCALDB=True
+    networks:
+      - secbydesign
+
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    env_file: ./mongodb.env
     networks:
       - secbydesign
 
