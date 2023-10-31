@@ -145,3 +145,27 @@ canvas {
 .accept-cookies:hover {
     background-color: #0056b3;
 }
+
+/* Password Strength Meter */
+.password-container {
+    margin-bottom: 30px;
+    font-family: Arial, sans-serif;
+}
+
+.password-strength-meter {
+    margin-top: 10px;
+    height: 10px;
+    background-color: #ccc;
+    position: relative;
+}
+
+.strength-bar {
+    height: 100%;
+    background-color: #d9534f;
+    width: 0;
+}
+
+.strength-text {
+    font-size: 14px;
+    margin-top: 5px;
+}
