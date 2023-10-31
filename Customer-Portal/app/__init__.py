@@ -69,7 +69,7 @@ def set_logger(logger:logging.Logger, format:logging.Formatter, log_level:str="D
     file_handler.setFormatter(format)
     logger.addHandler(consoleHandler)
     logger.addHandler(file_handler)
-    logger.debug('###  Started Webanwendung  ###')
+    logger.debug('###  Started Customer-Portal  ###')
     return logger
 
 # Establish logging
