@@ -10,8 +10,14 @@ Dashboard
 {% block content %}
 <section>
     <h2>Hello, {{ username }}!</h2>
-    <table>
-        <!-- Messdaten-Tabelle hier einfügen -->
-    </table>
+    <div class="contract-list">
+        {% for contract_info in contract_data %}
+          <div class="contract">
+            <h3>Contract ID: {{ contract_info._id }}</h3>
+            <p>Electricity Meter ID: {{ contract_info.electricity_meter_id }}</p>
+            <!-- Add more contract details when we need them -->
+          </div>
+        {% endfor %}
+      </div>
 </section>
 {% endblock %}
