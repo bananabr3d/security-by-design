@@ -40,18 +40,8 @@ def dashboard():
         flash("You are either not 2FA authenticated or your token expired", "error")
         return resp
 
-    # Add here loading of all contracts of user and then displaying the status, ...
-    # contract_list = user.get_attribute("contracts")
-    
-    # # 1. load data from contract of user
-    # for contract_id in contract_list:
-    #     contract = load_contract(contract_id)
-
-        # 2. make request on Messstellenbetreiber for data of each contract => How to implement? Do we load a contract.html in the dashboard.html or can we add it here in the return?
-
-    
-    #render_template with contract objects for each contract
-    return render_template('dashboard.html', loggedin=True)
+    contractIDs = user.get_attribute("contract_list")
+    return render_template('dashboard.html', loggedin=True, contracts=contracts)
 
 @app.errorhandler(404)
 def page_not_found(e):
