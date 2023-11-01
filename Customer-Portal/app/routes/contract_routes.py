@@ -1,3 +1,7 @@
+# Contributions by: Vitali Bier, Julian Flock
+# Description: This file contains the contract routes of the web application.
+# Last update: 23.10.2023
+
 from flask import request
 from flask_jwt_extended import jwt_required
 from app import app, logger

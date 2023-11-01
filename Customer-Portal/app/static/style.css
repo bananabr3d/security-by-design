@@ -103,6 +103,7 @@ img {
     margin-right: auto;
   }
 
+/* Logo */
 canvas {
     position: fixed;
     top: 0;
@@ -111,4 +112,60 @@ canvas {
     width: 36px;
     height: 36px;
     z-index: 1000000;
+}
+
+/* Cookiebanner */
+
+.cookie-banner {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background-color: #333;
+    color: #fff;
+    padding: 15px;
+    text-align: center;
+}
+
+.cookie-content {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.accept-cookies {
+    background-color: #007BFF;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+.accept-cookies:hover {
+    background-color: #0056b3;
+}
+
+/* Password Strength Meter */
+.password-container {
+    margin-bottom: 30px;
+    font-family: Arial, sans-serif;
+}
+
+.password-strength-meter {
+    margin-top: 10px;
+    height: 10px;
+    background-color: #ccc;
+    position: relative;
+}
+
+.strength-bar {
+    height: 100%;
+    background-color: #d9534f;
+    width: 0;
+}
+
+.strength-text {
+    font-size: 14px;
+    margin-top: 5px;
 }

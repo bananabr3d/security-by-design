@@ -15,11 +15,21 @@ User Registration
         <input type="email" id="email" name="email" required>
         <label for="username">Username:</label>
         <input type="text" id="username" name="username" required>
+        <div class="password-container">
+            <label for="password">Password:</label>
+            <input type="password" id="password" onkeyup="checkPasswordStrength()">
+            <div class="password-strength-meter">
+                <div class="strength-bar" id="strength-bar"></div>
+                <div class="strength-text" id="strength-text"></div>
+            </div>
+        </div>
+        <!--        
         <label for="password">Password:</label>
         <input type="password" id="password" name="password" required>
+        -->
         <label for="password2">Password again:</label>
         <input type="password" id="password2" name="password2" required>
-        <p>Your password must contain at least one digit (0-9), one lowercase and one uppercase character (a-z, A-Z), one special character (!#$%&?") and a minimum length of 8</p>
+        <p>Your password must contain at least one digit (0-9), one lowercase and one uppercase character (a-z, A-Z), one special character (!#$%&?") and a length of 12 - 128</p>
         <div>
         <button type="submit">Register</button>
     </form>
