@@ -17,7 +17,7 @@ from app.routes.auth_routes import check_2fa
 
 # Import models
 from app.models.user import load_user
-from app.models.contract import load_contract
+from app.models.contract import load_contract_data
 
 # ===== Routes =====
 
@@ -71,15 +71,13 @@ def dashboard():
         # Add here loading of all contracts of user and then displaying the status, ...
         # contract_list = user.get_attribute("contracts")
         
-        # # 1. load data from contract of user
-        # for contract_id in contract_list:
-        #     contract = load_contract(contract_id)
+        contract_data = load_contract_data(user, db)
 
             # 2. make request on Messstellenbetreiber for data of each contract => How to implement? Do we load a contract.html in the dashboard.html or can we add it here in the return?
 
         
         #render_template with contract objects for each contract
-        return render_template('dashboard.html', loggedin=True, username=user.get_attribute('username'))
+        return render_template('dashboard.html', loggedin=True, username=user.get_attribute('username'), contract_data=contract_data)
     
     except Exception as e:
         logger.error("Error: " + str(e))
