@@ -62,22 +62,26 @@ def dashboard():
         # Check if user has a valid JWT, then load user object
         if get_jwt_identity():
             user = load_user(db=db, user_id=get_jwt_identity())
-
+            
         # Check if user is 2FA authenticated
         result_check_2fa = check_2fa(twofa_activated=user.get_attribute('twofa_activated'), jwt_token=get_jwt())
         if result_check_2fa != None:
             return result_check_2fa 
-
-        # Add here loading of all contracts of user and then displaying the status, ...
-        # contract_list = user.get_attribute("contracts")
         
-        contract_data = load_contract_data(user, db)
+        # 1. load all contract objects of user
+        contract_list = load_contract_data(user, db)
 
-            # 2. make request on Messstellenbetreiber for data of each contract => How to implement? Do we load a contract.html in the dashboard.html or can we add it here in the return?
+        transformed_contract_list = list()
 
+        # Transform contract objects in list to dicts
+        for contract in contract_list:
+            temp_contract = {"_id": contract.get_id(), "electricity_meter_id": contract.get_attribute("electricity_meter_id")}
+            transformed_contract_list.append(temp_contract)
+
+        # 2. make request on Messstellenbetreiber for data of each contract => How to implement? Do we load a contract.html in the dashboard.html or can we add it here in the return?
         
         #render_template with contract objects for each contract
-        return render_template('dashboard.html', loggedin=True, username=user.get_attribute('username'), contract_data=contract_data)
+        return render_template('dashboard.html', loggedin=True, username=user.get_attribute('username'), contract_list=transformed_contract_list)
     
     except Exception as e:
         logger.error("Error: " + str(e))

@@ -28,6 +28,9 @@ class User(): # Add more details to user
     def get_attribute(self, attribute: str) -> str:
         return str(self.user_data[attribute])
     
+    def get_contract_list(self) -> list:
+        return self.user_data['contract_list']
+    
     def update_attribute(self, db: pymongo.database.Database, attribute: str, value: str) -> None:
         if self.get_attribute(attribute=attribute) != None: # Check if user has the attribute
             try:
@@ -54,8 +57,7 @@ class User(): # Add more details to user
 
     def add_contract(self, db: pymongo.database.Database, contract_id: int) -> None: #Get the list of contracts and append the new one
         try:
-            contract_list = (db.db.users.find_one({'_id': self.user_data['_id']})['contracts']).append(contract_id) # load the contracts and append the new contract id
-            db.db.users.update_one({'_id': self.user_data['_id']}, {'$push': {'contracts': contract_list}}) # update the contract list
+            db.db.users.update_one({'_id': self.user_data['_id']}, {'$push': {'contract_list': contract_id}}) # update the contract list
         except:
             raise DBConnectionError
         

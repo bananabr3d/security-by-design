@@ -9,26 +9,26 @@ Dashboard
 
 {% block content %}
 <section>
-    <h2>Contracts</h2>
-    <ul>
-        {% for contract in contracts %}
-        <li>
-            Contract-ID: {{ contract.contracts_id }} <br>
-            Electricity meter: {{contract.electricity_meter}}<br>
-            Current Level: {{contract.current}}<br>
-            Power consumption: {{contract.consumption}}<br>
-            Cost: {{contract.costs}}
-        </li>
-    </ul>
     <h2>Hello, {{ username }}!</h2>
+    <h3>Contracts</h3>
     <div class="contract-list">
-        {% for contract_info in contract_data %}
+        {% for contract in contract_list %}
           <div class="contract">
-            <h3>Contract ID: {{ contract_info._id }}</h3>
-            <p>Electricity Meter ID: {{ contract_info.electricity_meter_id }}</p>
-            <!-- Add more contract details when we need them -->
+            <h5>Contract ID: {{ contract._id }}</h3>
+            <h6>Electricity Meter ID: {{ contract.electricity_meter_id }}</h6>
+             <!-- Add more contract details when we need them  -->
           </div>
         {% endfor %}
       </div>
+      <!--TEST START-->
+      <div>
+        <!-- Button for creating a contract with em-id -->
+        <form method="post" action="/add-contract">
+          <label for="">Electricity Meter ID</label>
+          <input type="text" id="electricity_meter_id" name="electricity_meter_id">
+          <button type="submit">Add Contract</button>
+        </form>
+      </div>
+      <!--TEST END-->
 </section>
 {% endblock %}
