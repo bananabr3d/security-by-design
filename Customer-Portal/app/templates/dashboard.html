@@ -9,6 +9,17 @@ Dashboard
 
 {% block content %}
 <section>
+    <h2>Contracts</h2>
+    <ul>
+        {% for contract in contracts %}
+        <li>
+            Contract-ID: {{ contract.contracts_id }} <br>
+            Electricity meter: {{contract.electricity_meter}}<br>
+            Current Level: {{contract.current}}<br>
+            Power consumption: {{contract.consumption}}<br>
+            Cost: {{contract.costs}}
+        </li>
+    </ul>
     <h2>Hello, {{ username }}!</h2>
     <div class="contract-list">
         {% for contract_info in contract_data %}
