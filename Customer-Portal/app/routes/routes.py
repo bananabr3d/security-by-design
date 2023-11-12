@@ -113,3 +113,26 @@ def page_not_found(errorhandler_error):
         logger.error("Error: " + str(e))
         flash("Internal Server Error, redirect to home", "error")
         return redirect(url_for('home')), 500
+    
+
+# New route for user information
+@app.route('/user_info', methods=['GET'])
+@jwt_required()  # Requires a valid JWT to access the route
+def user_info():
+    try:
+        # Check if the user has a valid JWT
+        if get_jwt_identity():
+            user = load_user(db=db, user_id=get_jwt_identity())
+
+            # Render the user_info.html template with user data
+            return render_template('user_info.html', loggedin=True, username=user.get_attribute('username'), email=user.get_attribute('email'), twofa_activated=user.get_attribute('twofa_activated'), contract_list=user.get_attribute('contract_list'))
+
+        # If the JWT is not valid, you can redirect or handle it accordingly
+        else:
+            flash("Invalid JWT", "error")
+            return redirect(url_for('home'))
+
+    except Exception as e:
+        logger.error("Error: " + str(e))
+        flash("Internal Server Error, redirect to home", "error")
+        return redirect(url_for('home')), 500

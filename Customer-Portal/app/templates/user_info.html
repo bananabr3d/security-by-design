@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block header_title %}
+{% block title %}
+User Information
+{% endblock %}
+{% endblock %}
+
+
+{% block content %}
+<section>
+<body>
+    <h1>User Information</h1>
+    <p>Username: {{ username }}</p>
+    <p>Email: {{ email }}</p>
+
+    <h2>Two-Factor Authentication</h2>
+    <p>2FA Activated: {% if twofa_activated %}Yes{% else %}No{% endif %}</p>
+
+    <h2>Contract Information</h2>
+    <ul>
+        {% for contract_id in contract_list %}
+            <li>Contract ID: {{ contract_id }}</li>
+        {% endfor %}
+    </ul>
+</body>
+</section>
+{% endblock %}
