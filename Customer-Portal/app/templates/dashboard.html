@@ -9,26 +9,38 @@ Dashboard
 
 {% block content %}
 <section>
-    <h2>Hello, {{ username }}!</h2>
-    <h3>Contracts</h3>
-    <div class="contract-list">
-        {% for contract in contract_list %}
-          <div class="contract">
-            <h5>Contract ID: {{ contract._id }}</h3>
-            <h6>Electricity Meter ID: {{ contract.electricity_meter_id }}</h6>
-             <!-- Add more contract details when we need them  -->
-          </div>
-        {% endfor %}
+  <h2>Hello, {{ username }}!</h2>
+  <h3>Contracts</h3>
+  <div class="contract-list">
+    {% for contract in contract_list %}
+      <div class="contract">
+        <h5>Contract ID: {{ contract._id }}</h3>
+        <h6>Electricity Meter ID: {{ contract.electricity_meter_id }}</h6>
+          <!-- Add more contract details when we need them  -->
       </div>
-      <!--TEST START-->
-      <div>
-        <!-- Button for creating a contract with em-id -->
-        <form method="post" action="/add-contract">
-          <label for="">Electricity Meter ID</label>
-          <input type="text" id="electricity_meter_id" name="electricity_meter_id">
-          <button type="submit">Add Contract</button>
-        </form>
-      </div>
-      <!--TEST END-->
+    {% endfor %}
+  </div>
+  <!--TEST START-->
+  <div>
+    <!-- Add a contract with em-id -->
+    <form method="post" action="/add-contract">
+      <label for="">Electricity Meter ID</label>
+      <input type="text" id="electricity_meter_id" name="electricity_meter_id">
+      <button type="submit">Add Contract</button>
+    </form>
+    <!-- Set new password by sending old, new and new2 -->
+    <div>
+      <form method="post" action="/set-new-password">
+        <label for="">Old Password</label>
+        <input type="password" id="old_password" name="old_password">
+        <label for="">New Password</label>
+        <input type="password" id="new_password" name="new_password">
+        <label for="">Repeat New Password</label>
+        <input type="password" id="new_password2" name="new_password2">
+        <button type="submit">Set New Password</button>
+      </form>
+    </div>
+  </div>
+  <!--TEST END-->
 </section>
 {% endblock %}

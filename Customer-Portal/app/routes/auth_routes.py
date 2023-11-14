@@ -542,6 +542,65 @@ def login_2fa():
         flash("Internal Server Error, redirect to home", "error")
         return redirect(url_for('home')), 500
 
+# === Set new password ===      
+@app.route('/set-new-password', methods=['POST'])
+@jwt_required()
+def set_new_password():
+    '''
+    This function handles the set_new_password route and can only be accessed with a JWT Token.
+
+    Returns redirect according to 2fa authentication.
+
+    Returns redirect to dashboard and message if new password couldnt be set.
+
+    Returns redirect to login, unset JWT and flash message if new password was successfully set. (+ Updates the user password in the database)
+    '''
+    logger.info(str(request.method) + "-Request on " + request.path)
+
+    try: # last resort error handling
+
+        # Check if user has a valid JWT, then load user object
+        if get_jwt_identity():
+            user = load_user(db=db, user_id=get_jwt_identity())
+
+        # Check if user is 2FA authenticated
+        result_check_2fa = check_2fa(twofa_activated=user.get_attribute('twofa_activated'), jwt_token=get_jwt())
+        if result_check_2fa != None:
+            return result_check_2fa
+        
+        # = Input Validation =
+        # Password
+        if not validate_password(request.form['old_password']) or not validate_password(request.form['new_password']) or not validate_password(request.form['new_password2']):
+            return redirect(url_for('dashboard'))
+
+        # Compare new passwords
+        if request.form['new_password'] != request.form['new_password2']:
+            flash('New passwords dont match', 'failed')
+            return redirect(url_for('dashboard'))
+            
+        # Check if current password is correct
+        if bcrypt.check_password_hash(user.get_attribute('password'), request.form['old_password']) == False:
+            flash('Current password is incorrect', 'failed')
+            logger.debug("User: '" + user.get_attribute("username") + "' provided a wrong old password during the set new password")
+            return redirect(url_for('dashboard'))
+
+        # Set new password
+        hashed_password = bcrypt.generate_password_hash(request.form['new_password']).decode('utf-8')
+        user.update_attribute(db, attribute="password", value=hashed_password)
+
+        flash('Your password has been changed!', 'success')
+        logger.debug("User: '" + user.get_attribute("username") + "' has successfully changed its password")
+
+        # Unset JWT and redirect to login
+        resp = make_response(redirect(url_for('login')))
+        unset_jwt_cookies(resp)
+        return resp
+
+    except Exception as e:
+        logger.error("Error: " + str(e))
+        flash("Internal Server Error, redirect to home", "error")
+        return redirect(url_for('home')), 500
+
 
 # === Refresh JWT ===
 @app.after_request
