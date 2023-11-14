@@ -87,6 +87,31 @@ def dashboard():
         logger.error("Error: " + str(e))
         flash("Internal Server Error, redirect to home", "error")
         return redirect(url_for('home')), 500
+    
+# === User Info Page ===
+@app.route('/user_info', methods=['GET'])
+@jwt_required()
+def user_info():
+    '''
+    This function handles the user info page of the web application.
+
+    The JWT Token is required and the 2fa is checked. Then the user info page is displayed accordingly.
+    '''
+    logger.info(str(request.method) + "-Request on " + request.path)
+
+    try: # last resort error handling
+
+        # Check if the user has a valid JWT, then load user object
+        if get_jwt_identity():
+            user = load_user(db=db, user_id=get_jwt_identity())
+
+        # Render the user_info.html template with user data
+        return render_template('user_info.html', loggedin=True, username=user.get_attribute('username'), email=user.get_attribute('email'), twofa_activated=user.get_attribute('twofa_activated'), contract_list=user.get_contract_list())
+
+    except Exception as e:
+        logger.error("Error: " + str(e))
+        flash("Internal Server Error, redirect to home", "error")
+        return redirect(url_for('home')), 500
 
 # === Error handling ===
 @app.errorhandler(404)
@@ -109,29 +134,6 @@ def page_not_found(errorhandler_error):
         else:
             logger.debug("Error Page displayed for not logged in user")
             return render_template('PageNotFound.html'), 404
-    except Exception as e:
-        logger.error("Error: " + str(e))
-        flash("Internal Server Error, redirect to home", "error")
-        return redirect(url_for('home')), 500
-    
-
-# New route for user information
-@app.route('/user_info', methods=['GET'])
-@jwt_required()  # Requires a valid JWT to access the route
-def user_info():
-    try:
-        # Check if the user has a valid JWT
-        if get_jwt_identity():
-            user = load_user(db=db, user_id=get_jwt_identity())
-
-            # Render the user_info.html template with user data
-            return render_template('user_info.html', loggedin=True, username=user.get_attribute('username'), email=user.get_attribute('email'), twofa_activated=user.get_attribute('twofa_activated'), contract_list=user.get_contract_list())
-
-        # If the JWT is not valid, you can redirect or handle it accordingly
-        else:
-            flash("Invalid JWT", "error")
-            return redirect(url_for('home'))
-
     except Exception as e:
         logger.error("Error: " + str(e))
         flash("Internal Server Error, redirect to home", "error")
