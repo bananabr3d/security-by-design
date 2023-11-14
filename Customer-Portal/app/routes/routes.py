@@ -105,8 +105,21 @@ def user_info():
         if get_jwt_identity():
             user = load_user(db=db, user_id=get_jwt_identity())
 
+        # Check if user is 2FA authenticated
+        result_check_2fa = check_2fa(twofa_activated=user.get_attribute('twofa_activated'), jwt_token=get_jwt())
+        if result_check_2fa == None:
+            twofa_authenticated = True
+        else:
+            twofa_authenticated = False
+
         # Render the user_info.html template with user data
-        return render_template('user_info.html', loggedin=True, username=user.get_attribute('username'), email=user.get_attribute('email'), twofa_activated=user.get_attribute('twofa_activated'), contract_list=user.get_contract_list())
+        return render_template('user_info.html', 
+                               loggedin=True, 
+                               username=user.get_attribute('username'), 
+                               email=user.get_attribute('email'),
+                               twofa_activated=user.get_attribute('twofa_activated'), 
+                               twofa_authenticated=twofa_authenticated,
+                               contract_list=user.get_contract_list())
 
     except Exception as e:
         logger.error("Error: " + str(e))
