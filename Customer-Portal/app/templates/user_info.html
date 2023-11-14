@@ -14,8 +14,31 @@ User Information
     <p>Username: {{ username }}</p>
     <p>Email: {{ email }}</p>
 
+    <!-- Set new password by sending old, new and new2 -->
+    <div> <!-- Set new password is only available with 2fa authentication atm -->
+        <form method="post" action="/set-new-password">
+            <label for="">Old Password</label>
+            <input type="password" id="old_password" name="old_password" required>
+            <label for="">New Password</label>
+            <input type="password" id="new_password" name="new_password" required>
+            <label for="">Repeat New Password</label>
+            <input type="password" id="new_password2" name="new_password2" required>
+            <button type="submit">Set New Password</button>
+        </form>
+    </div>
+
+    <!-- Set new password by sending old, new and new2 -->
+    <div>
+        <form method="post" action="/reset-2fa">
+            <label for="">Backup Code</label>
+            <input type="text" id="backup_code" name="backup_code" required>
+            <button type="submit">Reset 2FA</button>
+        </form>
+    </div>
+
     <h2>Two-Factor Authentication</h2>
-    <p>2FA Activated: {% if twofa_activated %}Yes{% else %}No{% endif %}</p>
+    <p>2FA Activated: {% if twofa_activated %}Yes{% else %}No{% endif %}</p> <!-- TODO Mysteriously is always "True", even if user.get_attribute gives "False" -->
+    <p>2FA Authenticated: {% if twofa_authenticated %}Yes{% else %}No{% endif %}</p>
 
     <h2>Contract Information</h2>
     <ul>
