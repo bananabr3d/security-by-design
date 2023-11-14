@@ -35,7 +35,7 @@ def home():
     try: # last resort error handling
 
         # Check if user has a valid JWT and display the starting page accordingly
-        if get_jwt_identity() and check_2fa(twofa_activated=load_user(db=db, user_id=get_jwt_identity()).get_attribute('twofa_activated'), jwt_token=get_jwt()) == None:
+        if get_jwt_identity():
             logger.debug("Starting Page displayed for logged in user")
             return render_template('index.html', loggedin=True)
         else:
