@@ -18,9 +18,7 @@ from app import app, logger, db, bcrypt, jwt, UnknownRequest
 from app.models.user import User, load_user
 
 # Import pyotp for 2fa and io, qrcode, base64 for QR code generation
-import pyotp
-import io
-import qrcode
+import pyotp, io, qrcode, random
 from base64 import b64encode
 
 # Import datetime for cookie expiration handling
@@ -34,6 +32,7 @@ regex_email = re.compile(r'([A-Za-z0-9]+[.-_])*[A-Za-z0-9]+@[A-Za-z0-9-]+(\.[A-Z
 regex_username = re.compile(r'^[a-zA-Z0-9]+([_ -]?[a-zA-Z0-9])*$')
 regex_password = re.compile(r'^.*(?=.{12,128})(?=.*[a-zA-Z])(?=.*\d)(?=.*[!#$%&?"]).*$')
 regex_otp = re.compile(r'^[0-9]{6}$')
+regex_6digits = re.compile(r'^[0-9]{6}$')
 
 # JWT Access Token Refresh Expiration
 jwt_token_refresh_expiration = int(int(os.getenv("JWT_ACCESS_TOKEN_EXPIRATION_MINUTES"))/2)
@@ -98,6 +97,20 @@ def validate_otp(otp: str) -> bool:
     else:
         logger.warning("User provided a invalid otp input")
         flash('Invalid input on "OTP"', 'failed')
+        return False
+
+def validate_6digits(text: str) -> bool:
+    '''
+    This function validates the 6 digit input with a regex.
+
+    text: str
+
+    Returns True if the text is valid, else False.    
+    '''
+    if re.fullmatch(regex_6digits, text):
+        return True
+    else:
+        logger.warning("User provided a invalid 6 digit input")
         return False
 
 
@@ -454,6 +467,18 @@ def register_2fa():
                 user.update_attribute(db, "twofa_activated", True)
                 flash('2FA Verification Successful', 'success')
                 logger.debug("User: '" + user.get_attribute("username") + "' has successfully verified its 2fa")
+
+                # Generate 2fa backup codes 10 * (random 6 digit numbers)
+                backup_codes = list()
+                for i in range(10):
+                    backup_codes.append(random.randint(100000, 999999)) # "000000" is explicitly excluded
+
+                flash('Your backup codes are: ' + str(backup_codes), 'backup-codes')
+                
+                # Update user backup codes -> save the hashes of the backup_codes
+                backup_codes = [bcrypt.generate_password_hash(str(code)).decode('utf-8') for code in backup_codes]
+                user.update_attribute(db, "backup_codes", backup_codes)
+                
                 return redirect(url_for('login_2fa'))
             
             else: # If otp is not valid, flash error message and redirect to register_2fa
@@ -600,6 +625,65 @@ def set_new_password():
         logger.error("Error: " + str(e))
         flash("Internal Server Error, redirect to home", "error")
         return redirect(url_for('home')), 500
+
+# === Reset 2FA ===     
+@app.route('/reset-2fa', methods=['POST'])
+@jwt_required()
+def reset_2fa():
+    '''
+    This function handles the reset_2fa route and can only be accessed with a JWT Token.
+
+    Returns to dashboard and message if 2fa couldnt be reset. (Either because of the format or that it is not correct)
+
+    Returns redirect to login if 2fa was successfully reseted. (+ Updates the user 2fa secret + activated status in the database)
+    '''
+    logger.info(str(request.method) + "-Request on " + request.path)
+
+    try: # last resort error handling
+
+        # Check if user has a valid JWT, then load user object
+        if get_jwt_identity():
+            user = load_user(db=db, user_id=get_jwt_identity())
+        
+        # = Input Validation =
+        # Backup Code
+        if not validate_6digits(request.form['backup_code']):
+            flash("Invalid Backup Code", "error") # Dont send another flash message as if the backup code itself is invalid. So the attacker doesnt know if it has the wrong format or is invalid itself.
+            return redirect(url_for('dashboard'))
+
+        # Check if user has backup codes
+        backup_codes = user.get_backup_codes()
+        if backup_codes == None:
+            flash("Invalid Backup Code", "error")
+            return redirect(url_for('dashboard'))
+        
+        # Check if backup code is correct
+        for backup_code in backup_codes:
+            print(backup_code)
+            print(request.form['backup_code'])
+            print(type(backup_code))
+            print(type(request.form['backup_code']))
+            if bcrypt.check_password_hash(backup_code, request.form['backup_code']):
+                # Update user 2fa secret
+                user.update_attribute(db, attribute="twofa_secret", value=None)
+                # Update user 2fa activated
+                user.update_attribute(db, attribute="twofa_activated", value=False)
+        
+                # Unset JWT and redirect to login
+                resp = make_response(redirect(url_for('login')))
+                flash("Your 2 FA has been reset successfully", "success")
+                unset_jwt_cookies(resp)
+                return resp
+            
+        # Send flash message if backup code is not correct
+        flash("Invalid Backup Code", "error")
+        return redirect(url_for('dashboard'))
+        
+    except Exception as e:
+        logger.error("Error: " + str(e))
+        flash("Internal Server Error, redirect to home", "error")
+        return redirect(url_for('home')), 500
+
 
 
 # === Refresh JWT ===
