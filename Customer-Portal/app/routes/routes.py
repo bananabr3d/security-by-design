@@ -125,7 +125,7 @@ def user_info():
             user = load_user(db=db, user_id=get_jwt_identity())
 
             # Render the user_info.html template with user data
-            return render_template('user_info.html', loggedin=True, username=user.get_attribute('username'), email=user.get_attribute('email'), twofa_activated=user.get_attribute('twofa_activated'), contract_list=user.get_attribute('contract_list'))
+            return render_template('user_info.html', loggedin=True, username=user.get_attribute('username'), email=user.get_attribute('email'), twofa_activated=user.get_attribute('twofa_activated'), contract_list=user.get_contract_list())
 
         # If the JWT is not valid, you can redirect or handle it accordingly
         else:
