@@ -108,16 +108,16 @@ def before_request_main():
                 logger.debug("User has 2fa activated")
                 g.twofa_activated = True
                 
-            # Check if user is 2fa authenticated
+                # Check if user is 2fa authenticated
+                
+                # Get the current time and the timestamp of when the user authenticated with 2fa
+                date_now = datetime.strptime(str(datetime.now())[:19], '%Y-%m-%d %H:%M:%S')
+                date_2fa = datetime.strptime(get_jwt()["2fa_timestamp"], '%a, %d %b %Y %H:%M:%S %Z')
 
-            # Get the current time and the timestamp of when the user authenticated with 2fa
-            date_now = datetime.strptime(str(datetime.now())[:19], '%Y-%m-%d %H:%M:%S')
-            date_2fa = datetime.strptime(get_jwt["2fa_timestamp"], '%a, %d %b %Y %H:%M:%S %Z')
-
-            # Check if the 2fa timestamp is older than time specified in environment variable
-            if (date_now - date_2fa) <= timedelta(minutes=int(os.getenv("2FA_EXPIRATION_MINUTES"))):
-                logger.debug("User is 2fa authenticated")
-                g.twofa_authenticated = True
+                # Check if the 2fa timestamp is older than time specified in environment variable
+                if (date_now - date_2fa) <= timedelta(minutes=int(os.getenv("2FA_EXPIRATION_MINUTES"))):
+                    logger.debug("User is 2fa authenticated")
+                    g.twofa_authenticated = True
             
     except Exception as e:
         logger.error(f"Error in before_request: {e}")
