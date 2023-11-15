@@ -11,7 +11,9 @@ from app.models.user import load_user
 @jwt_required()
 def add_contract():
     '''
-    #TODO
+    This function handles the add-contract page of the web application. The JWT Token is required and the 2fa is checked. 
+
+    If the Electricity-Meter ID is correct, adds a new contract to the user and redirects to the dashboard page.
     '''
 
     if not g.twofa_authenticated:

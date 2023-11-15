@@ -169,14 +169,12 @@ def register_post():
     if User.find_by_email(db=db, email=email) != None:
         logger.warning("E-Mail already exists")
         flash('E-Mail already exists', 'failed')
-        # Add JSON Response for APIs?
         return redirect(url_for("register"))
 
     # Check if User already exists
     if User.find_by_username(db=db, username=username) != None:
         logger.warning("User already exists")
         flash('Username already exists', 'failed')
-        # Add JSON Response for APIs?
         return redirect(url_for("register"))
     
 
@@ -188,7 +186,6 @@ def register_post():
         logger.warning("Different passwords provided during the registration")
         logger.debug("User: " + username + "provided different passwords during the registration")
         flash('Passwords dont match', 'failed')
-        # Add JSON Response for APIs?
         return redirect(url_for("register"))
     
 
@@ -199,7 +196,6 @@ def register_post():
 
     flash('Your account has been created!', 'success')
     logger.debug("User Account has been created successfully")
-    #TODO Add JSON Response for APIs?
     return redirect(url_for('login'))
 
 # === Login ===
@@ -255,14 +251,12 @@ def login_post():
             logger.warning("Wrong username/password combination provided")
             logger.debug("User: '" + username + "' provided a wrong password during the login")
             flash('Wrong username or password', 'failed')
-            #TODO Add JSON Response for APIs?
             return redirect(url_for("login"))
         
     else:
         logger.warning("Username could not be found")
         logger.debug("User: '" + username + "' could not be found during the login")
         flash('Wrong username or password', 'failed')
-        #TODO Add JSON Response for APIs?
         redirect(url_for("login"))
     
     # create access token
@@ -270,7 +264,6 @@ def login_post():
 
     flash('You have been logged in successfully!', 'success')
     logger.debug("User Account has logged in successfully")
-    # Add JSON Response for APIs?
 
     # Set the JWT access cookies in the response and redirect user to login_2fa
     resp = make_response(redirect(url_for('login_2fa')))
@@ -320,7 +313,7 @@ def register_2fa():
     g.user.update_attribute(db, attribute="twofa_secret", value=secret)
 
     # Generate the OTP URI for the QR code
-    otp_uri = pyotp.TOTP(secret).provisioning_uri(g.user.get_attribute("username"), issuer_name="VoltWave") #TODO issuer_name
+    otp_uri = pyotp.TOTP(secret).provisioning_uri(g.user.get_attribute("username"), issuer_name="VoltWave")
 
     # Generate a QR code image
     qr = qrcode.QRCode(
