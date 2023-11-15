@@ -1,6 +1,5 @@
 # Contributions by: Vitali Bier, Julian Flock
 # Description: This file is the main file of the web application. It contains the configuration of the Flask app, the MongoDB connection and the logger.
-# Last update: 31.10.2023
 
 # ===== Packages =====
 # Packages for environment variables
