@@ -1,9 +1,9 @@
 # Contributions by: Vitali Bier, Julian Flock
 # Description: This file contains the contract routes of the web application.
 
-from flask import request, flash, redirect, url_for, render_template
+from flask import request, flash, redirect, url_for, g
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from app import app, logger, db
+from app import app, logger, db, Invalid2FA
 from app.models.contract import Contract
 from app.models.user import load_user
 
@@ -14,7 +14,8 @@ def add_contract():
     #TODO
     '''
 
-    #TODO Check 2fa timestamp in jwt
+    if not g.twofa_authenticated:
+        raise Invalid2FA
 
     # Add here information from form to contract object and then save it in the db
     electricity_meter_id = request.form['electricity_meter_id']

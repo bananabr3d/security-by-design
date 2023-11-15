@@ -37,9 +37,24 @@ class ConfigurationError(Exception):
     "Raised when an error occures on the configurations (.env)"
     pass
 
-class UnknownRequest(Exception):
-    "Raised when an unknown request is made"
+class Invalid2FA(Exception):
+    "Raised when an user is either not 2FA authenticated or the 2FA token is expired"
     pass
+
+class Inactive2FA(Exception):
+    "Raised when the 2FA token is inactive"
+    pass
+
+class Valid2FA(Exception):
+    "Raised when the 2FA token is valid"
+    pass
+
+class Active2FA(Exception):
+    "Raised when the 2FA token is active"
+    pass
+
+class ValidJWT(Exception):
+    "Raised when the JWT token is valid"
 
 # ===== Program configurations =====
 
@@ -162,6 +177,4 @@ for i in range(5):
 bcrypt = Bcrypt(app)
 
 # === Import routes ===
-from app.routes import routes
-from app.routes import contract_routes
-from app.routes import auth_routes
+from app.routes import routes, contract_routes, auth_routes, error_routes

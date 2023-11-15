@@ -25,8 +25,11 @@
                 <li><a href="/register">Register</a></li>
                 <li><a href="/login">Login</a></li>
             {% elif jwt_authenticated and not twofa_authenticated %}
-                <li><a href="/register/2fa">Register 2FA</a></li>
-                <li><a href="/login/2fa">Login 2FA</a></li>
+                {% if not twofa_activated %}
+                    <li><a href="/register/2fa">Register 2FA</a></li>
+                {% else %}
+                    <li><a href="/login/2fa">Login 2FA</a></li>
+                {% endif %}
             {% elif jwt_authenticated and twofa_authenticated %}
                 <li><a href="/dashboard">Dashboard</a></li>
             {% endif %}
