@@ -103,6 +103,13 @@ img {
     margin-right: auto;
   }
 
+/* Tiny Gray Text */
+.tiny-gray-text {
+    font-size: 12px;
+    color: #808080;
+}
+
+
 /* Logo */
 canvas {
     position: fixed;

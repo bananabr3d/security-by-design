@@ -36,6 +36,31 @@ User Information
         </form>
     </div>
 
+    <!-- Show answered security questions -->
+    <div>
+        <h2>Security Questions answered</h2>
+        <ul>
+            {% for question in security_questions_user %}
+                <li>{{ question }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    <!-- Add new security question -->
+    <div>
+        <h2>Add new Security Question</h2>
+        <form method="post" action="/add-security-question">
+            <label for="security_question">Security Question</label>
+            <select id="security_question" name="security_question" required>
+            {% for question in security_questions %}
+                <option value="{{ question }}">{{ question }}</option>
+            {% endfor %}
+            </select>
+            <br>
+            <label for="security_answer">Answer</label>
+            <input type="text" id="security_answer" name="answer" required>
+            <button type="submit">Add Security Question</button>
+        </form>
+
     <h2>Two-Factor Authentication</h2>
     <p>2FA Activated: {% if twofa_activated %}Yes{% else %}No{% endif %}</p> <!-- TODO Mysteriously is always "True", even if user.get_attribute gives "False" -->
     <p>2FA Authenticated: {% if twofa_authenticated %}Yes{% else %}No{% endif %}</p>

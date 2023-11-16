@@ -9,7 +9,7 @@ from flask import render_template, g
 from flask_jwt_extended import get_jwt_identity, jwt_required, get_jwt
 
 # Import app, logger and db object from app package
-from app import app, logger, db, Invalid2FA
+from app import app, logger, db, Invalid2FA, security_questions
 
 # Import models
 from app.models.user import load_user
@@ -69,6 +69,15 @@ def user_info():
     The JWT Token is required and the 2fa is checked. Then the user info page is displayed accordingly.
     '''
 
+    # Show user only security questions, that are not answered yet
+    security_questions_show = list()
+    security_questions_show.append("Please select a security question...")
+
+    security_questions_user = g.user.get_security_questions().keys()
+    for question in security_questions:
+        if question not in security_questions_user:
+            security_questions_show.append(question)
+
     # Render the user_info.html template with user data
     return render_template('user_info.html', 
                             jwt_authenticated=g.jwt_authenticated, 
@@ -76,7 +85,9 @@ def user_info():
                             email=g.user.get_attribute('email'),
                             twofa_activated=g.twofa_activated, 
                             twofa_authenticated=g.twofa_authenticated,
-                            contract_list=g.user.get_contract_list())
+                            contract_list=g.user.get_contract_list(),
+                            security_questions=security_questions_show,
+                            security_questions_user=security_questions_user)
 
 
 # ===== Before Request =====

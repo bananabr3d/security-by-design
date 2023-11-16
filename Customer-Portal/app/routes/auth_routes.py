@@ -6,15 +6,15 @@
 import os
 
 # Packages for Flask
-from flask import request, render_template, redirect, url_for, flash, make_response, g, Response
+from flask import request, render_template, redirect, url_for, flash, make_response, g
 from flask_jwt_extended import (
     create_access_token, get_jwt_identity, jwt_required, set_access_cookies, unset_jwt_cookies, get_jwt)
 
 # Import app, logger, db, bcrypt object, jwt object, exceptions and models from app package
-from app import app, logger, db, bcrypt, jwt, Inactive2FA, Invalid2FA, Active2FA, Valid2FA, ValidJWT
+from app import app, logger, db, bcrypt, jwt, Invalid2FA, ValidJWT, security_questions
 
 # Import models
-from app.models.user import User, load_user
+from app.models.user import User
 
 # Import datetime for cookie expiration handling
 from datetime import datetime, timedelta, timezone
@@ -26,6 +26,7 @@ import re
 regex_email = re.compile(r'([A-Za-z0-9]+[.-_])*[A-Za-z0-9]+@[A-Za-z0-9-]+(\.[A-Z|a-z]{2,})+')
 regex_username = re.compile(r'^[a-zA-Z0-9]+([_ -]?[a-zA-Z0-9])*$')
 regex_password = re.compile(r'^.*(?=.{12,128})(?=.*[a-zA-Z])(?=.*\d)(?=.*[!#$%&?"]).*$')
+regex_text = re.compile(r'^[a-zA-Z0-9\s]+$')
 
 # JWT Access Token Refresh Expiration
 jwt_token_refresh_expiration = int(int(os.getenv("JWT_ACCESS_TOKEN_EXPIRATION_MINUTES"))/2)
@@ -76,13 +77,20 @@ def validate_password(password: str) -> bool:
         logger.warning("User provided a invalid password input")
         flash('Invalid input on "Password"', 'failed')
         return False
+
+def validate_text(text: str) -> bool:
     '''
+    This function validates the text input with a regex.
 
     text: str
 
+    Returns True if the text is valid, else False.
     '''
+    if re.fullmatch(regex_text, text):
         return True
     else:
+        logger.warning("User provided a invalid text input")
+        flash('Invalid input', 'failed')
         return False
 
 # ===== Routes =====
@@ -251,32 +259,122 @@ def logout():
     return resp
 
 
+# === Reset password ===
+@app.route('/reset-password', methods=['GET'])
+@jwt_required(optional=True)
+def reset_password():
+    '''
+    This function handles the GET reset_password route.
+
+    Returns the reset_password.html template.
     '''
 
+    security_questions_show = list()
+    security_questions_show.append("Please select a security question...")
+    security_questions_show += security_questions
+
+    return render_template('reset_password.html', security_questions=security_questions_show)
 
 
+@app.route('/reset-password', methods=['POST'])
+@jwt_required(optional=True)
+def reset_password_post():
+    '''
+    This function handles the POST reset_password route.
 
-
+    Returns redirect to login if the reset password was successful. (+ Updates the user password in the database)
     '''
 
-    '''
+    # = Input Validation =
+    # Email address
+    if not validate_email(request.form['email']):
+        return redirect(url_for('reset_password'))
 
+    # Security Question
+    # Check if value is in security_questions
+    if not request.form['security_question'] in security_questions:
+        logger.warning("User provided a invalid security question input")
+        flash('Invalid input on "Security Question"', 'failed')
+        return redirect(url_for('reset_password'))
+    
+    # Answer
+    if not validate_text(request.form['answer']):
+        logger.warning("User provided a invalid answer input")
+        return redirect(url_for('reset_password'))
+    
+    # New Password
+    if not validate_password(request.form['new_password']):
+        logger.warning("User provided a invalid new password input")
+        return redirect(url_for('reset_password'))
     
     
+    # Check if email exists
+    g.user = User.find_by_email(db=db, email=request.form['email'])
+    if g.user == None:
+        logger.warning("Email could not be found")
+        logger.debug("User: '" + request.form['email'] + "' could not be found during the reset password")
+        flash('Email could not be found', 'failed')
+        return redirect(url_for('reset_password'))
     
+    # Check if security question is answered
+    if request.form['security_question'] not in g.user.get_attribute('security_questions'):
+        logger.warning("User provided a security question that is not answered")
+        flash('Your Answer is incorrect', 'failed') # That you cant differ between wrong answer and not answered is a feature, not a bug
+        return redirect(url_for('reset_password'))
+
+    # Check if answer is correct for the selected security question
+    hashed_answer = g.user.get_security_questions()[request.form['security_question']]
+
+    if bcrypt.check_password_hash(hashed_answer, request.form['answer']) == False:
+        flash('Your answer is incorrect', 'failed')
+        logger.debug("User: '" + g.user.get_attribute("username") + "' provided a wrong answer to the security question during the reset password")
+        return redirect(url_for('reset_password'))
+
+    # Set new password
+    hashed_password = bcrypt.generate_password_hash(request.form['new_password']).decode('utf-8')
+    g.user.update_attribute(db, attribute="password", value=hashed_password)
+
+    flash('Your password has been changed!', 'success')
+    logger.debug("User: '" + g.user.get_attribute("username") + "' has successfully changed its password")
+    return redirect(url_for('login'))
 
 
-
-
-
-
+# === Add security question ===
+@app.route('/add-security-question', methods=['POST'])
 @jwt_required()
+def add_security_question():
+    '''
+    This function handles the add_security_question route and can only be accessed with a JWT Token.
+
+    Returns redirect to dashboard if the security question was successfully added. (+ Updates the user security questions in the database)
     '''
 
-    '''
+    # = Input Validation =
+    # Security Question
+    # Check if value is between 1 and 5
+    if not request.form['security_question'] in security_questions:
+        logger.warning("User provided a invalid security question input")
+        flash('Invalid input on "Security Question"', 'failed')
+        return redirect(url_for('user_info'))
+    
+    # Answer
+    if not validate_text(request.form['answer']):
+        logger.warning("User provided a invalid answer input")
+        return redirect(url_for('user_info'))
+    
+    # Check if security question is already answered
+    if request.form['security_question'] in g.user.get_attribute('security_questions'):
+        logger.warning("User provided a security question that is already answered")
+        flash('You already answered this security question', 'failed')
+        return redirect(url_for('user_info'))
+    
+    # Add hash of answer to user security questions
+    hashed_answer = bcrypt.generate_password_hash(request.form['answer']).decode('utf-8')
+    g.user.add_security_question(db=db, question=request.form['security_question'], answer=hashed_answer)
 
-    
-    
+    flash('Your security question has been added!', 'success')
+    logger.debug("User: '" + g.user.get_attribute("username") + "' has successfully added a security question")
+    return redirect(url_for('user_info'))
 
 
 # === Set new password ===      
