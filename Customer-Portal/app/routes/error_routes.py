@@ -97,4 +97,4 @@ def errorhandler_internal_server_error(errorhandler_error):
     '''
     logger.error(f"Error: {errorhandler_error}")
     flash("Internal Server Error, redirect to home", "error")
-    return redirect(url_for('home')), 500
+    return redirect(url_for('home'))
