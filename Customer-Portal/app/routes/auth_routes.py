@@ -6,7 +6,7 @@
 import os
 
 # Packages for Flask
-from flask import request, render_template, redirect, url_for, flash, make_response, g
+from flask import request, render_template, redirect, url_for, flash, make_response, g, Response
 from flask_jwt_extended import (
     create_access_token, get_jwt_identity, jwt_required, set_access_cookies, unset_jwt_cookies, get_jwt)
 
@@ -518,41 +518,55 @@ def reset_2fa():
 
     Returns redirect to login if 2fa was successfully reseted. (+ Updates the user 2fa secret + activated status in the database)
     '''
-    
-    # = Input Validation =
-    # Backup Code
-    if not validate_6digits(request.form['backup_code']):
-        flash("Invalid Backup Code", "error") # Dont send another flash message as if the backup code itself is invalid. So the attacker doesnt know if it has the wrong format or is invalid itself.
-        return redirect(url_for('dashboard'))
 
-    # Check if user has backup codes
-    backup_codes = g.user.get_backup_codes()
-    if backup_codes == None:
+    if g.twofa_authenticated:
+        logger.debug("User: '" + g.user.get_attribute("username") + "' tried to reset its 2fa, while being 2fa authenticated")
+        return resp_reset_2fa()
+
+    elif "backup_code" in request.form.keys():
+        logger.debug("User: '" + g.user.get_attribute("username") + "' tried to reset its 2fa, with a backup code")
+    
+        # = Input Validation =
+        # Backup Code
+        if not validate_6digits(request.form['backup_code']):
+            flash("Invalid Backup Code", "error") # Dont send another flash message as if the backup code itself is invalid. So the attacker doesnt know if it has the wrong format or is invalid itself.
+            return redirect(url_for('dashboard'))
+
+        # Check if user has backup codes
+        backup_codes = g.user.get_backup_codes()
+        if backup_codes == None: # Should not happen normally, because the user has to have backup codes to get to this route
+            flash("Invalid Backup Code", "error")
+            logger.error("User: '" + g.user.get_attribute("username") + "' provided a backup code, but there are none in the database")
+            return redirect(url_for('dashboard'))
+        
+        # Check if backup code is correct
+        for backup_code in backup_codes:
+            if bcrypt.check_password_hash(backup_code, request.form['backup_code']):
+                return resp_reset_2fa()
+    
+        # Send flash message if backup code is not correct
         flash("Invalid Backup Code", "error")
         return redirect(url_for('dashboard'))
     
-    # Check if backup code is correct
-    for backup_code in backup_codes:
-        print(backup_code)
-        print(request.form['backup_code'])
-        print(type(backup_code))
-        print(type(request.form['backup_code']))
-        if bcrypt.check_password_hash(backup_code, request.form['backup_code']):
-            # Update user 2fa secret
-            g.user.update_attribute(db, attribute="twofa_secret", value=None)
-            # Update user 2fa activated
-            g.user.update_attribute(db, attribute="twofa_activated", value=False)
-    
-            # Unset JWT and redirect to login
-            resp = make_response(redirect(url_for('login')))
-            flash("Your 2 FA has been reset successfully", "success")
-            unset_jwt_cookies(resp)
-            return resp
-        
-    # Send flash message if backup code is not correct
-    flash("Invalid Backup Code", "error")
-    return redirect(url_for('dashboard'))
+    else:
+        logger.debug("User: '" + g.user.get_attribute("username") + "' didnt provide a backup code or is 2fa authenticated during the 2fa reset")
+        flash("2FA could not be reset", "error")
+        return redirect(url_for('dashboard'))
 
+def resp_reset_2fa() -> Response:
+    # Update user 2fa secret
+    g.user.update_attribute(db, attribute="twofa_secret", value=None)
+    # Update user 2fa activated
+    g.user.update_attribute(db, attribute="twofa_activated", value=False)
+
+    g.user.update_attribute(db, attribute="backup_codes", value=None)
+
+    # Unset JWT and redirect to login
+    resp = make_response(redirect(url_for('login')))
+    logger.debug("User: '" + g.user.get_attribute("username") + "' has successfully reset its 2fa")
+    flash("Your 2 FA has been reset successfully", "success")
+    unset_jwt_cookies(resp)
+    return resp
 
 
 # === Refresh JWT ===
