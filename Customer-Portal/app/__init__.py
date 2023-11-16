@@ -150,7 +150,7 @@ def db_connection() -> pymongo.database.Database or None:
 
         db = client.get_database('webapp')
 
-        db.db.test.find_one()
+        db.test.find_one()
 
         return db
     except Exception as e:

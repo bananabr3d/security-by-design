@@ -5,7 +5,7 @@ from bson.objectid import ObjectId
 #TODO: more information about user
 def load_user(db, user_id:str):
     try:
-        user_data = db.db.users.find_one({'_id': ObjectId(user_id)}, allow_partial_results=False)
+        user_data = db.users.find_one({'_id': ObjectId(user_id)}, allow_partial_results=False)
     except:
         raise DBConnectionError
         
@@ -16,7 +16,7 @@ class User(): # Add more details to user
         self.user_data = {'email': email, 'username': username, 'password': password, 'twofa_secret': twofa_secret, 'twofa_activated': twofa_activated, 'contract_list': contract_list, 'backup_codes': backup_codes}
 
         try:
-            user_data = db.db.users.find_one({'email': email}, allow_partial_results=False)
+            user_data = db.users.find_one({'email': email}, allow_partial_results=False)
             if user_data:
                 self.user_data['_id'] = user_data['_id']
         except:
@@ -37,7 +37,7 @@ class User(): # Add more details to user
     def update_attribute(self, db: pymongo.database.Database, attribute: str, value: str) -> None:
         if self.get_attribute(attribute=attribute) != None: # Check if user has the attribute
             try:
-                db.db.users.update_one({'_id': self.user_data['_id']}, {'$set': {attribute: value}})
+                db.users.update_one({'_id': self.user_data['_id']}, {'$set': {attribute: value}})
             except:
                 raise DBConnectionError
         else:
@@ -45,7 +45,7 @@ class User(): # Add more details to user
 
     def find_by_username(db: pymongo.database.Database, username: str):
         try:
-            user_data = db.db.users.find_one({'username': username}, allow_partial_results=False)
+            user_data = db.users.find_one({'username': username}, allow_partial_results=False)
         except:
             raise DBConnectionError
         
@@ -53,7 +53,7 @@ class User(): # Add more details to user
     
     def find_by_email(db: pymongo.database.Database, email: str):
         try:
-            user_data = db.db.users.find_one({'email': email}, allow_partial_results=False)
+            user_data = db.users.find_one({'email': email}, allow_partial_results=False)
         except:
             raise DBConnectionError
         
@@ -62,15 +62,15 @@ class User(): # Add more details to user
 
     def add_contract(self, db: pymongo.database.Database, contract_id: int) -> None: #Get the list of contracts and append the new one
         try:
-            db.db.users.update_one({'_id': self.user_data['_id']}, {'$push': {'contract_list': contract_id}}) # update the contract list
+            db.users.update_one({'_id': self.user_data['_id']}, {'$push': {'contract_list': contract_id}}) # update the contract list
         except:
             raise DBConnectionError
         
     def save(self, db:pymongo.database.Database) -> None:
             try:
-                db.db.users.insert_one(self.user_data)
+                db.users.insert_one(self.user_data)
 
-                user_data = db.db.users.find_one({'email': self.user_data["email"]}, allow_partial_results=False)
+                user_data = db.users.find_one({'email': self.user_data["email"]}, allow_partial_results=False)
                 self.user_data["_id"] = user_data["_id"]
             except:
                 raise DBConnectionError
