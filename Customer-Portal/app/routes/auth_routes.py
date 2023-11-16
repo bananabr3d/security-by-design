@@ -257,7 +257,7 @@ def login_post():
         logger.warning("Username could not be found")
         logger.debug("User: '" + username + "' could not be found during the login")
         flash('Wrong username or password', 'failed')
-        redirect(url_for("login"))
+        return redirect(url_for("login"))
     
     # create access token
     access_token = create_access_token(identity=user.get_id(), fresh=timedelta(minutes=jwt_token_refresh_expiration))
