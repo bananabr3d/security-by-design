@@ -97,7 +97,7 @@ def validate_text(text: str) -> bool:
 # ===== Routes =====
 
 # === Register ===
-@app.route('/register', methods=['GET'])
+@app.route('/register', methods=['GET'], endpoint='register')
 @jwt_required(optional=True)
 def register():
     '''
@@ -113,7 +113,7 @@ def register():
     
     return render_template('register.html')
 
-@app.route('/register', methods=['POST'])
+@app.route('/register', methods=['POST'], endpoint='register_post')
 @jwt_required(optional=True)
 def register_post():
     '''
@@ -172,7 +172,7 @@ def register_post():
     return redirect(url_for('login'))
 
 # === Login ===
-@app.route('/login', methods=['GET'])
+@app.route('/login', methods=['GET'], endpoint='login')
 @jwt_required(optional=True)
 def login():
     '''
@@ -189,7 +189,7 @@ def login():
     return render_template('login.html')
 
 
-@app.route('/login', methods=['POST'])
+@app.route('/login', methods=['POST'], endpoint='login_post')
 @jwt_required(optional=True)
 def login_post():
     '''
@@ -245,7 +245,7 @@ def login_post():
 
 
 # === Logout ===
-@app.route('/logout', methods=['GET'])
+@app.route('/logout', methods=['GET'], endpoint='logout')
 @jwt_required()
 def logout():
     '''
@@ -261,7 +261,7 @@ def logout():
 
 
 # === Reset password ===
-@app.route('/reset-password', methods=['GET'])
+@app.route('/reset-password', methods=['GET'], endpoint='reset_password')
 @jwt_required(optional=True)
 def reset_password():
     '''
@@ -277,7 +277,7 @@ def reset_password():
     return render_template('reset_password.html', security_questions=security_questions_show)
 
 
-@app.route('/reset-password', methods=['POST'])
+@app.route('/reset-password', methods=['POST'], endpoint='reset_password_post')
 @jwt_required(optional=True)
 def reset_password_post():
     '''
@@ -341,7 +341,7 @@ def reset_password_post():
 
 
 # === Add security question ===
-@app.route('/add-security-question', methods=['POST'])
+@app.route('/add-security-question', methods=['POST'], endpoint='add_security_question')
 @jwt_required()
 def add_security_question():
     '''
@@ -379,7 +379,7 @@ def add_security_question():
 
 
 # === Set new password ===      
-@app.route('/set-new-password', methods=['POST'])
+@app.route('/set-new-password', methods=['POST'], endpoint='set_new_password')
 @jwt_required()
 def set_new_password():
     '''
