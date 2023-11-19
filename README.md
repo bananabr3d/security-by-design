@@ -236,7 +236,7 @@ In order to code securely, there are some rules to follow. These are:
 - Update your requirements.txt file after installing new packages
 - Check the needed imported packages, if they are really needed and only import the used functions and variables from them
 - Update the date on the contribution in the header of the files.
-- ...
+- https://owasp.org/www-project-secure-coding-practices-quick-reference-guide/assets/docs/OWASP_SCP_Quick_Reference_Guide_v21.pdf
 
 
 
