@@ -22,7 +22,7 @@ import urllib
 from time import sleep
 
 # Packages for testing the .env file
-from app.tests.unit import verify_env
+from app.tests.verify_env import verify_all
 
 # For cookie expiration handling
 from datetime import timedelta
@@ -98,7 +98,7 @@ logger = set_logger(logger=logger, format=format, log_level=os.getenv("LOGGING_L
 expected_environment_variables = ["SECRET_KEY", "JWT_SECRET_KEY", "MONGODB_USER", "MONGODB_PW", "MONGODB_CLUSTER", "MONGODB_SUBDOMAIN", "JWT_ACCESS_TOKEN_EXPIRATION_MINUTES", "2FA_EXPIRATION_MINUTES"]
 
 try:
-    assert verify_env.verify_all(expected_environment_variables=expected_environment_variables) == True
+    assert verify_all(expected_environment_variables=expected_environment_variables) == True
     logger.info(".env file verified")
 except:
     logger.error(".env file could not be verified")
@@ -150,9 +150,11 @@ def db_connection() -> pymongo.database.Database or None:
 
         db = client.get_database('webapp')
 
+        # Test connection
         db.test.find_one()
 
         return db
+    
     except Exception as e:
         logger.debug("Error: " + str(e))
         return None
