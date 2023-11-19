@@ -23,6 +23,10 @@ from datetime import datetime, timedelta, timezone
 # Import regex for input validation
 import re
 
+# Import jwt_token_refresh_expiration from auth_routes
+from app.routes.auth_routes import jwt_token_refresh_expiration
+
+
 
 # Regex for input validation
 regex_6digits = re.compile(r'^[0-9]{6}$')
