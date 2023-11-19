@@ -21,7 +21,7 @@ def add_contract():
 
     # Add here information from form to contract object and then save it in the db
     electricity_meter_id = request.form['electricity_meter_id']
-    # Check electricity_meter_id for correct format
+    # Check electricity_meter_id for correct format and check with metering point operator if it exists and is free
     #TODO
 
     # Check if contract with electricity_meter_id already exists
