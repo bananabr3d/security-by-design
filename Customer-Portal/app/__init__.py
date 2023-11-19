@@ -180,6 +180,3 @@ bcrypt = Bcrypt(app)
 
 # Security Questions
 security_questions = ["What is your mother's maiden name?", "What is the name of your first pet?", "What is your favorite color?", "What is the name of the city where you were born?", "What is your favorite movie?"]
-
-# === Import routes ===
-from app.routes import routes, contract_routes, auth_routes, error_routes, auth_routes_2fa
