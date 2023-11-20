@@ -141,6 +141,7 @@ def db_connection() -> pymongo.database.Database or None:
 
     # MongoDB Atlas configuration and test connection 
     try:
+        logger.debug(f"LOCALDB: {os.getenv('LOCALDB')}, GITHUB_ACTIONS: {os.getenv('GITHUB_ACTIONS')}")
         if os.getenv("LOCALDB") == "True" or os.getenv("LOCALDB") == True:
             if os.getenv("GITHUB_ACTIONS") == "True" or os.getenv("GITHUB_ACTIONS") == True:
                 logger.info("Connecting to local MongoDB (GitHub Actions)...")
