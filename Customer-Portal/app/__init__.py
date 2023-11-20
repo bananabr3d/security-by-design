@@ -141,7 +141,7 @@ def db_connection() -> pymongo.database.Database or None:
 
     # MongoDB Atlas configuration and test connection 
     try:
-        if os.getenv("LOCALDB") == "True":
+        if os.getenv("LOCALDB") == "True" or os.getenv("LOCALDB") == True:
             logger.info("Connecting to local MongoDB...")
             client = pymongo.MongoClient("mongodb://" + os.getenv("MONGODB_USER") + ":" + urllib.parse.quote_plus(os.getenv("MONGODB_PW")) + "@mongodb:27017/")
         else:
