@@ -8,8 +8,8 @@ from flask import render_template, g
 # Packages for JWT
 from flask_jwt_extended import jwt_required
 
-# Import app, logger and db object from app package
-from app import app, logger, db, Invalid2FA, security_questions
+# Import app and db object from app package
+from app import app, db, Invalid2FA, security_questions
 
 # Import models
 from app.models.contract import load_contract_data
@@ -18,7 +18,8 @@ from app.models.contract import load_contract_data
 # ===== Routes =====
 
 # === Home / Index ===
-@app.route('/')
+@app.route('/', methods=['GET'], endpoint='index')
+@app.route('/home', methods=['GET'], endpoint='home')
 @jwt_required(optional=True) # optional=True allows to access the route without a valid JWT, but checks it if it is present
 def home():
     '''
@@ -27,7 +28,7 @@ def home():
     return render_template('index.html', jwt_authenticated=g.jwt_authenticated, twofa_activated=g.twofa_activated, twofa_authenticated=g.twofa_authenticated)
 
 # === Dashboard ===
-@app.route('/dashboard', methods=['GET'])
+@app.route('/dashboard', methods=['GET'], endpoint='dashboard')
 @jwt_required() # jwt_required() requires a valid JWT to access the route
 def dashboard():
     '''
@@ -55,7 +56,7 @@ def dashboard():
     return render_template('dashboard.html', jwt_authenticated=g.jwt_authenticated, twofa_activated=g.twofa_activated, twofa_authenticated=g.twofa_authenticated, username=g.user.get_attribute('username'), contract_list=transformed_contract_list)
     
 # === User Info Page ===
-@app.route('/user_info', methods=['GET'])
+@app.route('/user_info', methods=['GET'], endpoint='user_info')
 @jwt_required()
 def user_info():
     '''

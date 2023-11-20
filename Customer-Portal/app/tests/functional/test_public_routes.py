@@ -11,6 +11,9 @@ class TestPublicRoutes:
         response = self.client.get('/')
         assert response.status_code == 200
 
+        response = self.client.get('/home')
+        assert response.status_code == 200
+
     # def test_get_about_route(self): #TODO
     #     response = self.client.get('/about')
     #     assert response.status_code == 200

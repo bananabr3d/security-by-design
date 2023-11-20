@@ -76,7 +76,7 @@ def verify2fa(user: User, otp: str) -> bool:
 # ===== Routes =====
 
 # === Register 2FA ===
-@app.route('/register/2fa', methods=['GET'])
+@app.route('/register/2fa', methods=['GET'], endpoint='register_2fa')
 @jwt_required()
 def register_2fa():
     '''
@@ -126,7 +126,7 @@ def register_2fa():
 
     return render_template('register_2fa.html', secret=secret, img_qrcode_data=img_qrcode_data, jwt_authenticated=g.jwt_authenticated, twofa_activated=g.twofa_activated)
 
-@app.route('/register/2fa', methods=['POST'])
+@app.route('/register/2fa', methods=['POST'], endpoint='register_2fa_post')
 @jwt_required()
 def register_2fa_post():
     '''
@@ -179,7 +179,7 @@ def register_2fa_post():
     
 
 # === Login 2FA ===      
-@app.route('/login/2fa', methods=['GET'])
+@app.route('/login/2fa', methods=['GET'], endpoint='login_2fa')
 @jwt_required()
 def login_2fa():
     '''
@@ -202,7 +202,7 @@ def login_2fa():
 
     return render_template('login_2fa.html', jwt_authenticated=g.jwt_authenticated, twofa_activated=g.twofa_activated)
     
-@app.route('/login/2fa', methods=['POST'])
+@app.route('/login/2fa', methods=['POST'], endpoint='login_2fa_post')
 @jwt_required()
 def login_2fa_post():
     '''
@@ -251,7 +251,7 @@ def login_2fa_post():
 
 
 # === Reset 2FA ===     
-@app.route('/reset-2fa', methods=['POST'])
+@app.route('/reset-2fa', methods=['POST'], endpoint='reset_2fa')
 @jwt_required()
 def reset_2fa():
     '''

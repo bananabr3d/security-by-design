@@ -7,7 +7,7 @@ from app import app, logger, db, Invalid2FA
 from app.models.contract import Contract
 from app.models.user import load_user
 
-@app.route('/add-contract', methods=['POST'])
+@app.route('/add-contract', methods=['POST'], endpoint='add_contract')
 @jwt_required()
 def add_contract():
     '''
