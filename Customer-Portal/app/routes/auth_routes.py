@@ -542,14 +542,14 @@ def custom_unauthorized_response(callback):
     return redirect(url_for('login'))
 
 # Error handler for fresh JWT needed
-@jwt.needs_fresh_token_loader #TODO
+@jwt.needs_fresh_token_loader
 def token_not_fresh_callback(jwt_header, jwt_payload):
     '''
     This function handles the token_not_fresh_callback, so the user needs a fresh access token to to this action.
 
     This function redirects the user to the login page in order to log in again and flashes a error message.
     '''
-    flash('You have to log in again in order to do this', 'error')
+    flash('You need a fresh token. You have to log in again in order to do this', 'error')
     logger.debug("User has a unfresh token, but needs a fresh one")
     resp = make_response(redirect(url_for('login')))
     unset_jwt_cookies(response=resp)
