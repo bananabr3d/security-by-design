@@ -18,8 +18,7 @@ from app.models.contract import load_contract_data
 # ===== Routes =====
 
 # === Home / Index ===
-@app.route('/', methods=['GET'], endpoint='index')
-@app.route('/home', methods=['GET'], endpoint='home')
+@app.route('/', methods=['GET'], endpoint='home')
 @jwt_required(optional=True) # optional=True allows to access the route without a valid JWT, but checks it if it is present
 def home():
     '''
