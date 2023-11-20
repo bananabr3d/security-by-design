@@ -22,6 +22,11 @@ from datetime import datetime, timedelta, timezone
 # Import regex for input validation
 import re
 
+# Import requests and hashlib for pwnedpasswords API
+from requests import get
+from hashlib import sha1
+
+
 # Regex for input validation
 regex_email = re.compile(r'([A-Za-z0-9]+[.-_])*[A-Za-z0-9]+@[A-Za-z0-9-]+(\.[A-Z|a-z]{2,})+')
 regex_username = re.compile(r'^[a-zA-Z0-9]+([_ -]?[a-zA-Z0-9])*$')
@@ -94,6 +99,31 @@ def validate_text(text: str) -> bool:
         flash('Invalid input', 'failed')
         return False
 
+def check_password_breach(password: str) -> bool:
+    '''
+    This function checks if the password hash is breached. It calls the pwnedpasswords API with the first 5 characters of the password hash.
+
+    password: str
+
+    Returns True if the password is breached, else False.
+    '''
+    # Hash the password with SHA1
+    password_hash = sha1(password.encode('utf-8')).hexdigest()
+
+    # Get the first 5 characters of the password hash in hex format
+    password_hash_first_5 = password_hash[:5]
+
+    # Call the pwnedpasswords API
+    respond = get(f"https://api.pwnedpasswords.com/range/{password_hash_first_5}")
+
+    # Check if the password hash is breached
+    if password_hash[5:].upper() in respond.text:
+        logger.warning("User provided a breached password")
+        flash('Your provided password is breached, choose another password.', 'failed')
+        return True
+    else:
+        return False
+
 # ===== Routes =====
 
 # === Register ===
@@ -130,7 +160,7 @@ def register_post():
     # = Input Validation =
     # Email address and password
 
-    if not validate_email(request.form['email']) or not validate_username(request.form['username']) or not validate_password(request.form['password']) or not validate_password(request.form['password2']):
+    if not validate_email(request.form['email']) or not validate_username(request.form['username']) or not validate_password(request.form['password']) or not validate_password(request.form['password2']) or check_password_breach(request.form['password']):
         return redirect(url_for("register"))
     
     # set email in lowercase and username in original case           
@@ -304,7 +334,7 @@ def reset_password_post():
         return redirect(url_for('reset_password'))
     
     # New Password
-    if not validate_password(request.form['new_password']):
+    if not validate_password(request.form['new_password']) or check_password_breach(request.form['new_password']):
         logger.warning("User provided a invalid new password input")
         return redirect(url_for('reset_password'))
     
@@ -398,7 +428,7 @@ def set_new_password():
     
     # = Input Validation =
     # Password
-    if not validate_password(request.form['old_password']) or not validate_password(request.form['new_password']) or not validate_password(request.form['new_password2']):
+    if not validate_password(request.form['old_password']) or not validate_password(request.form['new_password']) or not validate_password(request.form['new_password2']) or check_password_breach(request.form['new_password']):
         return redirect(url_for('dashboard'))
 
     # Compare new passwords
