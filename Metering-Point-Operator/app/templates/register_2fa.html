@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %}
+2 FA Registration
+{% endblock %}
+{% block header_title %}
+2 Factor Authentication Registration
+{% endblock %}
+
+{% block content %}
+<section>
+    <h2>Register your 2fa</h2>
+    <p>Scan the QR code with your 2fa app and enter the code below.</p>
+    <form method="post">
+        <label for="secret">Secret Token</label>
+        <input type="text" class="form-control" id="secret" value="{{ secret }}" readonly onblur='generateBarCode();'>
+        
+        <label for="otp">OTP / 2FA Code:</label>
+        <input type="text" id="otp" name="otp" required>
+        <button type="submit">Register your 2 FA</button>
+    </form>
+    <img id='barcode' 
+    src="data:image/png;base64,{{ img_qrcode_data }}"
+    alt="" 
+    title="QR Code 2fa"/>
+</section>
+{% endblock %}

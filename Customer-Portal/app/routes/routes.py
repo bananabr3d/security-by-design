@@ -64,7 +64,6 @@ def user_info():
 
     The JWT Token is required and the 2fa is checked. Then the user info page is displayed accordingly.
     '''
-
     # Show user only security questions, that are not answered yet
     security_questions_show = list()
     security_questions_show.append("Please select a security question...")

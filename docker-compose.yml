@@ -5,13 +5,13 @@ services:
     restart: unless-stopped
     ports:
       - "443:443"
-      # - "8443:8443"
+      - "8443:8443"
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf  # Mounting nginx configuration file
       - ./certs:/etc/nginx/certs           # Mounting certificates
     depends_on:
       - customer-portal
-#      - metering-point-operator
+      - metering-point-operator
     networks:
       - secbydesign
 
@@ -25,15 +25,23 @@ services:
     networks:
       - secbydesign
 
-  # metering-point-operator:
-  #   build: ./Metering-Point-Operator
-  #   depends_on:
-  #     - customer-portal
-  #   networks:
-  #     - secbydesign
+  metering-point-operator:
+    build:
+      context: ./
+      dockerfile: ./Metering-Point-Operator/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      - customer-portal
+    environment:
+      - LOGGING_LEVEL=DEBUG
+      - FLASK_DEBUG=False
+      - LOCALDB=False
+    networks:
+      - secbydesign
 
   # electricity-meter:
   #   build: ./Electricity-Meter
+  #   restart: unless-stopped
   #   deploy:
   #     replicas: 3
   #   depends_on:

@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}
+2 FA Login
+{% endblock %}
+{% block header_title %}
+2 Factor Authentication Login
+{% endblock %}
+
+{% block content %}
+<section>
+    <h2>login with 2fa</h2>
+    <form method="post">
+        <label for="otp">OTP / 2FA Code:</label>
+        <input type="text" id="otp" name="otp" required>
+        <button type="submit">Login with 2 FA</button>
+    </form>
+</section>
+{% endblock %}
