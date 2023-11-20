@@ -130,8 +130,8 @@ def validate_2fa(client, otp: str):
         assert response.status_code == 302
         assert response.headers['Location'] == '/dashboard'
     except AssertionError:
-        logger.error(f"2fa otp: {otp} is invalid, generate new otp in 1 second")
-        sleep(1)
+        logger.error(f"2fa otp: {otp} is invalid, generate new otp in 3 second")
+        sleep(3)
         otp = TOTP(get_secret()).now()
         return validate_2fa(client, otp)
         
