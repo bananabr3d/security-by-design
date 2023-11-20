@@ -17,8 +17,22 @@ jobs:
 
     runs-on: ubuntu-latest
 
+    strategy:
+      matrix:
+        mongodb-version: ['4.4.14', '5.0.9']
+
     steps:
+    - name: Start MongoDB
+      uses: MongoCamp/mongodb-github-action@1.0.0
+      with:
+        mongodb-version: ${{ matrix.mongodb-version }}
+        mongodb-username: security
+        mongodb-pwd: iK6KSWoMdESqnC9d
+
+    - run: curl http://localhost:27017
+
     - uses: actions/checkout@v3
+
     - name: Set up Python 3.x
       uses: actions/setup-python@v3
       with:
@@ -33,6 +47,8 @@ jobs:
       run: |
         pip install pytest
         pytest --junitxml=jnuit/test-results.xml
+      env:
+        LOCALDB: "True"
     - name: Upload pytest test results
       uses: actions/upload-artifact@v3
       with:
