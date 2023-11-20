@@ -49,7 +49,6 @@ jobs:
         pytest --junitxml=jnuit/test-results.xml
       env:
         LOCALDB: "True"
-        GITHUB_ACTIONS: "True"
     - name: Upload pytest test results
       uses: actions/upload-artifact@v3
       with:
