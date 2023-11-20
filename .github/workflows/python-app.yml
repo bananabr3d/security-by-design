@@ -48,7 +48,7 @@ jobs:
         pip install pytest
         pytest --junitxml=jnuit/test-results.xml
       env:
-        LOCALDB: "True"
+        LOCALDB: True
     - name: Upload pytest test results
       uses: actions/upload-artifact@v3
       with:

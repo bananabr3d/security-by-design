@@ -1,5 +1,6 @@
 from pyotp import TOTP
 from app import logger
+from time import sleep
 
 
 secret = None
@@ -129,7 +130,8 @@ def validate_2fa(client, otp: str):
         assert response.status_code == 302
         assert response.headers['Location'] == '/dashboard'
     except AssertionError:
-        logger.error(f"2fa otp: {otp} is invalid, generate new otp")
+        logger.error(f"2fa otp: {otp} is invalid, generate new otp in 1 second")
+        sleep(1)
         otp = TOTP(get_secret()).now()
         return validate_2fa(client, otp)
         

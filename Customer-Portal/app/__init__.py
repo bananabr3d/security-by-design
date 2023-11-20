@@ -141,8 +141,8 @@ def db_connection() -> pymongo.database.Database or None:
 
     # MongoDB Atlas configuration and test connection 
     try:
-        if os.getenv("LOCALDB") == "true":
-            if os.getenv("GITHUB_ACTIONS") == "True" or os.getenv("GITHUB_ACTIONS") == True:
+        if os.getenv("LOCALDB") == "True" or os.getenv("LOCALDB") == True:
+            if os.getenv("GITHUB_ACTIONS") == "true":
                 logger.info("Connecting to local MongoDB (GitHub Actions)...")
                 client = pymongo.MongoClient(f"mongodb://{os.getenv('MONGODB_USER')}:{urllib.parse.quote_plus(os.getenv('MONGODB_PW'))}@localhost:27017/")
             else:
@@ -160,7 +160,7 @@ def db_connection() -> pymongo.database.Database or None:
         return db
     
     except Exception as e:
-        logger.debug(f"Error: e")
+        logger.debug(f"Error: {e}")
         return None
 
 # Try to connect to the MongoDB 5 times with 5 seconds delay after a error
