@@ -1,0 +1,57 @@
+# This workflow will install Python dependencies, run tests and lint with a single version of Python
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
+
+name: Python application
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        mongodb-version: ['4.4.14', '5.0.9']
+
+    steps:
+    - name: Start MongoDB
+      uses: MongoCamp/mongodb-github-action@1.0.0
+      with:
+        mongodb-version: ${{ matrix.mongodb-version }}
+        mongodb-username: security
+        mongodb-pwd: iK6KSWoMdESqnC9d
+
+    - run: curl http://localhost:27017
+
+    - uses: actions/checkout@v3
+
+    - name: Set up Python 3.x
+      uses: actions/setup-python@v3
+      with:
+        python-version: "3.x"
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        if [ -f Customer-Portal/requirements.txt ]; then pip install -r Customer-Portal/requirements.txt; fi
+        if [ -f Metering-Point-Operator/requirements.txt ]; then pip install -r Metering-Point-Operator/requirements.txt; fi
+        if [ -f Electricity-Meter/requirements.txt ]; then pip install -r Electricity-Meter/requirements.txt; fi
+    - name: Test with pytest
+      run: |
+        pip install pytest
+        pytest --junitxml=jnuit/test-results.xml
+      env:
+        LOCALDB: "True"
+    - name: Upload pytest test results
+      uses: actions/upload-artifact@v3
+      with:
+        name: pytest-results
+        path: junit/test-results.xml
+      if: ${{ always() }}
