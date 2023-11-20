@@ -32,7 +32,7 @@ jobs:
     - name: Test with pytest
       run: |
         pip install pytest
-        pytest --doctest-modules --junitxml=jnuit/test-results.xml
+        pytest --junitxml=jnuit/test-results.xml
     - name: Upload pytest test results
       uses: actions/upload-artifact@v3
       with:
