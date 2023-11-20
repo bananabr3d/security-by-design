@@ -142,11 +142,14 @@ def db_connection() -> pymongo.database.Database or None:
     # MongoDB Atlas configuration and test connection 
     try:
         if os.getenv("LOCALDB") == "True" or os.getenv("LOCALDB") == True:
+            if os.getenv("GITHUB_ACTIONS") == "True" or os.getenv("GITHUB_ACTIONS") == True:
+                logger.info("Connecting to local MongoDB (GitHub Actions)...")
+                client = pymongo.MongoClient(f"mongodb://{os.getenv('MONGODB_USER')}:{urllib.parse.quote_plus(os.getenv('MONGODB_PW'))}@localhost:27017/")
             logger.info("Connecting to local MongoDB...")
-            client = pymongo.MongoClient("mongodb://" + os.getenv("MONGODB_USER") + ":" + urllib.parse.quote_plus(os.getenv("MONGODB_PW")) + "@mongodb:27017/")
+            client = pymongo.MongoClient(f"mongodb://{os.getenv('MONGODB_USER')}:{urllib.parse.quote_plus(os.getenv('MONGODB_PW'))}@mongodb:27017/")
         else:
             logger.info("Connecting to MongoDB Atlas...")
-            client = pymongo.MongoClient("mongodb+srv://" + os.getenv("MONGODB_USER") + ":" + urllib.parse.quote_plus(os.getenv("MONGODB_PW")) + "@" + os.getenv("MONGODB_CLUSTER") + "." + os.getenv("MONGODB_SUBDOMAIN") + ".mongodb.net/?retryWrites=true&w=majority")
+            client = pymongo.MongoClient(f"mongodb+srv://{os.getenv('MONGODB_USER')}:{urllib.parse.quote_plus(os.getenv('MONGODB_PW'))}@{os.getenv('MONGODB_CLUSTER')}.{os.getenv('MONGODB_SUBDOMAIN')}.mongodb.net/?retryWrites=true&w=majority")
 
         db = client.get_database('webapp')
 
