@@ -83,7 +83,7 @@ def set_logger(logger:logging.Logger, format:logging.Formatter, log_level:str="D
     file_handler.setFormatter(format)
     logger.addHandler(consoleHandler)
     logger.addHandler(file_handler)
-    logger.debug('###  Started Customer-Portal  ###')
+    logger.debug('###  Started Server  ###')
     return logger
 
 # Establish logging
@@ -156,7 +156,7 @@ def db_connection() -> pymongo.database.Database or None:
         return db
     
     except Exception as e:
-        logger.debug("Error: " + str(e))
+        logger.debug(f"Error: e")
         return None
 
 # Try to connect to the MongoDB 5 times with 5 seconds delay after a error
@@ -169,7 +169,7 @@ for i in range(5):
             logger.info("DB connection established")
             break
     except:
-        logger.error("DB connection Error. Try another " + str(5-i) + " times...")
+        logger.error(f"DB connection Error. Try another {5-i} times...")
         sleep(5)
         
     if i == 4:

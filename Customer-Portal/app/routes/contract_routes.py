@@ -26,14 +26,14 @@ def add_contract():
 
     # Check if contract with electricity_meter_id already exists
     if Contract.find_contract_by_electricity_meter_id(db=db, electricity_meter_id=electricity_meter_id) != None:
-        logger.warning("Contract with electricity_meter_id %s already exists.", electricity_meter_id)
+        logger.warning(f"Contract with electricity_meter_id: '{electricity_meter_id}' already exists.")
         flash("A contract with the provided Electricity Meter ID already exists")
         return redirect(url_for('dashboard'))
     
     else:
         contract = Contract(db=db, electricity_meter_id=electricity_meter_id)
         contract.save(db=db)
-        logger.debug("Contract with Electricity Meter ID '%s' successfully created.", electricity_meter_id)
+        logger.debug(f"Contract with Electricity Meter ID '{electricity_meter_id}' successfully created.")
 
         # Add contract to user
         user = load_user(db=db, user_id=get_jwt_identity())

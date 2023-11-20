@@ -22,7 +22,7 @@ def load_contract_data(user: User, db: pymongo.database.Database) -> list:
         if contract != None:
             contract_data_list.append(contract)
         else:
-            logger.warning("The contract with the ID %s of the user %s could not be found.", contract_id, user.get_id())                                    
+            logger.warning(f"The contract with the ID {contract_id} of the user {user.get_id()} could not be found.")                                    
 
     return contract_data_list
 

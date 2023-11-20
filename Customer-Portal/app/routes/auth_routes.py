@@ -157,7 +157,7 @@ def register_post():
 
     if password != password2:
         logger.warning("Different passwords provided during the registration")
-        logger.debug("User: " + username + "provided different passwords during the registration")
+        logger.debug(f"User: '{username}' provided different passwords during the registration")
         flash('Passwords dont match', 'failed')
         return redirect(url_for("register"))
     
@@ -228,7 +228,7 @@ def login_post():
         
     else:
         logger.warning("Username could not be found")
-        logger.debug("User: '" + username + "' could not be found during the login")
+        logger.debug(f"User: '{username}' could not be found during the login")
         flash('Wrong username or password', 'failed')
         return redirect(url_for("login"))
     
@@ -313,7 +313,7 @@ def reset_password_post():
     g.user = User.find_by_email(db=db, email=request.form['email'])
     if g.user == None:
         logger.warning("Email could not be found")
-        logger.debug("User: '" + request.form['email'] + "' could not be found during the reset password")
+        logger.debug(f"User: '{request.form['email']}' could not be found during the reset password")
         flash('Email could not be found', 'failed')
         return redirect(url_for('reset_password'))
     
@@ -328,7 +328,7 @@ def reset_password_post():
 
     if bcrypt.check_password_hash(hashed_answer, request.form['answer']) == False:
         flash('Your answer is incorrect', 'failed')
-        logger.debug("User: '" + g.user.get_attribute("username") + "' provided a wrong answer to the security question during the reset password")
+        logger.debug(f"User: '{g.user.get_attribute('username')}' provided a wrong answer to the security question during the reset password")
         return redirect(url_for('reset_password'))
 
     # Set new password
@@ -336,7 +336,7 @@ def reset_password_post():
     g.user.update_attribute(db, attribute="password", value=hashed_password)
 
     flash('Your password has been changed!', 'success')
-    logger.debug("User: '" + g.user.get_attribute("username") + "' has successfully changed its password")
+    logger.debug(f"User: '{g.user.get_attribute('username')}' has successfully changed its password")
     return redirect(url_for('login'))
 
 
@@ -374,7 +374,7 @@ def add_security_question():
     g.user.add_security_question(db=db, question=request.form['security_question'], answer=hashed_answer)
 
     flash('Your security question has been added!', 'success')
-    logger.debug("User: '" + g.user.get_attribute("username") + "' has successfully added a security question")
+    logger.debug(f"User: '{g.user.get_attribute('username')}' has successfully added a security question")
     return redirect(url_for('user_info'))
 
 
@@ -409,7 +409,7 @@ def set_new_password():
     # Check if current password is correct
     if bcrypt.check_password_hash(g.user.get_attribute('password'), request.form['old_password']) == False:
         flash('Current password is incorrect', 'failed')
-        logger.debug("User: '" + g.user.get_attribute("username") + "' provided a wrong old password during the set new password")
+        logger.debug(f"User: '{g.user.get_attribute('username')}' provided a wrong old password during the set new password")
         return redirect(url_for('dashboard'))
 
     # Set new password
@@ -417,7 +417,7 @@ def set_new_password():
     g.user.update_attribute(db, attribute="password", value=hashed_password)
 
     flash('Your password has been changed!', 'success')
-    logger.debug("User: '" + g.user.get_attribute("username") + "' has successfully changed its password")
+    logger.debug(f"User: '{g.user.get_attribute('username')}' has successfully changed its password")
 
     # Unset JWT and redirect to login
     resp = make_response(redirect(url_for('login')))
@@ -502,7 +502,7 @@ def refresh_expiring_jwts(response):
                     set_access_cookies(response=response, encoded_access_token=access_token)
 
             except Exception as e:
-                logger.error("Error: " + str(e))
+                logger.error(f"Error: e")
                 flash("Internal Server Error, redirect to home", "error")
                 return redirect(url_for('home')), 500
                 

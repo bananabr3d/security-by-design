@@ -83,7 +83,7 @@ def errorhandler_page_not_found(errorhandler_error):
     try: # last resort error handling
         return render_template('PageNotFound.html', jwt_authenticated=g.jwt_authenticated, twofa_activated=g.twofa_activated, twofa_authenticated=g.twofa_authenticated), 404
     except Exception as e:
-        logger.error("Error: " + str(e))
+        logger.error(f"Error: e")
         flash("Internal Server Error, redirect to home", "error")
         return redirect(url_for('home')), 500
     
