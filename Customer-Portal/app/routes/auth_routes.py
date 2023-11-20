@@ -14,7 +14,7 @@ from flask_jwt_extended import (
 from app import app, logger, db, bcrypt, jwt, Invalid2FA, ValidJWT, security_questions
 
 # Import models
-from app.models.user import User
+from app.models.user import User, load_user
 
 # Import datetime for cookie expiration handling
 from datetime import datetime, timedelta, timezone
@@ -423,6 +423,50 @@ def set_new_password():
     resp = make_response(redirect(url_for('login')))
     unset_jwt_cookies(resp)
     return resp
+
+
+# ===== Before Request =====
+@app.before_request
+@jwt_required(optional=True)
+def before_request_auth():
+    '''
+    This function is executed before each request.
+
+    It logs the request method and the request path. It also checks wether the user has a valid JWT and 2fa authentication and stores the result in the g object.
+    '''
+    try: # last resort error handling
+
+        g.jwt_authenticated = False
+        g.twofa_activated = False
+        g.twofa_authenticated = False
+        g.user = None
+
+        # Check if user has a valid JWT
+        if get_jwt_identity():
+            logger.debug("User has a valid JWT")
+            g.jwt_authenticated = True
+            g.user = load_user(db=db, user_id=get_jwt_identity())
+
+            twofa_activated = g.user.get_attribute('twofa_activated')
+
+            # Check if user has 2fa activated
+            if twofa_activated == "True":
+                logger.debug("User has 2fa activated")
+                g.twofa_activated = True
+                
+                # Check if user is 2fa authenticated
+                
+                # Get the current time and the timestamp of when the user authenticated with 2fa
+                date_now = datetime.strptime(str(datetime.now())[:19], '%Y-%m-%d %H:%M:%S')
+                date_2fa = datetime.strptime(get_jwt()["2fa_timestamp"], '%a, %d %b %Y %H:%M:%S %Z')
+
+                # Check if the 2fa timestamp is older than time specified in environment variable
+                if (date_now - date_2fa) <= timedelta(minutes=int(os.getenv("2FA_EXPIRATION_MINUTES"))):
+                    logger.debug("User is 2fa authenticated")
+                    g.twofa_authenticated = True
+            
+    except Exception as e:
+        logger.error(f"Error in before_request: {e}")
 
 
 # === Refresh JWT ===
