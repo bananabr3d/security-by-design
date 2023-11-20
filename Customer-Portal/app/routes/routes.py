@@ -27,7 +27,7 @@ def home():
     return render_template('index.html', jwt_authenticated=g.jwt_authenticated, twofa_activated=g.twofa_activated, twofa_authenticated=g.twofa_authenticated)
 
 # === Dashboard ===
-@app.route('/dashboard', methods=['GET'], endpoint='dashboard')
+@app.route('/dashboard', methods=['GET'])
 @jwt_required() # jwt_required() requires a valid JWT to access the route
 def dashboard():
     '''
@@ -55,7 +55,7 @@ def dashboard():
     return render_template('dashboard.html', jwt_authenticated=g.jwt_authenticated, twofa_activated=g.twofa_activated, twofa_authenticated=g.twofa_authenticated, username=g.user.get_attribute('username'), contract_list=transformed_contract_list)
     
 # === User Info Page ===
-@app.route('/user_info', methods=['GET'], endpoint='user_info')
+@app.route('/user_info', methods=['GET'])
 @jwt_required()
 def user_info():
     '''

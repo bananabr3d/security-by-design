@@ -5,7 +5,7 @@
 # Packages for Flask
 from flask import request, render_template, redirect, url_for, flash, make_response, g, Response
 from flask_jwt_extended import (
-    create_access_token, get_jwt_identity, jwt_required, set_access_cookies, unset_jwt_cookies, get_jwt)
+    create_access_token, jwt_required, set_access_cookies, unset_jwt_cookies)
 
 # Import app, logger, db, bcrypt object, jwt object, exceptions and models from app package
 from app import app, logger, db, bcrypt, jwt, Inactive2FA, Active2FA, Valid2FA
@@ -18,7 +18,7 @@ import pyotp, io, qrcode, random
 from base64 import b64encode
 
 # Import datetime for cookie expiration handling
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 
 # Import regex for input validation
 import re
@@ -76,7 +76,7 @@ def verify2fa(user: User, otp: str) -> bool:
 # ===== Routes =====
 
 # === Register 2FA ===
-@app.route('/register/2fa', methods=['GET'], endpoint='register_2fa')
+@app.route('/register/2fa', methods=['GET'])
 @jwt_required()
 def register_2fa():
     '''
@@ -126,7 +126,7 @@ def register_2fa():
 
     return render_template('register_2fa.html', secret=secret, img_qrcode_data=img_qrcode_data, jwt_authenticated=g.jwt_authenticated, twofa_activated=g.twofa_activated)
 
-@app.route('/register/2fa', methods=['POST'], endpoint='register_2fa_post')
+@app.route('/register/2fa', methods=['POST'])
 @jwt_required()
 def register_2fa_post():
     '''
@@ -179,7 +179,7 @@ def register_2fa_post():
     
 
 # === Login 2FA ===      
-@app.route('/login/2fa', methods=['GET'], endpoint='login_2fa')
+@app.route('/login/2fa', methods=['GET'])
 @jwt_required()
 def login_2fa():
     '''
@@ -202,7 +202,7 @@ def login_2fa():
 
     return render_template('login_2fa.html', jwt_authenticated=g.jwt_authenticated, twofa_activated=g.twofa_activated)
     
-@app.route('/login/2fa', methods=['POST'], endpoint='login_2fa_post')
+@app.route('/login/2fa', methods=['POST'])
 @jwt_required()
 def login_2fa_post():
     '''
@@ -251,7 +251,7 @@ def login_2fa_post():
 
 
 # === Reset 2FA ===     
-@app.route('/reset-2fa', methods=['POST'], endpoint='reset_2fa')
+@app.route('/reset-2fa', methods=['POST'])
 @jwt_required()
 def reset_2fa():
     '''
