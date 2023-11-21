@@ -425,6 +425,44 @@ def set_new_password():
     return resp
 
 
+# === Delete User ===
+@app.route('/delete-user', methods=['POST'])
+@jwt_required(fresh=True)
+def delete_user():
+    '''
+    This function handles the delete_user route and can only be accessed with a fresh JWT Token.
+
+    Raise Invalid2FA if the user is not 2fa authenticated.
+
+    Returns redirect to dashboard and message if user couldnt be deleted.
+
+    Returns redirect to login, unset JWT and flash message if user was successfully deleted. (+ Deletes the user in the database)
+    '''
+
+    # Check if user has 2fa activated, then 2fa authenticated is needed
+    if g.twofa_activated and not g.twofa_authenticated:
+        logger.warning(f"User: '{g.user.get_attribute('username')}' has 2fa activated, but is not 2fa authenticated")
+        flash('You have 2fa activated, you need to authenticate with 2fa to delete your account', 'failed')
+        raise Invalid2FA
+    
+    # Delete user
+    g.user.delete(db=db)
+
+    # Check if user is deleted
+    if load_user(db=db, user_id=g.user.get_id()) != None:
+        logger.warning(f"User: '{g.user.get_attribute('username')}' could not be deleted")
+        flash('User could not be deleted', 'failed')
+        return redirect(url_for('dashboard'))
+    
+    logger.debug(f"User: '{g.user.get_attribute('username')}' has successfully deleted its account")
+
+    # Unset JWT and redirect to login
+    resp = make_response(redirect(url_for('login')))
+    unset_jwt_cookies(resp)
+    flash('Your account has been deleted!', 'success')
+    return resp
+
+
 # ===== Before Request =====
 @app.before_request
 @jwt_required(optional=True)
