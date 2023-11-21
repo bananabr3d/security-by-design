@@ -8,7 +8,7 @@ from app.models.contract import Contract
 from app.models.user import load_user
 
 @app.route('/add-contract', methods=['POST'])
-@jwt_required()
+@jwt_required(fresh=True)
 def add_contract():
     '''
     This function handles the add-contract page of the web application. The JWT Token is required and the 2fa is checked. 

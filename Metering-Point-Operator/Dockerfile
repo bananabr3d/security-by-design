@@ -5,9 +5,6 @@ WORKDIR /app
 # Copy Strength-Meter
 COPY ./Customer-Portal/app/static/password-strength-meter.js ./app/static/password-strength-meter.js
 
-# Copy User Model
-COPY ./Customer-Portal/app/models/user.py ./app/models/user.py
-
 # Copy routes
 COPY ./Customer-Portal/app/routes/error_routes.py ./app/routes/error_routes.py
 COPY ./Customer-Portal/app/routes/auth_routes.py ./app/routes/auth_routes.py

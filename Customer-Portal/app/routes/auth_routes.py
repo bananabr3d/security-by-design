@@ -455,6 +455,44 @@ def set_new_password():
     return resp
 
 
+# === Delete User ===
+@app.route('/delete-user', methods=['POST'])
+@jwt_required(fresh=True)
+def delete_user():
+    '''
+    This function handles the delete_user route and can only be accessed with a fresh JWT Token.
+
+    Raise Invalid2FA if the user is not 2fa authenticated.
+
+    Returns redirect to dashboard and message if user couldnt be deleted.
+
+    Returns redirect to login, unset JWT and flash message if user was successfully deleted. (+ Deletes the user in the database)
+    '''
+
+    # Check if user has 2fa activated, then 2fa authenticated is needed
+    if g.twofa_activated and not g.twofa_authenticated:
+        logger.warning(f"User: '{g.user.get_attribute('username')}' has 2fa activated, but is not 2fa authenticated")
+        flash('You have 2fa activated, you need to authenticate with 2fa to delete your account', 'failed')
+        raise Invalid2FA
+    
+    # Delete user
+    g.user.delete(db=db)
+
+    # Check if user is deleted
+    if load_user(db=db, user_id=g.user.get_id()) != None:
+        logger.warning(f"User: '{g.user.get_attribute('username')}' could not be deleted")
+        flash('User could not be deleted', 'failed')
+        return redirect(url_for('dashboard'))
+    
+    logger.debug(f"User: '{g.user.get_attribute('username')}' has successfully deleted its account")
+
+    # Unset JWT and redirect to login
+    resp = make_response(redirect(url_for('login')))
+    unset_jwt_cookies(resp)
+    flash('Your account has been deleted!', 'success')
+    return resp
+
+
 # ===== Before Request =====
 @app.before_request
 @jwt_required(optional=True)
@@ -484,16 +522,17 @@ def before_request_auth():
                 logger.debug("User has 2fa activated")
                 g.twofa_activated = True
                 
-                # Check if user is 2fa authenticated
-                
-                # Get the current time and the timestamp of when the user authenticated with 2fa
-                date_now = datetime.strptime(str(datetime.now())[:19], '%Y-%m-%d %H:%M:%S')
-                date_2fa = datetime.strptime(get_jwt()["2fa_timestamp"], '%a, %d %b %Y %H:%M:%S %Z')
+                if "2fa_timestamp" in get_jwt():
+                    # Check if user is 2fa authenticated
+                    
+                    # Get the current time and the timestamp of when the user authenticated with 2fa
+                    date_now = datetime.strptime(str(datetime.now())[:19], '%Y-%m-%d %H:%M:%S')
+                    date_2fa = datetime.strptime(get_jwt()["2fa_timestamp"], '%a, %d %b %Y %H:%M:%S %Z')
 
-                # Check if the 2fa timestamp is older than time specified in environment variable
-                if (date_now - date_2fa) <= timedelta(minutes=int(os.getenv("2FA_EXPIRATION_MINUTES"))):
-                    logger.debug("User is 2fa authenticated")
-                    g.twofa_authenticated = True
+                    # Check if the 2fa timestamp is older than time specified in environment variable
+                    if (date_now - date_2fa) <= timedelta(minutes=int(os.getenv("2FA_EXPIRATION_MINUTES"))):
+                        logger.debug("User is 2fa authenticated")
+                        g.twofa_authenticated = True
             
     except Exception as e:
         logger.error(f"Error in before_request: {e}")
@@ -545,6 +584,20 @@ def refresh_expiring_jwts(response):
 
 # === Error handling ===
 
+# Error handler for InvalidSignatureError (when a JWT was provided from the same endpoint but other secret (e.g. CP <-> MPO))
+@jwt.invalid_token_loader
+def invalid_token_callback(error):
+    '''
+    This function handles the invalid_token_callback.
+
+    This function redirects the user to the login page and flashes a error message.
+    '''
+    resp = make_response(redirect(url_for('login')))
+    flash('Invalid token, please log in again', 'error')
+    logger.debug("User has a invalid token")
+    unset_jwt_cookies(response=resp)
+    return resp
+
 # Error handler for expired JWT
 @jwt.expired_token_loader
 def expired_token_callback(jwt_header, jwt_payload):
@@ -572,14 +625,14 @@ def custom_unauthorized_response(callback):
     return redirect(url_for('login'))
 
 # Error handler for fresh JWT needed
-@jwt.needs_fresh_token_loader #TODO
+@jwt.needs_fresh_token_loader
 def token_not_fresh_callback(jwt_header, jwt_payload):
     '''
     This function handles the token_not_fresh_callback, so the user needs a fresh access token to to this action.
 
     This function redirects the user to the login page in order to log in again and flashes a error message.
     '''
-    flash('You have to log in again in order to do this', 'error')
+    flash('You need a fresh token. You have to log in again in order to do this', 'error')
     logger.debug("User has a unfresh token, but needs a fresh one")
     resp = make_response(redirect(url_for('login')))
     unset_jwt_cookies(response=resp)
