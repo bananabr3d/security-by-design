@@ -492,16 +492,17 @@ def before_request_auth():
                 logger.debug("User has 2fa activated")
                 g.twofa_activated = True
                 
-                # Check if user is 2fa authenticated
-                
-                # Get the current time and the timestamp of when the user authenticated with 2fa
-                date_now = datetime.strptime(str(datetime.now())[:19], '%Y-%m-%d %H:%M:%S')
-                date_2fa = datetime.strptime(get_jwt()["2fa_timestamp"], '%a, %d %b %Y %H:%M:%S %Z')
+                if "2fa_timestamp" in get_jwt():
+                    # Check if user is 2fa authenticated
+                    
+                    # Get the current time and the timestamp of when the user authenticated with 2fa
+                    date_now = datetime.strptime(str(datetime.now())[:19], '%Y-%m-%d %H:%M:%S')
+                    date_2fa = datetime.strptime(get_jwt()["2fa_timestamp"], '%a, %d %b %Y %H:%M:%S %Z')
 
-                # Check if the 2fa timestamp is older than time specified in environment variable
-                if (date_now - date_2fa) <= timedelta(minutes=int(os.getenv("2FA_EXPIRATION_MINUTES"))):
-                    logger.debug("User is 2fa authenticated")
-                    g.twofa_authenticated = True
+                    # Check if the 2fa timestamp is older than time specified in environment variable
+                    if (date_now - date_2fa) <= timedelta(minutes=int(os.getenv("2FA_EXPIRATION_MINUTES"))):
+                        logger.debug("User is 2fa authenticated")
+                        g.twofa_authenticated = True
             
     except Exception as e:
         logger.error(f"Error in before_request: {e}")
@@ -552,6 +553,20 @@ def refresh_expiring_jwts(response):
 
 
 # === Error handling ===
+
+# Error handler for InvalidSignatureError (when a JWT was provided from the same endpoint but other secret (e.g. CP <-> MPO))
+@jwt.invalid_token_loader
+def invalid_token_callback(error):
+    '''
+    This function handles the invalid_token_callback.
+
+    This function redirects the user to the login page and flashes a error message.
+    '''
+    resp = make_response(redirect(url_for('login')))
+    flash('Invalid token, please log in again', 'error')
+    logger.debug("User has a invalid token")
+    unset_jwt_cookies(response=resp)
+    return resp
 
 # Error handler for expired JWT
 @jwt.expired_token_loader
