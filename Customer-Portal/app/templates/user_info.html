@@ -14,6 +14,18 @@ User Information
     <p>Username: {{ username }}</p>
     <p>Email: {{ email }}</p>
 
+    <!-- Export user account information Button + div to show json output with correct indentation -->
+    <div>
+        <form method="get" action="/export-user">
+            <button type="submit">Export User Information</button>
+        </form>
+        {% if user_information_json %}
+        <div>
+            <pre id="user_json_output">{{ user_information_json }}</pre>
+        </div>
+        {% endif %}
+    </div>
+
     <!-- Set new password by sending old, new and new2 -->
     <div> <!-- Set new password is only available with 2fa authentication atm -->
         <form method="post" action="/set-new-password">

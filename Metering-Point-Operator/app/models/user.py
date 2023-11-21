@@ -33,6 +33,21 @@ class User():
     def get_security_questions(self) -> dict:
         return self.user_data['security_questions']
     
+    def get_all_key_values(self) -> dict:
+        '''
+        Returns a dict with all key value pairs of the user_data dict except _id, password, twofa_secret, backup_codes, security_questions
+        '''
+        temp_user_data = self.user_data.copy() # Create a copy of user_data to not change the original dict
+
+        # Remove _id, password, twofa_secret, backup_codes, security_questions from user_data
+        temp_user_data.pop('_id')
+        temp_user_data.pop('password')
+        temp_user_data.pop('twofa_secret')
+        temp_user_data.pop('backup_codes')
+        temp_user_data.pop('security_questions')
+
+        return temp_user_data
+    
     def update_attribute(self, db: pymongo.database.Database, attribute: str, value: str) -> None:
         if self.get_attribute(attribute=attribute) != None: # Check if user has the attribute
             try:

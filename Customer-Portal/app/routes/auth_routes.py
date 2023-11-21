@@ -492,6 +492,33 @@ def delete_user():
     flash('Your account has been deleted!', 'success')
     return resp
 
+# === Export user account information ===
+@app.route('/export-user', methods=['GET'])
+@jwt_required(fresh=True)
+def export_user():
+    '''
+    This function handles the export_user route and can only be accessed with a fresh JWT Token.
+
+    Raise Invalid2FA if the user is not 2fa authenticated.
+
+    Returns the export_user.html template.
+    '''
+
+    # Check if user has 2fa activated, then 2fa authenticated is needed
+    if g.twofa_activated and not g.twofa_authenticated:
+        logger.warning(f"User: '{g.user.get_attribute('username')}' has 2fa activated, but is not 2fa authenticated")
+        flash('You have 2fa activated, you need to authenticate with 2fa to export your account information', 'failed')
+        raise Invalid2FA
+    
+    # get user data from user object
+    user_data = g.user.get_all_key_values()
+
+    # render export_user.html with user_data
+    #return render_template('export_user.html', user_data=user_data)
+
+    # return response with json formatted user_data
+    return user_data
+
 
 # ===== Before Request =====
 @app.before_request
