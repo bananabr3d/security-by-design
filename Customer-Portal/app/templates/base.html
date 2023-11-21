@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{% endblock %} - VoltWave</title>
+    <link rel="shortcut icon" href="../static/Favicon-32x32.ico" sizes="310x310">
+    <link rel="shortcut icon" href="../static/Favicon-16x16.ico" sizes="96x96">
+    <link rel="shortcut icon" href="../static/Favicon-32x32.ico" sizes="32x32">
+    <link rel="shortcut icon" href="../static/Favicon-16x16.ico" sizes="16x16">
+    <link rel="stylesheet" href="../static/style.css">
+    <script type="text/javascript" src="../static/logo.js"></script>
+    <script type="text/javascript" src="../static/cookiebanner.js"></script>
+    <script type="text/javascript" src="../static/password-strength-meter.js"></script>
+</head>
+<body>
+    <header>
+        <h1>{% block header_title required %} {% endblock %}</h1>
+        <canvas></canvas>
+    </header>
+    <nav>
+        <ul>
+            <li><a href="/">Start</a></li>
+            {% if not jwt_authenticated %}
+                <li><a href="/register">Register</a></li>
+                <li><a href="/login">Login</a></li>
+            {% elif jwt_authenticated and not twofa_authenticated %}
+                {% if not twofa_activated %}
+                    <li><a href="/register/2fa">Register 2FA</a></li>
+                {% else %}
+                    <li><a href="/login/2fa">Login 2FA</a></li>
+                {% endif %}
+            {% elif jwt_authenticated and twofa_authenticated %}
+                <li><a href="/dashboard">Dashboard</a></li>
+            {% endif %}
+
+            {% if jwt_authenticated %}
+                <li><a href="/user_info">User Information</a></li>
+                <li><a href="/logout">Logout</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <ul class=flashes>
+            {% for category, message in messages %}
+            <li class="{{ category }}">{{ message }}</li>
+            {% endfor %}
+            </ul>
+        {% endif %}
+    {% endwith %}
+    <div id="cookie-banner" class="cookie-banner">
+        <div class="cookie-content">
+            <p>Welcome to VoltWave GMBH und CO KG AG, your trusted customer portal for metering point operator. We use cookies to enhance your experience and provide essential functionality. By using our website, you consent to the use of cookies in accordance with our <a href="/privacy-policy">Privacy Policy</a>.</p>
+            <button id="accept-cookies" class="accept-cookies">Accept</button>
+        </div>
+    </div>
+    <main>
+        {% block content %} {% endblock %}
+    </main>
+    <footer>
+        <p>&copy; 2023 VoltWave GMBH und CO KG AG</p>
+    </footer>
+</body>
+</html>

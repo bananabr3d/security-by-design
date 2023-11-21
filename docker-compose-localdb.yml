@@ -1,0 +1,62 @@
+version: '3'
+services:
+  nginx:
+    image: nginx:latest
+    restart: unless-stopped
+    ports:
+      - "443:443"
+      - "8443:8443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf  # Mounting nginx configuration file
+      - ./certs:/etc/nginx/certs           # Mounting certificates
+    depends_on:
+      - customer-portal
+      - metering-point-operator
+    networks:
+      - secbydesign
+
+  customer-portal:
+    depends_on:
+      - mongodb
+    build: ./Customer-Portal
+    restart: unless-stopped
+    environment:
+      - LOGGING_LEVEL=DEBUG
+      - FLASK_DEBUG=True
+      - LOCALDB=True
+    networks:
+      - secbydesign
+
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    env_file: ./mongodb.env
+    networks:
+      - secbydesign
+
+  metering-point-operator:
+    build:
+      context: ./
+      dockerfile: ./Metering-Point-Operator/Dockerfile
+    restart: unless-stopped
+    environment:
+      - LOGGING_LEVEL=DEBUG
+      - FLASK_DEBUG=True
+      - LOCALDB=True
+    depends_on:
+      - customer-portal
+    networks:
+      - secbydesign
+
+  # electricity-meter:
+  #   build: ./Electricity-Meter
+  #   deploy:
+  #     replicas: 3
+  #   depends_on:
+  #     - metering-point-operator
+  #   networks:
+  #     - secbydesign
+
+networks:
+  secbydesign:
+    driver: bridge

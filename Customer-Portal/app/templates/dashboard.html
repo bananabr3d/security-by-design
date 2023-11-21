@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block header_title %}
+{% block title %}
+Dashboard
+{% endblock %}
+{% endblock %}
+
+
+{% block content %}
+<section>
+  <h2>Hello, {{ username }}!</h2>
+  <h3>Contracts</h3>
+  <div class="contract-list">
+    {% for contract in contract_list %}
+      <div class="contract">
+        <h5>Contract ID: {{ contract._id }}</h3>
+        <h6>Electricity Meter ID: {{ contract.electricity_meter_id }}</h6>
+          <!-- Add more contract details when we need them  -->
+      </div>
+    {% endfor %}
+  </div>
+  <!--TEST START-->
+  <div>
+    <!-- Add a contract with em-id -->
+    <form method="post" action="/add-contract">
+      <label for="">Electricity Meter ID</label>
+      <input type="text" id="electricity_meter_id" name="electricity_meter_id">
+      <button type="submit">Add Contract</button>
+    </form>
+    <!-- Reset 2FA Button -->
+    <form method="post" action="/reset-2fa">
+      <button type="submit">Reset 2FA</button>
+    </form>
+  </div>
+  <!--TEST END-->
+</section>
+{% endblock %}
