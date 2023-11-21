@@ -60,7 +60,14 @@ User Information
             <input type="text" id="security_answer" name="answer" required>
             <button type="submit">Add Security Question</button>
         </form>
-
+    </div>
+    <!-- Remove security question TODO -->
+    <!-- Delete user -->
+    <div>
+        <form method="post" action="/delete-user">
+            <button type="submit">Delete Account</button>
+        </form>
+    </div>
     <h2>Two-Factor Authentication</h2>
     <p>2FA Activated: {% if twofa_activated %}Yes{% else %}No{% endif %}</p> <!-- TODO Mysteriously is always "True", even if user.get_attribute gives "False" -->
     <p>2FA Authenticated: {% if twofa_authenticated %}Yes{% else %}No{% endif %}</p>

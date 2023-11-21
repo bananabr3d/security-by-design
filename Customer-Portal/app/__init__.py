@@ -83,7 +83,7 @@ def set_logger(logger:logging.Logger, format:logging.Formatter, log_level:str="D
     file_handler.setFormatter(format)
     logger.addHandler(consoleHandler)
     logger.addHandler(file_handler)
-    logger.debug('###  Started Customer-Portal  ###')
+    logger.debug('###  Started Server  ###')
     return logger
 
 # Establish logging
@@ -141,12 +141,16 @@ def db_connection() -> pymongo.database.Database or None:
 
     # MongoDB Atlas configuration and test connection 
     try:
-        if os.getenv("LOCALDB") == "True":
-            logger.info("Connecting to local MongoDB...")
-            client = pymongo.MongoClient("mongodb://" + os.getenv("MONGODB_USER") + ":" + urllib.parse.quote_plus(os.getenv("MONGODB_PW")) + "@mongodb:27017/")
+        if os.getenv("LOCALDB") == "True" or os.getenv("LOCALDB") == True:
+            if os.getenv("GITHUB_ACTIONS") == "true":
+                logger.info("Connecting to local MongoDB (GitHub Actions)...")
+                client = pymongo.MongoClient(f"mongodb://{os.getenv('MONGODB_USER')}:{urllib.parse.quote_plus(os.getenv('MONGODB_PW'))}@localhost:27017/")
+            else:
+                logger.info("Connecting to local MongoDB...")
+                client = pymongo.MongoClient(f"mongodb://{os.getenv('MONGODB_USER')}:{urllib.parse.quote_plus(os.getenv('MONGODB_PW'))}@mongodb:27017/")
         else:
             logger.info("Connecting to MongoDB Atlas...")
-            client = pymongo.MongoClient("mongodb+srv://" + os.getenv("MONGODB_USER") + ":" + urllib.parse.quote_plus(os.getenv("MONGODB_PW")) + "@" + os.getenv("MONGODB_CLUSTER") + "." + os.getenv("MONGODB_SUBDOMAIN") + ".mongodb.net/?retryWrites=true&w=majority")
+            client = pymongo.MongoClient(f"mongodb+srv://{os.getenv('MONGODB_USER')}:{urllib.parse.quote_plus(os.getenv('MONGODB_PW'))}@{os.getenv('MONGODB_CLUSTER')}.{os.getenv('MONGODB_SUBDOMAIN')}.mongodb.net/?retryWrites=true&w=majority")
 
         db = client.get_database('webapp')
 
@@ -156,7 +160,7 @@ def db_connection() -> pymongo.database.Database or None:
         return db
     
     except Exception as e:
-        logger.debug("Error: " + str(e))
+        logger.debug(f"Error: {e}")
         return None
 
 # Try to connect to the MongoDB 5 times with 5 seconds delay after a error
@@ -169,7 +173,7 @@ for i in range(5):
             logger.info("DB connection established")
             break
     except:
-        logger.error("DB connection Error. Try another " + str(5-i) + " times...")
+        logger.error(f"DB connection Error. Try another {5-i} times...")
         sleep(5)
         
     if i == 4:
@@ -180,3 +184,5 @@ bcrypt = Bcrypt(app)
 
 # Security Questions
 security_questions = ["What is your mother's maiden name?", "What is the name of your first pet?", "What is your favorite color?", "What is the name of the city where you were born?", "What is your favorite movie?"]
+
+from app.routes import auth_routes, error_routes, auth_routes_2fa

@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}{% endblock %} - VoltWave</title>
-    <link rel="shortcut icon" href="../static/Favicon-32x32.ico" sizes="310x310">
+    <title>{% block title %}{% endblock %} - VoltWave Systems</title>
+    <!-- <link rel="shortcut icon" href="../static/Favicon-32x32.ico" sizes="310x310">
     <link rel="shortcut icon" href="../static/Favicon-16x16.ico" sizes="96x96">
     <link rel="shortcut icon" href="../static/Favicon-32x32.ico" sizes="32x32">
-    <link rel="shortcut icon" href="../static/Favicon-16x16.ico" sizes="16x16">
+    <link rel="shortcut icon" href="../static/Favicon-16x16.ico" sizes="16x16"> -->
     <link rel="stylesheet" href="../static/style.css">
-    <script type="text/javascript" src="../static/logo.js"></script>
-    <script type="text/javascript" src="../static/cookiebanner.js"></script>
+    <!-- <script type="text/javascript" src="../static/logo.js"></script>
+    <script type="text/javascript" src="../static/cookiebanner.js"></script> -->
     <script type="text/javascript" src="../static/password-strength-meter.js"></script>
 </head>
 <body>
@@ -40,21 +40,21 @@
             {% endif %}
         </ul>
     </nav>
-    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% with messages = get_flashed_messages() %}
         {% if messages %}
             <ul class=flashes>
-            {% for category, message in messages %}
-            <li class="{{ category }}">{{ message }}</li>
+            {% for message in messages %}
+            <li>{{ message }}</li>
             {% endfor %}
             </ul>
         {% endif %}
     {% endwith %}
-    <div id="cookie-banner" class="cookie-banner">
+    <!-- <div id="cookie-banner" class="cookie-banner">
         <div class="cookie-content">
             <p>Welcome to VoltWave GMBH und CO KG AG, your trusted customer portal for metering point operator. We use cookies to enhance your experience and provide essential functionality. By using our website, you consent to the use of cookies in accordance with our <a href="/privacy-policy">Privacy Policy</a>.</p>
             <button id="accept-cookies" class="accept-cookies">Accept</button>
         </div>
-    </div>
+    </div> -->
     <main>
         {% block content %} {% endblock %}
     </main>

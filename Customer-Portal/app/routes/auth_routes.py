@@ -14,7 +14,7 @@ from flask_jwt_extended import (
 from app import app, logger, db, bcrypt, jwt, Invalid2FA, ValidJWT, security_questions
 
 # Import models
-from app.models.user import User
+from app.models.user import User, load_user
 
 # Import datetime for cookie expiration handling
 from datetime import datetime, timedelta, timezone
@@ -97,7 +97,7 @@ def validate_text(text: str) -> bool:
 # ===== Routes =====
 
 # === Register ===
-@app.route('/register', methods=['GET'], endpoint='register')
+@app.route('/register', methods=['GET'])
 @jwt_required(optional=True)
 def register():
     '''
@@ -113,7 +113,7 @@ def register():
     
     return render_template('register.html')
 
-@app.route('/register', methods=['POST'], endpoint='register_post')
+@app.route('/register', methods=['POST'])
 @jwt_required(optional=True)
 def register_post():
     '''
@@ -157,7 +157,7 @@ def register_post():
 
     if password != password2:
         logger.warning("Different passwords provided during the registration")
-        logger.debug("User: " + username + "provided different passwords during the registration")
+        logger.debug(f"User: '{username}' provided different passwords during the registration")
         flash('Passwords dont match', 'failed')
         return redirect(url_for("register"))
     
@@ -172,7 +172,7 @@ def register_post():
     return redirect(url_for('login'))
 
 # === Login ===
-@app.route('/login', methods=['GET'], endpoint='login')
+@app.route('/login', methods=['GET'])
 @jwt_required(optional=True)
 def login():
     '''
@@ -189,7 +189,7 @@ def login():
     return render_template('login.html')
 
 
-@app.route('/login', methods=['POST'], endpoint='login_post')
+@app.route('/login', methods=['POST'])
 @jwt_required(optional=True)
 def login_post():
     '''
@@ -228,7 +228,7 @@ def login_post():
         
     else:
         logger.warning("Username could not be found")
-        logger.debug("User: '" + username + "' could not be found during the login")
+        logger.debug(f"User: '{username}' could not be found during the login")
         flash('Wrong username or password', 'failed')
         return redirect(url_for("login"))
     
@@ -245,7 +245,7 @@ def login_post():
 
 
 # === Logout ===
-@app.route('/logout', methods=['GET'], endpoint='logout')
+@app.route('/logout', methods=['GET'])
 @jwt_required()
 def logout():
     '''
@@ -261,7 +261,7 @@ def logout():
 
 
 # === Reset password ===
-@app.route('/reset-password', methods=['GET'], endpoint='reset_password')
+@app.route('/reset-password', methods=['GET'])
 @jwt_required(optional=True)
 def reset_password():
     '''
@@ -277,7 +277,7 @@ def reset_password():
     return render_template('reset_password.html', security_questions=security_questions_show)
 
 
-@app.route('/reset-password', methods=['POST'], endpoint='reset_password_post')
+@app.route('/reset-password', methods=['POST'])
 @jwt_required(optional=True)
 def reset_password_post():
     '''
@@ -313,7 +313,7 @@ def reset_password_post():
     g.user = User.find_by_email(db=db, email=request.form['email'])
     if g.user == None:
         logger.warning("Email could not be found")
-        logger.debug("User: '" + request.form['email'] + "' could not be found during the reset password")
+        logger.debug(f"User: '{request.form['email']}' could not be found during the reset password")
         flash('Email could not be found', 'failed')
         return redirect(url_for('reset_password'))
     
@@ -328,7 +328,7 @@ def reset_password_post():
 
     if bcrypt.check_password_hash(hashed_answer, request.form['answer']) == False:
         flash('Your answer is incorrect', 'failed')
-        logger.debug("User: '" + g.user.get_attribute("username") + "' provided a wrong answer to the security question during the reset password")
+        logger.debug(f"User: '{g.user.get_attribute('username')}' provided a wrong answer to the security question during the reset password")
         return redirect(url_for('reset_password'))
 
     # Set new password
@@ -336,12 +336,12 @@ def reset_password_post():
     g.user.update_attribute(db, attribute="password", value=hashed_password)
 
     flash('Your password has been changed!', 'success')
-    logger.debug("User: '" + g.user.get_attribute("username") + "' has successfully changed its password")
+    logger.debug(f"User: '{g.user.get_attribute('username')}' has successfully changed its password")
     return redirect(url_for('login'))
 
 
 # === Add security question ===
-@app.route('/add-security-question', methods=['POST'], endpoint='add_security_question')
+@app.route('/add-security-question', methods=['POST'])
 @jwt_required()
 def add_security_question():
     '''
@@ -374,12 +374,12 @@ def add_security_question():
     g.user.add_security_question(db=db, question=request.form['security_question'], answer=hashed_answer)
 
     flash('Your security question has been added!', 'success')
-    logger.debug("User: '" + g.user.get_attribute("username") + "' has successfully added a security question")
+    logger.debug(f"User: '{g.user.get_attribute('username')}' has successfully added a security question")
     return redirect(url_for('user_info'))
 
 
 # === Set new password ===      
-@app.route('/set-new-password', methods=['POST'], endpoint='set_new_password')
+@app.route('/set-new-password', methods=['POST'])
 @jwt_required()
 def set_new_password():
     '''
@@ -409,7 +409,7 @@ def set_new_password():
     # Check if current password is correct
     if bcrypt.check_password_hash(g.user.get_attribute('password'), request.form['old_password']) == False:
         flash('Current password is incorrect', 'failed')
-        logger.debug("User: '" + g.user.get_attribute("username") + "' provided a wrong old password during the set new password")
+        logger.debug(f"User: '{g.user.get_attribute('username')}' provided a wrong old password during the set new password")
         return redirect(url_for('dashboard'))
 
     # Set new password
@@ -417,12 +417,95 @@ def set_new_password():
     g.user.update_attribute(db, attribute="password", value=hashed_password)
 
     flash('Your password has been changed!', 'success')
-    logger.debug("User: '" + g.user.get_attribute("username") + "' has successfully changed its password")
+    logger.debug(f"User: '{g.user.get_attribute('username')}' has successfully changed its password")
 
     # Unset JWT and redirect to login
     resp = make_response(redirect(url_for('login')))
     unset_jwt_cookies(resp)
     return resp
+
+
+# === Delete User ===
+@app.route('/delete-user', methods=['POST'])
+@jwt_required(fresh=True)
+def delete_user():
+    '''
+    This function handles the delete_user route and can only be accessed with a fresh JWT Token.
+
+    Raise Invalid2FA if the user is not 2fa authenticated.
+
+    Returns redirect to dashboard and message if user couldnt be deleted.
+
+    Returns redirect to login, unset JWT and flash message if user was successfully deleted. (+ Deletes the user in the database)
+    '''
+
+    # Check if user has 2fa activated, then 2fa authenticated is needed
+    if g.twofa_activated and not g.twofa_authenticated:
+        logger.warning(f"User: '{g.user.get_attribute('username')}' has 2fa activated, but is not 2fa authenticated")
+        flash('You have 2fa activated, you need to authenticate with 2fa to delete your account', 'failed')
+        raise Invalid2FA
+    
+    # Delete user
+    g.user.delete(db=db)
+
+    # Check if user is deleted
+    if load_user(db=db, user_id=g.user.get_id()) != None:
+        logger.warning(f"User: '{g.user.get_attribute('username')}' could not be deleted")
+        flash('User could not be deleted', 'failed')
+        return redirect(url_for('dashboard'))
+    
+    logger.debug(f"User: '{g.user.get_attribute('username')}' has successfully deleted its account")
+
+    # Unset JWT and redirect to login
+    resp = make_response(redirect(url_for('login')))
+    unset_jwt_cookies(resp)
+    flash('Your account has been deleted!', 'success')
+    return resp
+
+
+# ===== Before Request =====
+@app.before_request
+@jwt_required(optional=True)
+def before_request_auth():
+    '''
+    This function is executed before each request.
+
+    It logs the request method and the request path. It also checks wether the user has a valid JWT and 2fa authentication and stores the result in the g object.
+    '''
+    try: # last resort error handling
+
+        g.jwt_authenticated = False
+        g.twofa_activated = False
+        g.twofa_authenticated = False
+        g.user = None
+
+        # Check if user has a valid JWT
+        if get_jwt_identity():
+            logger.debug("User has a valid JWT")
+            g.jwt_authenticated = True
+            g.user = load_user(db=db, user_id=get_jwt_identity())
+
+            twofa_activated = g.user.get_attribute('twofa_activated')
+
+            # Check if user has 2fa activated
+            if twofa_activated == "True":
+                logger.debug("User has 2fa activated")
+                g.twofa_activated = True
+                
+                if "2fa_timestamp" in get_jwt():
+                    # Check if user is 2fa authenticated
+                    
+                    # Get the current time and the timestamp of when the user authenticated with 2fa
+                    date_now = datetime.strptime(str(datetime.now())[:19], '%Y-%m-%d %H:%M:%S')
+                    date_2fa = datetime.strptime(get_jwt()["2fa_timestamp"], '%a, %d %b %Y %H:%M:%S %Z')
+
+                    # Check if the 2fa timestamp is older than time specified in environment variable
+                    if (date_now - date_2fa) <= timedelta(minutes=int(os.getenv("2FA_EXPIRATION_MINUTES"))):
+                        logger.debug("User is 2fa authenticated")
+                        g.twofa_authenticated = True
+            
+    except Exception as e:
+        logger.error(f"Error in before_request: {e}")
 
 
 # === Refresh JWT ===
@@ -458,7 +541,7 @@ def refresh_expiring_jwts(response):
                     set_access_cookies(response=response, encoded_access_token=access_token)
 
             except Exception as e:
-                logger.error("Error: " + str(e))
+                logger.error(f"Error: e")
                 flash("Internal Server Error, redirect to home", "error")
                 return redirect(url_for('home')), 500
                 
@@ -470,6 +553,20 @@ def refresh_expiring_jwts(response):
 
 
 # === Error handling ===
+
+# Error handler for InvalidSignatureError (when a JWT was provided from the same endpoint but other secret (e.g. CP <-> MPO))
+@jwt.invalid_token_loader
+def invalid_token_callback(error):
+    '''
+    This function handles the invalid_token_callback.
+
+    This function redirects the user to the login page and flashes a error message.
+    '''
+    resp = make_response(redirect(url_for('login')))
+    flash('Invalid token, please log in again', 'error')
+    logger.debug("User has a invalid token")
+    unset_jwt_cookies(response=resp)
+    return resp
 
 # Error handler for expired JWT
 @jwt.expired_token_loader
@@ -498,14 +595,14 @@ def custom_unauthorized_response(callback):
     return redirect(url_for('login'))
 
 # Error handler for fresh JWT needed
-@jwt.needs_fresh_token_loader #TODO
+@jwt.needs_fresh_token_loader
 def token_not_fresh_callback(jwt_header, jwt_payload):
     '''
     This function handles the token_not_fresh_callback, so the user needs a fresh access token to to this action.
 
     This function redirects the user to the login page in order to log in again and flashes a error message.
     '''
-    flash('You have to log in again in order to do this', 'error')
+    flash('You need a fresh token. You have to log in again in order to do this', 'error')
     logger.debug("User has a unfresh token, but needs a fresh one")
     resp = make_response(redirect(url_for('login')))
     unset_jwt_cookies(response=resp)
