@@ -3,10 +3,10 @@
 
 # ===== Packages =====
 # Import app from app package
-from app import app
+from app import app, logger
 
 # TODO remove
-from app.config import get_em_id, get_em_value
+from app import get_em_id, get_em_value
 
 # ===== Routes =====
 
@@ -14,14 +14,20 @@ from app.config import get_em_id, get_em_value
 @app.route('/', methods=['GET'])
 def test():
 
-    print(get_em_id())
-    print(get_em_value())
+    return [get_em_id(), get_em_value()]
 
-    return "test"
-
-@app.route('/maintenance', methods=['POST'])
+@app.route('/maintenance', methods=['POST']) #TODO
 def maintenance():
     '''
     This function handles the maintenance page of the web application.
     '''
     return "test"
+
+
+@app.before_request
+def before_request():
+    '''
+    This function is executed before each request.
+    '''
+    # Check the secret
+    #TODO

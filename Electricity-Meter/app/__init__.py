@@ -15,9 +15,9 @@ from sys import stderr
 from flask import Flask
 
 # Packages for Electricity Meter configuration
-from app.config import get_em_id, get_em_value, initialize, count
 from threading import Timer
 from requests import post
+from random import randint
 
 # ===== Program configurations =====
 
@@ -63,22 +63,49 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = os.urandom(24)
 
 # === EM Initialisation ===
-if get_em_id() == None or get_em_value() == None: #TODO test
-    initialize()
 
-logger.debug(f"ID: {get_em_id()}")
+em_id = randint(0, 9999999)
+em_value = randint(0,50000)
+
+maintenance_mode = False
+
+def get_em_id() -> int:
+    '''
+    This function returns the ID of the electricity meter.
+    '''
+    return em_id
+
+def get_em_value() -> int:
+    '''
+    This function returns the value of the electricity meter.
+    '''
+    return em_value
+
+def set_em_value(value:int) -> None:
+    '''
+    This function sets the value of the electricity meter.
+    '''
+    global em_value
+    em_value = value
+
+logger.info(f"ID: {get_em_id()}")
 logger.debug(f"Initialisation Value: {get_em_value()}")
 
 def heartbeat():
     '''
     This function sends a heartbeat to the metering-point-operator every 10 seconds.
     '''
-    logger.debug("Sending heartbeat...")
+    # Check if maintenance mode is active, if so, check again in 10 seconds
+    if maintenance_mode:
+        Timer(10, heartbeat).start()
+        return
+    
+    # Count up the em_value
+    set_em_value(get_em_value() + randint(11, 33)) # Change value accordingly
+
+    logger.info("Sending heartbeat...")
     logger.debug(f"Value: {get_em_value()}")
     #post("http://metering-point-operator:5000/api/heartbeat", json={"id": get_em_id(), "value": get_em_value(), "secret": os.getenv("SECRET_MPO_EM")}) TODO
-
-    # Count up the value
-    count()
 
     Timer(10, heartbeat).start() # Change time accordingly
 

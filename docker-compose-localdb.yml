@@ -53,8 +53,8 @@ services:
 
   electricity-meter:
     build: ./Electricity-Meter
-    # deploy:
-    #   replicas: 3
+    deploy:
+      replicas: 1 # Change according to the number of meters
     restart: unless-stopped
     environment:
       - SECRET_MPO_EM=01234567890123456
