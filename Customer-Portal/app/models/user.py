@@ -84,6 +84,12 @@ class User():
         except:
             raise DBConnectionError
         
+    def remove_contract(self, db: pymongo.database.Database, contract_id: int) -> None: #Get the list of contracts and remove the one
+        try:
+            db.users.update_one({'_id': self.user_data['_id']}, {'$pull': {'contract_list': contract_id}}) # update the contract list
+        except:
+            raise DBConnectionError
+        
     def add_security_question(self, db: pymongo.database.Database, question: str, answer: str) -> None:
         try:
             db.users.update_one({'_id': self.user_data['_id']}, {'$set': {'security_questions.' + question: answer}})

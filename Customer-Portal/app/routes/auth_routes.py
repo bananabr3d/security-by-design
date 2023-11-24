@@ -540,6 +540,7 @@ def before_request_auth():
 
     It logs the request method and the request path. It also checks wether the user has a valid JWT and 2fa authentication and stores the result in the g object.
     '''
+    logger.info(f"Request: {request.method} {request.path}")
     try: # last resort error handling
 
         g.jwt_authenticated = False

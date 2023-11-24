@@ -48,7 +48,7 @@ def dashboard():
 
     # Transform contract objects in list to dicts
     for contract in contract_list:
-        temp_contract = {"_id": contract.get_id(), "electricity_meter_id": contract.get_attribute("electricity_meter_id")}
+        temp_contract = {"_id": contract.get_id(), "electricity_meter_id": contract.get_attribute("electricity_meter_id")}#TODO: Add more attributes
         transformed_contract_list.append(temp_contract)
 
     # 2. make request on Messstellenbetreiber for data of each contract => How to implement? Do we load a contract.html in the dashboard.html or can we add it here in the return?
