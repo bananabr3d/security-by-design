@@ -90,7 +90,24 @@ User Information
             <button type="submit">Add Security Question</button>
         </form>
     </div>
-    <!-- Remove security question TODO -->
+    <!-- Remove security question -->
+    {% if security_questions_user %}
+        <div>
+            <h2>Remove Security Question</h2>
+            <form method="post" action="/remove-security-question">
+                <label for="security_question">Security Question</label>
+                <select id="security_question" name="security_question" required>
+                {% for question in security_questions_user %}
+                    <option value="{{ question }}">{{ question }}</option>
+                {% endfor %}
+                </select>
+                <br>
+                <label for="security_answer">Answer</label>
+                <input type="text" id="security_answer" name="answer" required>
+                <button type="submit">Remove Security Question</button>
+            </form>
+        </div>
+    {% endif %}
     <!-- Delete user -->
     <div>
         <form method="post" action="/delete-user" onsubmit="return confirm('Are you sure you want to submit this form?');">

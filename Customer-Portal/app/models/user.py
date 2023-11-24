@@ -90,11 +90,35 @@ class User():
         except:
             raise DBConnectionError
         
+        # Check if contract is removed
+        try:
+            user_data = db.users.find_one({'_id': self.user_data['_id']}, allow_partial_results=False)
+        except:
+            raise DBConnectionError
+        
+        if contract_id in user_data['contract_list']:
+            logger.error(f"Contract with ID '{contract_id}' could not be removed from user with ID '{self.get_id()}'.")
+        
     def add_security_question(self, db: pymongo.database.Database, question: str, answer: str) -> None:
         try:
             db.users.update_one({'_id': self.user_data['_id']}, {'$set': {'security_questions.' + question: answer}})
         except:
             raise DBConnectionError
+
+    def remove_security_question(self, db: pymongo.database.Database, question: str) -> None:
+        try:
+            db.users.update_one({'_id': self.user_data['_id']}, {'$unset': {'security_questions.' + question: ""}})
+        except:
+            raise DBConnectionError
+        
+        # Check if security question is removed
+        try:
+            user_data = db.users.find_one({'_id': self.user_data['_id']}, allow_partial_results=False)
+        except:
+            raise DBConnectionError
+        
+        if question in user_data['security_questions']:
+            logger.error(f"Security question with question '{question}' could not be removed from user with ID '{self.get_id()}'.")
 
     def save(self, db:pymongo.database.Database) -> None:
             try:
@@ -120,10 +144,10 @@ class User():
         if user_data:
             logger.error(f"User with ID '{self.get_id()}' could not be deleted.")
         
-        logger.info(f"User with ID '{self.get_id()}' successfully deleted.")
+        logger.debug(f"User with ID '{self.get_id()}' successfully deleted.")
 
         # Check if user has contracts and delete them
         for contract_id in self.get_contract_list():
             contract = load_contract(db=db, contract_id=contract_id)
             contract.delete(db=db)
-            logger.info(f"Contract with ID '{contract_id}' of user with ID '{self.get_id()}' successfully deleted.")
+            logger.debug(f"Contract with ID '{contract_id}' of user with ID '{self.get_id()}' successfully deleted.")

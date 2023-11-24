@@ -396,7 +396,7 @@ def add_security_question():
     '''
     This function handles the add_security_question route and can only be accessed with a JWT Token.
 
-    Returns redirect to dashboard if the security question was successfully added. (+ Updates the user security questions in the database)
+    Returns redirect to user_info if the security question was successfully added. (+ Updates the user security questions in the database)
     '''
 
     # = Input Validation =
@@ -424,6 +424,52 @@ def add_security_question():
 
     flash('Your security question has been added!', 'success')
     logger.debug(f"User: '{g.user.get_attribute('username')}' has successfully added a security question")
+    return redirect(url_for('user_info'))
+
+
+# === Remove security question ===
+@app.route('/remove-security-question', methods=['POST'])
+@jwt_required()
+def remove_security_question():
+    '''
+    This function handles the remove_security_question route and can only be accessed with a JWT Token.
+
+    Returns redirect to user_info if the security question was successfully removed. (+ Updates the user security questions in the database)
+    '''
+
+    # = Input Validation =
+    # Security Question
+    # Check if value is between 1 and 5
+    if not request.form['security_question'] in security_questions:
+        logger.warning("User provided a invalid security question input")
+        flash('Invalid input on "Security Question"', 'failed')
+        return redirect(url_for('user_info'))
+    
+    # Answer
+    if not validate_text(request.form['answer']):
+        logger.warning("User provided a invalid answer input")
+        return redirect(url_for('user_info'))
+
+    
+    # Check if security question is answered
+    if request.form['security_question'] not in g.user.get_attribute('security_questions'):
+        logger.warning("User provided a security question that is not answered")
+        flash('You did not answer this security question', 'failed')
+        return redirect(url_for('user_info'))
+    
+    # Check if answer is correct for the selected security question
+    hashed_answer = g.user.get_security_questions()[request.form['security_question']]
+
+    if bcrypt.check_password_hash(hashed_answer, request.form['answer']) == False:
+        flash('Your answer is incorrect', 'failed')
+        logger.debug(f"User: '{g.user.get_attribute('username')}' provided a wrong answer to the security question during the remove security question")
+        return redirect(url_for('user_info'))
+    
+    # Remove security question from user security questions
+    g.user.remove_security_question(db=db, question=request.form['security_question'])
+
+    flash('Your security question has been removed!', 'success')
+    logger.debug(f"User: '{g.user.get_attribute('username')}' has successfully removed a security question")
     return redirect(url_for('user_info'))
 
 
