@@ -55,3 +55,19 @@ def dashboard():
     
     #render_template with contract objects for each contract
     return render_template('dashboard.html', jwt_authenticated=g.jwt_authenticated, twofa_activated=g.twofa_activated, twofa_authenticated=g.twofa_authenticated, username=g.user.get_attribute('username'), contract_list=transformed_contract_list)
+
+# === About ===
+@app.route('/about', methods=['GET'])
+def about():
+    '''
+    This function handles the about page of the web application.
+    '''
+    return render_template('about.html', jwt_authenticated=g.jwt_authenticated, twofa_activated=g.twofa_activated, twofa_authenticated=g.twofa_authenticated)
+
+# === Impressum ===
+@app.route('/impressum', methods=['GET'])
+def impressum():
+    '''
+    This function handles the impressum page of the web application.
+    '''
+    return render_template('impressum.html', jwt_authenticated=g.jwt_authenticated, twofa_activated=g.twofa_activated, twofa_authenticated=g.twofa_authenticated)
