@@ -280,6 +280,35 @@ def logout():
     return resp
 
 
+# === User Info Page ===
+@app.route('/user-info', methods=['GET'])
+@jwt_required()
+def user_info():
+    '''
+    This function handles the user info page of the web application.
+
+    The JWT Token is required and the 2fa is checked. Then the user info page is displayed accordingly.
+    '''
+    # Show user only security questions, that are not answered yet
+    security_questions_show = list()
+    security_questions_show.append("Please select a security question...")
+
+    security_questions_user = g.user.get_security_questions().keys()
+    for question in security_questions:
+        if question not in security_questions_user:
+            security_questions_show.append(question)
+
+    # Render the user_info.html template with user data
+    return render_template('user_info.html', 
+                            jwt_authenticated=g.jwt_authenticated, 
+                            username=g.user.get_attribute("username"), 
+                            email=g.user.get_attribute('email'),
+                            twofa_activated=g.twofa_activated, 
+                            twofa_authenticated=g.twofa_authenticated,
+                            security_questions=security_questions_show,
+                            security_questions_user=security_questions_user)
+
+
 # === Reset password ===
 @app.route('/reset-password', methods=['GET'])
 @jwt_required(optional=True)
