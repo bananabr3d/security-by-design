@@ -27,14 +27,22 @@ User Information
     </div>
 
     <!-- Set new password by sending old, new and new2 -->
-    <div> <!-- Set new password is only available with 2fa authentication atm -->
-        <form method="post" action="/set-new-password">
-            <label for="">Old Password</label>
+    <div> <!-- Set new password -->
+        <form method="post" action="/set-new-password" onsubmit="return confirm('Are you sure you want to submit this form?');">
+            <label for="old_password">Old Password</label>
             <input type="password" id="old_password" name="old_password" required>
-            <label for="">New Password</label>
-            <input type="password" id="new_password" name="new_password" required>
-            <label for="">Repeat New Password</label>
-            <input type="password" id="new_password2" name="new_password2" required>
+            <div class="password-container">
+                <label for="password">New Password:</label>
+                <input type="password" id="password" name="new_password" required onkeyup="checkPasswordStrength(); checkPasswordMatch()">
+                <div class="password-strength-meter">
+                    <div class="strength-bar" id="strength-bar"></div>
+                    <div class="strength-text" id="strength-text"></div>
+                </div>
+            </div>
+            <label for="password2">Repeat new Password:</label>
+            <input type="password" id="password2" name="new_password2" required onkeyup="checkPasswordMatch()">
+            <span id="password-match"></span>
+            <p>Your password must contain at least one digit (0-9), one lowercase and one uppercase character (a-z, A-Z), one special character (!#$%&?") and a length of 12 - 128</p>
             <button type="submit">Set New Password</button>
         </form>
     </div>

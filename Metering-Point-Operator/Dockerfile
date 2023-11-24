@@ -2,8 +2,9 @@ FROM python:latest
 
 WORKDIR /app
 
-# Copy Strength-Meter
+# Copy Strength-Meter and Password match
 COPY ./Customer-Portal/app/static/password-strength-meter.js ./app/static/password-strength-meter.js
+COPY ./Customer-Portal/app/static/passwords-match.js ./app/static/passwords-match.js
 
 # Copy routes
 COPY ./Customer-Portal/app/routes/error_routes.py ./app/routes/error_routes.py

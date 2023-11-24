@@ -160,7 +160,7 @@ def register_post():
     # = Input Validation =
     # Email address and password
 
-    if not validate_email(request.form['email']) or not validate_username(request.form['username']) or not validate_password(request.form['password']) or not validate_password(request.form['password2']) or check_password_breach(request.form['password']):
+    if not validate_email(request.form['email']) or not validate_username(request.form['username']) or check_password_breach(request.form['password']):
         return redirect(url_for("register"))
     
     # set email in lowercase and username in original case           
@@ -180,17 +180,7 @@ def register_post():
         flash('Username already exists', 'failed')
         return redirect(url_for("register"))
     
-
-    # Compare passwords
-    password = request.form['password']
-    password2 = request.form['password2']
-
-    if password != password2:
-        logger.warning("Different passwords provided during the registration")
-        logger.debug(f"User: '{username}' provided different passwords during the registration")
-        flash('Passwords dont match', 'failed')
-        return redirect(url_for("register"))
-    
+    password = request.form['password'] 
 
     # hash pw, set user as object and save user
     hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
@@ -421,26 +411,18 @@ def set_new_password():
 
     Returns redirect to login, unset JWT and flash message if new password was successfully set. (+ Updates the user password in the database)
     '''
-
-    # Check if user is 2FA authenticated
-    if not g.twofa_authenticated:
-        raise Invalid2FA
     
     # = Input Validation =
     # Password
-    if not validate_password(request.form['old_password']) or not validate_password(request.form['new_password']) or not validate_password(request.form['new_password2']) or check_password_breach(request.form['new_password']):
-        return redirect(url_for('dashboard'))
-
-    # Compare new passwords
-    if request.form['new_password'] != request.form['new_password2']:
-        flash('New passwords dont match', 'failed')
-        return redirect(url_for('dashboard'))
+    if not validate_password(request.form['old_password']) or not validate_password(request.form['new_password']) or check_password_breach(request.form['new_password']):
+        flash('Invalid input', 'failed')
+        return redirect(url_for('user_info'))
         
     # Check if current password is correct
     if bcrypt.check_password_hash(g.user.get_attribute('password'), request.form['old_password']) == False:
         flash('Current password is incorrect', 'failed')
         logger.debug(f"User: '{g.user.get_attribute('username')}' provided a wrong old password during the set new password")
-        return redirect(url_for('dashboard'))
+        return redirect(url_for('user_info'))
 
     # Set new password
     hashed_password = bcrypt.generate_password_hash(request.form['new_password']).decode('utf-8')
