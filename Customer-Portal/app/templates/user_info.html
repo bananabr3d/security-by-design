@@ -47,14 +47,23 @@ User Information
         </form>
     </div>
 
-    <!-- Set new password by sending old, new and new2 -->
-    <div>
-        <form method="post" action="/reset-2fa">
-            <label for="">Backup Code</label>
-            <input type="text" id="backup_code" name="backup_code" required>
-            <button type="submit">Reset 2FA</button>
-        </form>
-    </div>
+    {% if twofa_activated %}
+        {% if twofa_authenticated %}
+            <!-- Reset 2FA Button with 2FA auth -->
+            <form method="post" action="/reset-2fa" onsubmit="return confirm('Are you sure you want to submit this form?');">
+                <button type="submit">Reset 2FA</button>
+            </form>
+        {% else %}
+            <!-- Reset 2FA without 2fa auth by sending backup code -->
+            <div>
+                <form method="post" action="/reset-2fa" onsubmit="return confirm('Are you sure you want to submit this form?');">
+                    <label for="">Backup Code</label>
+                    <input type="text" id="backup_code" name="backup_code" required>
+                    <button type="submit">Reset 2FA</button>
+                </form>
+            </div>
+        {% endif %}
+    {% endif %}
 
     <!-- Show answered security questions -->
     <div>
@@ -91,13 +100,6 @@ User Information
     <h2>Two-Factor Authentication</h2>
     <p>2FA Activated: {% if twofa_activated %}Yes{% else %}No{% endif %}</p>
     <p>2FA Authenticated: {% if twofa_authenticated %}Yes{% else %}No{% endif %}</p>
-
-    <h2>Contract Information</h2>
-    <ul>
-        {% for contract_id in contract_list %}
-            <li>Contract ID: {{ contract_id }}</li>
-        {% endfor %}
-    </ul>
 </body>
 </section>
 {% endblock %}
