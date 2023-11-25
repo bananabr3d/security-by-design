@@ -22,6 +22,11 @@ from datetime import datetime, timedelta, timezone
 # Import regex for input validation
 import re
 
+# Import requests and hashlib for pwnedpasswords API
+from requests import get
+from hashlib import sha1
+
+
 # Regex for input validation
 regex_email = re.compile(r'([A-Za-z0-9]+[.-_])*[A-Za-z0-9]+@[A-Za-z0-9-]+(\.[A-Z|a-z]{2,})+')
 regex_username = re.compile(r'^[a-zA-Z0-9]+([_ -]?[a-zA-Z0-9])*$')
@@ -94,6 +99,31 @@ def validate_text(text: str) -> bool:
         flash('Invalid input', 'failed')
         return False
 
+def check_password_breach(password: str) -> bool:
+    '''
+    This function checks if the password hash is breached. It calls the pwnedpasswords API with the first 5 characters of the password hash.
+
+    password: str
+
+    Returns True if the password is breached, else False.
+    '''
+    # Hash the password with SHA1
+    password_hash = sha1(password.encode('utf-8')).hexdigest()
+
+    # Get the first 5 characters of the password hash in hex format
+    password_hash_first_5 = password_hash[:5]
+
+    # Call the pwnedpasswords API
+    respond = get(f"https://api.pwnedpasswords.com/range/{password_hash_first_5}")
+
+    # Check if the password hash is breached
+    if password_hash[5:].upper() in respond.text:
+        logger.warning("User provided a breached password")
+        flash('Your provided password is breached, choose another password.', 'failed')
+        return True
+    else:
+        return False
+
 # ===== Routes =====
 
 # === Register ===
@@ -130,7 +160,7 @@ def register_post():
     # = Input Validation =
     # Email address and password
 
-    if not validate_email(request.form['email']) or not validate_username(request.form['username']) or not validate_password(request.form['password']) or not validate_password(request.form['password2']):
+    if not validate_email(request.form['email']) or not validate_username(request.form['username']) or check_password_breach(request.form['password']):
         return redirect(url_for("register"))
     
     # set email in lowercase and username in original case           
@@ -150,17 +180,7 @@ def register_post():
         flash('Username already exists', 'failed')
         return redirect(url_for("register"))
     
-
-    # Compare passwords
-    password = request.form['password']
-    password2 = request.form['password2']
-
-    if password != password2:
-        logger.warning("Different passwords provided during the registration")
-        logger.debug(f"User: '{username}' provided different passwords during the registration")
-        flash('Passwords dont match', 'failed')
-        return redirect(url_for("register"))
-    
+    password = request.form['password'] 
 
     # hash pw, set user as object and save user
     hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
@@ -260,6 +280,35 @@ def logout():
     return resp
 
 
+# === User Info Page ===
+@app.route('/user-info', methods=['GET'])
+@jwt_required()
+def user_info():
+    '''
+    This function handles the user info page of the web application.
+
+    The JWT Token is required and the 2fa is checked. Then the user info page is displayed accordingly.
+    '''
+    # Show user only security questions, that are not answered yet
+    security_questions_show = list()
+    security_questions_show.append("Please select a security question...")
+
+    security_questions_user = g.user.get_security_questions().keys()
+    for question in security_questions:
+        if question not in security_questions_user:
+            security_questions_show.append(question)
+
+    # Render the user_info.html template with user data
+    return render_template('user_info.html', 
+                            jwt_authenticated=g.jwt_authenticated, 
+                            username=g.user.get_attribute("username"), 
+                            email=g.user.get_attribute('email'),
+                            twofa_activated=g.twofa_activated, 
+                            twofa_authenticated=g.twofa_authenticated,
+                            security_questions=security_questions_show,
+                            security_questions_user=security_questions_user)
+
+
 # === Reset password ===
 @app.route('/reset-password', methods=['GET'])
 @jwt_required(optional=True)
@@ -304,7 +353,7 @@ def reset_password_post():
         return redirect(url_for('reset_password'))
     
     # New Password
-    if not validate_password(request.form['new_password']):
+    if not validate_password(request.form['new_password']) or check_password_breach(request.form['new_password']):
         logger.warning("User provided a invalid new password input")
         return redirect(url_for('reset_password'))
     
@@ -391,26 +440,18 @@ def set_new_password():
 
     Returns redirect to login, unset JWT and flash message if new password was successfully set. (+ Updates the user password in the database)
     '''
-
-    # Check if user is 2FA authenticated
-    if not g.twofa_authenticated:
-        raise Invalid2FA
     
     # = Input Validation =
     # Password
-    if not validate_password(request.form['old_password']) or not validate_password(request.form['new_password']) or not validate_password(request.form['new_password2']):
-        return redirect(url_for('dashboard'))
-
-    # Compare new passwords
-    if request.form['new_password'] != request.form['new_password2']:
-        flash('New passwords dont match', 'failed')
-        return redirect(url_for('dashboard'))
+    if not validate_password(request.form['old_password']) or not validate_password(request.form['new_password']) or check_password_breach(request.form['new_password']):
+        flash('Invalid input', 'failed')
+        return redirect(url_for('user_info'))
         
     # Check if current password is correct
     if bcrypt.check_password_hash(g.user.get_attribute('password'), request.form['old_password']) == False:
         flash('Current password is incorrect', 'failed')
         logger.debug(f"User: '{g.user.get_attribute('username')}' provided a wrong old password during the set new password")
-        return redirect(url_for('dashboard'))
+        return redirect(url_for('user_info'))
 
     # Set new password
     hashed_password = bcrypt.generate_password_hash(request.form['new_password']).decode('utf-8')
@@ -461,6 +502,33 @@ def delete_user():
     unset_jwt_cookies(resp)
     flash('Your account has been deleted!', 'success')
     return resp
+
+# === Export user account information ===
+@app.route('/export-user', methods=['GET'])
+@jwt_required(fresh=True)
+def export_user():
+    '''
+    This function handles the export_user route and can only be accessed with a fresh JWT Token.
+
+    Raise Invalid2FA if the user is not 2fa authenticated.
+
+    Returns the export_user.html template.
+    '''
+
+    # Check if user has 2fa activated, then 2fa authenticated is needed
+    if g.twofa_activated and not g.twofa_authenticated:
+        logger.warning(f"User: '{g.user.get_attribute('username')}' has 2fa activated, but is not 2fa authenticated")
+        flash('You have 2fa activated, you need to authenticate with 2fa to export your account information', 'failed')
+        raise Invalid2FA
+    
+    # get user data from user object
+    user_data = g.user.get_all_key_values()
+
+    # render export_user.html with user_data
+    #return render_template('export_user.html', user_data=user_data)
+
+    # return response with json formatted user_data
+    return user_data
 
 
 # ===== Before Request =====
