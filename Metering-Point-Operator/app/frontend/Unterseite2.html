@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="utf-8" name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="Style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="Bilder.css">
+
+
+</head>
+
+
+<body>
+
+
+<!-- Header -->
+<div class="topnav" id="myTopnav">
+    <a id="logo" tabindex="-1" title="Zurück zur Startseite" href="Index.html"> <img
+            src="images/Logo_mpo_icon_white.png" width="80px" height=auto" alt="Logo">
+
+    </a>
+
+    <a href="Unterseite1.html">Seite 1 </a>
+    <a href="Untertseite2.html" class="active">Seite 2</a>
+    <a href="Unterseite3.html">Seite 3</a>
+    <a href="Unterseite4.html">Seite 4</a>
+    <a class="right-align" href="Login_MB.html">Logout</a>
+
+    <a href="javascript:void(0);" class="icon" onclick="myFunction()">
+        <i class="fa fa-bars"></i>
+    </a>
+</div>
+
+
+<script>
+    function myFunction() {
+        var x = document.getElementById("myTopnav");
+        if (x.className === "topnav") {
+            x.className += " responsive";
+        } else {
+            x.className = "topnav";
+        }
+    }
+</script>
+
+
+<!-- Tabelle -->
+
+<div class="row">
+    <div class="col-25 col-s-25 menu">
+        <ul>
+            <li>
+                <details>
+                    <summary> hallo</summary>
+                    <p>njknfkjans</p>
+                </details>
+            </li>
+
+            <li>
+                <details>
+                    <summary> sdfnsl</summary>
+                    <p>sdfsf</p>
+                </details>
+            </li>
+
+            <li>
+                <details>
+                    <summary> sdfsdf</summary>
+                    <p>sdfssfsf </p>
+                </details>
+            </li>
+
+            <li>
+                <details>
+                    <summary> nknkjn</summary>
+                    <p>jnknknk </p>
+                </details>
+            </li>
+
+        </ul>
+    </div>
+    <div class="col-50 col-s-75 mid">
+
+        <h1>Seite 2 </h1>
+
+        <div class="display-container" style="max-width:800px">
+            <img class="mySlides" src="" alt="" style="width:100%">
+            <img class="mySlides" src="" alt="" style="width:100%">
+            <img class="mySlides" src="" alt="" style="width:100%">
+            <img class="mySlides" src="" alt="" style="width:100%">
+            <img class="mySlides" src="" alt="" style="width:100%">
+
+            <div class="center container section large text-white display-bottommiddle" style="width:100%">
+                <div class="left hover-text-khaki" onclick="plusDivs(-1)">&#10094;</div>
+                <div class="right hover-text-khaki" onclick="plusDivs(1)">&#10095;</div>
+                <span class="badge demo border transparent hover-white" onclick="currentDiv(1)"></span>
+                <span class="badge demo border transparent hover-white" onclick="currentDiv(2)"></span>
+                <span class="badge demo border transparent hover-white" onclick="currentDiv(3)"></span>
+                <span class="badge demo border transparent hover-white" onclick="currentDiv(4)"></span>
+                <span class="badge demo border transparent hover-white" onclick="currentDiv(5)"></span>
+            </div>
+        </div>
+
+
+        <script>
+            var slideIndex = 1;
+            showDivs(slideIndex);
+
+            function plusDivs(n) {
+                showDivs(slideIndex += n);
+            }
+
+            function currentDiv(n) {
+                showDivs(slideIndex = n);
+            }
+
+            function showDivs(n) {
+                var i;
+                var x = document.getElementsByClassName("mySlides");
+                var dots = document.getElementsByClassName("demo");
+                if (n > x.length) {
+                    slideIndex = 1
+                }
+                if (n < 1) {
+                    slideIndex = x.length
+                }
+                for (i = 0; i < x.length; i++) {
+                    x[i].style.display = "none";
+                }
+                for (i = 0; i < dots.length; i++) {
+                    dots[i].className = dots[i].className.replace(" white", "");
+                }
+                x[slideIndex - 1].style.display = "block";
+                dots[slideIndex - 1].className += " white";
+            }
+        </script>
+
+
+    </div>
+
+    <div class="col-25 col-s-100">
+        <div class="aside">
+            <h2>nkjnkjbk</h2>
+            <p>n knknk</p>
+            <h2>nlnln </h2>
+            <p>nnl,ln</p>
+            <h2>n nn ,kn</h2>
+            <p>mlkmlkmömö </p>
+        </div>
+    </div>
+</div>
+
+<div class="footer">
+    <p>Copyright 2023 Volr Wave</p>
+    <a href="Impressum.html"> Impressum</a>
+
+</div>
+</body>
+</html>
