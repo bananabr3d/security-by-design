@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block header_title %}
+{% block title %}
+Update User Information
+{% endblock %}
+{% endblock %}
+
+
+{% block content %}
+<section>
+<body>
+    <form method="post", onsubmit="return confirm('Are you sure you want to submit this form?');">
+        <h2>Not provided information</h2>
+        <!-- Check for keys in not_provided_information and spawn div and label -->
+        {% for key in not_provided_information %}
+            {% if key == "date_of_birth" %}
+            <div>
+                <label for="{{ key }}">{{ key }}:</label>
+                <input type="date" id="update_user_info_{{ key }}" name="{{ key }}" value="">
+            </div>
+            {% else %}
+            <div>
+                <label for="{{ key }}">{{ key }}:</label>
+                <input type="text" id="update_user_info_{{ key }}" name="{{ key }}" value="">
+            </div>
+            {% endif %}
+        {% endfor %}
+        <h2>Provided information</h2>
+        {% for key, value in user_information.items() %}
+            {% if key == "date_of_birth" %}
+            <div>
+                <label for="{{ key }}">{{ key }}:</label>
+                <input type="date" id="update_user_info_{{ key }}" name="{{ key }}" value="{{ value }}">
+            </div>
+            {% else %}
+            <div>
+                <label for="{{ key }}">{{ key }}:</label>
+                <input type="text" id="update_user_info_{{ key }}" name="{{ key }}" value="" placeholder="{{ value }}">
+            </div>
+            {% endif %}
+        {% endfor %}
+        <button type="submit">Update user information</button>
+    </form>
+</body>
+</section>
+{% endblock %}
