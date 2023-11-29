@@ -80,7 +80,7 @@ def contract(contract_id: str):
     # Add text in first item of attributes to be shown in the frontend
     contract_show["attributes"] = ["Select attribute"] + contract_show["attributes"]
 
-    return render_template('contract.html', contract=contract_show)
+    return render_template('contract.html', contract=contract_show, jwt_authenticated=g.jwt_authenticated, twofa_activated=g.twofa_activated, twofa_authenticated=g.twofa_authenticated, admin=g.admin)
 
 @app.route('/update-contract/<contract_id>', methods=['POST'])
 @jwt_required(fresh=True)
