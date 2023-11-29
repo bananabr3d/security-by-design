@@ -593,41 +593,45 @@ def before_request_auth():
 
     It logs the request method and the request path. It also checks wether the user has a valid JWT and 2fa authentication and stores the result in the g object.
     '''
-    logger.info(f"Request: {request.method} {request.path}")
-    try: # last resort error handling
+    g.jwt_authenticated = False
+    g.twofa_activated = False
+    g.twofa_authenticated = False
+    g.user = None
 
-        g.jwt_authenticated = False
-        g.twofa_activated = False
-        g.twofa_authenticated = False
-        g.user = None
+    # Only log the request path if the request is not a static file
+    if not request.path.startswith("/static"):
+        logger.info(f"Request: {request.method} {request.path}")
+        
+        
+        try: # last resort error handling
 
-        # Check if user has a valid JWT
-        if get_jwt_identity():
-            logger.debug("User has a valid JWT")
-            g.jwt_authenticated = True
-            g.user = load_user(db=db, user_id=get_jwt_identity())
+            # Check if user has a valid JWT
+            if get_jwt_identity():
+                logger.debug("User has a valid JWT")
+                g.jwt_authenticated = True
+                g.user = load_user(db=db, user_id=get_jwt_identity())
 
-            twofa_activated = g.user.get_attribute('twofa_activated')
+                twofa_activated = g.user.get_attribute('twofa_activated')
 
-            # Check if user has 2fa activated
-            if twofa_activated == "True":
-                logger.debug("User has 2fa activated")
-                g.twofa_activated = True
-                
-                if "2fa_timestamp" in get_jwt():
-                    # Check if user is 2fa authenticated
+                # Check if user has 2fa activated
+                if twofa_activated == "True":
+                    logger.debug("User has 2fa activated")
+                    g.twofa_activated = True
                     
-                    # Get the current time and the timestamp of when the user authenticated with 2fa
-                    date_now = datetime.strptime(str(datetime.now())[:19], '%Y-%m-%d %H:%M:%S')
-                    date_2fa = datetime.strptime(get_jwt()["2fa_timestamp"], '%a, %d %b %Y %H:%M:%S %Z')
+                    if "2fa_timestamp" in get_jwt():
+                        # Check if user is 2fa authenticated
+                        
+                        # Get the current time and the timestamp of when the user authenticated with 2fa
+                        date_now = datetime.strptime(str(datetime.now())[:19], '%Y-%m-%d %H:%M:%S')
+                        date_2fa = datetime.strptime(get_jwt()["2fa_timestamp"], '%a, %d %b %Y %H:%M:%S %Z')
 
-                    # Check if the 2fa timestamp is older than time specified in environment variable
-                    if (date_now - date_2fa) <= timedelta(minutes=int(os.getenv("2FA_EXPIRATION_MINUTES"))):
-                        logger.debug("User is 2fa authenticated")
-                        g.twofa_authenticated = True
-            
-    except Exception as e:
-        logger.error(f"Error in before_request_auth: {e}")
+                        # Check if the 2fa timestamp is older than time specified in environment variable
+                        if (date_now - date_2fa) <= timedelta(minutes=int(os.getenv("2FA_EXPIRATION_MINUTES"))):
+                            logger.debug("User is 2fa authenticated")
+                            g.twofa_authenticated = True
+                
+        except Exception as e:
+            logger.error(f"Error in before_request_auth: {e}")
 
 
 # === Refresh JWT ===
