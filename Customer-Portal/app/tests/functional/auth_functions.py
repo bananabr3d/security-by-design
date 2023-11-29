@@ -35,8 +35,7 @@ def register(client) -> None:
     request_data = {
         "email": "Pytest@test.test",
         "username": "pytest",
-        "password": "PytestPytest123!",
-        "password2": "PytestPytest123!"
+        "password": "PytestPytest123!"
     }
 
     response = client.post('/register', data=request_data)
