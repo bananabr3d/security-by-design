@@ -14,6 +14,27 @@ from app import app, db, Invalid2FA, security_questions
 # Import models
 from app.models.contract import load_contract_data
 
+# Import regex
+from re import compile, fullmatch
+
+# Import datetime
+from datetime import datetime
+
+# ===== Regex =====
+# Regex for date_of_birth (YYYY-MM-DD)
+date_of_birth_regex = compile(r'^\d{4}-\d{2}-\d{2}$')
+
+# Regex for address_plz, address_street_house_number (5 digits)
+address_plz_regex = compile(r'^\d{5}$')
+
+# Regex for address_street, address_city, address_country (only letters, äöüÄÖÜß and spaces)
+address_street_city_country_regex = compile(r'^[a-zA-ZäöüÄÖÜß ]+$')
+
+# Regex for address_street_house_number (only digits, up to 5)
+address_street_house_number_regex = compile(r'^\d{1,5}$')
+
+# Regex for phone_number (e.g. +4915227515341, 015227515341) with a upper limit of 13 digits (china) after the + sign
+phone_number_regex = compile(r'^\+?\d{6,13}$')
 
 # ===== Routes =====
 
