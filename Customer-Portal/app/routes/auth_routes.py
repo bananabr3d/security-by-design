@@ -298,6 +298,14 @@ def user_info():
         if question not in security_questions_user:
             security_questions_show.append(question)
 
+    try:
+        # Get user_information_json from url if exists, else None
+        user_information_json = request.args.get('user_information_json')
+    except:
+        user_information_json = None
+    
+
+
     # Render the user_info.html template with user data
     return render_template('user_info.html', 
                             jwt_authenticated=g.jwt_authenticated, 
@@ -306,7 +314,8 @@ def user_info():
                             twofa_activated=g.twofa_activated, 
                             twofa_authenticated=g.twofa_authenticated,
                             security_questions=security_questions_show,
-                            security_questions_user=security_questions_user)
+                            security_questions_user=security_questions_user,
+                            user_information_json=user_information_json)
 
 
 # === Reset password ===
@@ -567,14 +576,12 @@ def export_user():
         flash('You have 2fa activated, you need to authenticate with 2fa to export your account information', 'failed')
         raise Invalid2FA
     
-    # get user data from user object
-    user_data = g.user.get_all_key_values()
+    # get user data from user object and save it in g object
+    user_information_json = g.user.get_all_key_values()
 
-    # render export_user.html with user_data
-    #return render_template('export_user.html', user_data=user_data)
 
-    # return response with json formatted user_data
-    return user_data
+    # return to user_info.html
+    return redirect(url_for('user_info', user_information_json=user_information_json))
 
 
 # ===== Before Request =====
