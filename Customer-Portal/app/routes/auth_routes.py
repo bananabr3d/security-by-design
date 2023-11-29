@@ -620,7 +620,7 @@ def before_request_auth():
                         g.twofa_authenticated = True
             
     except Exception as e:
-        logger.error(f"Error in before_request: {e}")
+        logger.error(f"Error in before_request_auth: {e}")
 
 
 # === Refresh JWT ===

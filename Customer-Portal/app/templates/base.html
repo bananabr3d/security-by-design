@@ -32,6 +32,9 @@
                     <li><a href="/login/2fa">Login 2FA</a></li>
                 {% endif %}
             {% elif jwt_authenticated and twofa_authenticated %}
+                {% if admin %}
+                    <li><a href="/admin">Admin Panel</a></li>
+                {% endif %}
                 <li><a href="/dashboard">Dashboard</a></li>
             {% endif %}
 

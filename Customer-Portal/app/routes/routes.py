@@ -54,7 +54,7 @@ def dashboard():
     # 2. make request on Messstellenbetreiber for data of each contract => How to implement? Do we load a contract.html in the dashboard.html or can we add it here in the return?
     
     #render_template with contract objects for each contract
-    return render_template('dashboard.html', jwt_authenticated=g.jwt_authenticated, twofa_activated=g.twofa_activated, twofa_authenticated=g.twofa_authenticated, username=g.user.get_attribute('username'), contract_list=transformed_contract_list)
+    return render_template('dashboard.html', jwt_authenticated=g.jwt_authenticated, twofa_activated=g.twofa_activated, twofa_authenticated=g.twofa_authenticated, admin=g.admin, username=g.user.get_attribute('username'), contract_list=transformed_contract_list)
 
 # === About ===
 @app.route('/about', methods=['GET'])
