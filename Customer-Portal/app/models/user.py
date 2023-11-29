@@ -11,6 +11,23 @@ def load_user(db, user_id:str):
         
     return User(db=db, email=user_data["email"], username=user_data["username"], password=user_data["password"], twofa_secret=user_data["twofa_secret"], twofa_activated=user_data["twofa_activated"], contract_list=user_data["contract_list"], backup_codes=user_data["backup_codes"], security_questions=user_data["security_questions"], admin=user_data["admin"]) if user_data else None # Add here user attributes
 
+def get_user_count(db: pymongo.database.Database) -> int:
+    try:
+        user_count = db.users.count_documents({})
+    except:
+        raise DBConnectionError
+
+    return user_count
+
+def get_usernames(db: pymongo.database.Database) -> list:
+    try:
+        usernames = db.users.distinct('username')
+    except:
+        raise DBConnectionError
+
+    return usernames
+
+
 class User():
     def __init__(self, db:pymongo.database.Database, email:str, username:str, password:str, twofa_secret:str = None, twofa_activated:bool = False, contract_list:list = [], backup_codes:list = [], security_questions:dict = {}, admin:bool = False) -> None:
         self.user_data = {'email': email, 'username': username, 'password': password, 'twofa_secret': twofa_secret, 'twofa_activated': twofa_activated, 'contract_list': contract_list, 'backup_codes': backup_codes, 'security_questions': security_questions, 'admin': admin}
