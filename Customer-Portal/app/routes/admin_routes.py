@@ -24,7 +24,7 @@ def before_request_admin():
         g.admin = False
 
         if g.user:
-            if g.user.get_attribute("admin"):
+            if g.user.get_attribute("admin") == True:
                 logger.debug("User is admin.")
 
                 g.admin = True
