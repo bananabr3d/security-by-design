@@ -14,13 +14,12 @@ Dashboard
   <div class="contract-list">
     {% for contract in contract_list %}
       <div class="contract">
-        <h5>Contract ID: {{ contract._id }}</h3>
+        <h5>Contract ID: <a href="/dashboard/{{ contract._id }}">{{ contract._id }}</a></h3>
         <h6>Electricity Meter ID: {{ contract.electricity_meter_id }}</h6>
-          <!-- Add more contract details when we need them  -->
+          <!-- Add more contract details when we have them  -->
       </div>
     {% endfor %}
   </div>
-  <!--TEST START-->
   <div>
     <!-- Add a contract with em-id -->
     <form method="post" action="/add-contract" onsubmit="return confirm('Are you sure you want to submit this form?');">
@@ -29,6 +28,5 @@ Dashboard
       <button type="submit">Add Contract</button>
     </form>
   </div>
-  <!--TEST END-->
 </section>
 {% endblock %}

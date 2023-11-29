@@ -79,6 +79,21 @@ class User():
         except:
             raise DBConnectionError
 
+    def remove_security_question(self, db: pymongo.database.Database, question: str) -> None:
+        try:
+            db.users.update_one({'_id': self.user_data['_id']}, {'$unset': {'security_questions.' + question: ""}})
+        except:
+            raise DBConnectionError
+        
+        # Check if security question is removed
+        try:
+            user_data = db.users.find_one({'_id': self.user_data['_id']}, allow_partial_results=False)
+        except:
+            raise DBConnectionError
+        
+        if question in user_data['security_questions']:
+            logger.error(f"Security question with question '{question}' could not be removed from user with ID '{self.get_id()}'.")
+
     def save(self, db:pymongo.database.Database) -> None:
             try:
                 db.users.insert_one(self.user_data)

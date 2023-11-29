@@ -9,11 +9,28 @@ def load_user(db, user_id:str):
     except:
         raise DBConnectionError
         
-    return User(db=db, email=user_data["email"], username=user_data["username"], password=user_data["password"], twofa_secret=user_data["twofa_secret"], twofa_activated=user_data["twofa_activated"], contract_list=user_data["contract_list"], backup_codes=user_data["backup_codes"], security_questions=user_data["security_questions"]) if user_data else None # Add here user attributes
+    return User(db=db, email=user_data["email"], username=user_data["username"], password=user_data["password"], twofa_secret=user_data["twofa_secret"], twofa_activated=user_data["twofa_activated"], contract_list=user_data["contract_list"], backup_codes=user_data["backup_codes"], security_questions=user_data["security_questions"], admin=user_data["admin"]) if user_data else None # Add here user attributes
+
+def get_user_count(db: pymongo.database.Database) -> int:
+    try:
+        user_count = db.users.count_documents({})
+    except:
+        raise DBConnectionError
+
+    return user_count
+
+def get_usernames(db: pymongo.database.Database) -> list:
+    try:
+        usernames = db.users.distinct('username')
+    except:
+        raise DBConnectionError
+
+    return usernames
+
 
 class User():
-    def __init__(self, db:pymongo.database.Database, email:str, username:str, password:str, twofa_secret:str = None, twofa_activated:bool = False, contract_list:list = [], backup_codes:list = [], security_questions:dict = {}) -> None:
-        self.user_data = {'email': email, 'username': username, 'password': password, 'twofa_secret': twofa_secret, 'twofa_activated': twofa_activated, 'contract_list': contract_list, 'backup_codes': backup_codes, 'security_questions': security_questions}
+    def __init__(self, db:pymongo.database.Database, email:str, username:str, password:str, twofa_secret:str = None, twofa_activated:bool = False, contract_list:list = [], backup_codes:list = [], security_questions:dict = {}, admin:bool = False) -> None:
+        self.user_data = {'email': email, 'username': username, 'password': password, 'twofa_secret': twofa_secret, 'twofa_activated': twofa_activated, 'contract_list': contract_list, 'backup_codes': backup_codes, 'security_questions': security_questions, 'admin': admin}
 
         try:
             user_data = db.users.find_one({'email': email}, allow_partial_results=False)
@@ -67,7 +84,7 @@ class User():
         except:
             raise DBConnectionError
         
-        return User(db=db, email=user_data["email"], username=user_data["username"], password=user_data["password"], twofa_secret=user_data["twofa_secret"], twofa_activated=user_data["twofa_activated"], contract_list=user_data["contract_list"], backup_codes=user_data["backup_codes"], security_questions=user_data["security_questions"]) if user_data else None # Add here user attributes
+        return User(db=db, email=user_data["email"], username=user_data["username"], password=user_data["password"], twofa_secret=user_data["twofa_secret"], twofa_activated=user_data["twofa_activated"], contract_list=user_data["contract_list"], backup_codes=user_data["backup_codes"], security_questions=user_data["security_questions"], admin=user_data["admin"]) if user_data else None # Add here user attributes
     
     def find_by_email(db: pymongo.database.Database, email: str):
         try:
@@ -75,7 +92,7 @@ class User():
         except:
             raise DBConnectionError
         
-        return User(db=db, email=user_data["email"], username=user_data["username"], password=user_data["password"], twofa_secret=user_data["twofa_secret"], twofa_activated=user_data["twofa_activated"], contract_list=user_data["contract_list"], backup_codes=user_data["backup_codes"], security_questions=user_data["security_questions"]) if user_data else None # Add here user attributes
+        return User(db=db, email=user_data["email"], username=user_data["username"], password=user_data["password"], twofa_secret=user_data["twofa_secret"], twofa_activated=user_data["twofa_activated"], contract_list=user_data["contract_list"], backup_codes=user_data["backup_codes"], security_questions=user_data["security_questions"], admin=user_data["admin"]) if user_data else None # Add here user attributes
     
 
     def add_contract(self, db: pymongo.database.Database, contract_id: int) -> None: #Get the list of contracts and append the new one
@@ -84,11 +101,41 @@ class User():
         except:
             raise DBConnectionError
         
+    def remove_contract(self, db: pymongo.database.Database, contract_id: int) -> None: #Get the list of contracts and remove the one
+        try:
+            db.users.update_one({'_id': self.user_data['_id']}, {'$pull': {'contract_list': contract_id}}) # update the contract list
+        except:
+            raise DBConnectionError
+        
+        # Check if contract is removed
+        try:
+            user_data = db.users.find_one({'_id': self.user_data['_id']}, allow_partial_results=False)
+        except:
+            raise DBConnectionError
+        
+        if contract_id in user_data['contract_list']:
+            logger.error(f"Contract with ID '{contract_id}' could not be removed from user with ID '{self.get_id()}'.")
+        
     def add_security_question(self, db: pymongo.database.Database, question: str, answer: str) -> None:
         try:
             db.users.update_one({'_id': self.user_data['_id']}, {'$set': {'security_questions.' + question: answer}})
         except:
             raise DBConnectionError
+
+    def remove_security_question(self, db: pymongo.database.Database, question: str) -> None:
+        try:
+            db.users.update_one({'_id': self.user_data['_id']}, {'$unset': {'security_questions.' + question: ""}})
+        except:
+            raise DBConnectionError
+        
+        # Check if security question is removed
+        try:
+            user_data = db.users.find_one({'_id': self.user_data['_id']}, allow_partial_results=False)
+        except:
+            raise DBConnectionError
+        
+        if question in user_data['security_questions']:
+            logger.error(f"Security question with question '{question}' could not be removed from user with ID '{self.get_id()}'.")
 
     def save(self, db:pymongo.database.Database) -> None:
             try:
@@ -114,10 +161,10 @@ class User():
         if user_data:
             logger.error(f"User with ID '{self.get_id()}' could not be deleted.")
         
-        logger.info(f"User with ID '{self.get_id()}' successfully deleted.")
+        logger.debug(f"User with ID '{self.get_id()}' successfully deleted.")
 
         # Check if user has contracts and delete them
         for contract_id in self.get_contract_list():
             contract = load_contract(db=db, contract_id=contract_id)
             contract.delete(db=db)
-            logger.info(f"Contract with ID '{contract_id}' of user with ID '{self.get_id()}' successfully deleted.")
+            logger.debug(f"Contract with ID '{contract_id}' of user with ID '{self.get_id()}' successfully deleted.")

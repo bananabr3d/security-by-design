@@ -298,6 +298,14 @@ def user_info():
         if question not in security_questions_user:
             security_questions_show.append(question)
 
+    try:
+        # Get user_information_json from url if exists, else None
+        user_information_json = request.args.get('user_information_json')
+    except:
+        user_information_json = None
+    
+
+
     # Render the user_info.html template with user data
     return render_template('user_info.html', 
                             jwt_authenticated=g.jwt_authenticated, 
@@ -306,7 +314,8 @@ def user_info():
                             twofa_activated=g.twofa_activated, 
                             twofa_authenticated=g.twofa_authenticated,
                             security_questions=security_questions_show,
-                            security_questions_user=security_questions_user)
+                            security_questions_user=security_questions_user,
+                            user_information_json=user_information_json)
 
 
 # === Reset password ===
@@ -396,7 +405,7 @@ def add_security_question():
     '''
     This function handles the add_security_question route and can only be accessed with a JWT Token.
 
-    Returns redirect to dashboard if the security question was successfully added. (+ Updates the user security questions in the database)
+    Returns redirect to user_info if the security question was successfully added. (+ Updates the user security questions in the database)
     '''
 
     # = Input Validation =
@@ -424,6 +433,52 @@ def add_security_question():
 
     flash('Your security question has been added!', 'success')
     logger.debug(f"User: '{g.user.get_attribute('username')}' has successfully added a security question")
+    return redirect(url_for('user_info'))
+
+
+# === Remove security question ===
+@app.route('/remove-security-question', methods=['POST'])
+@jwt_required()
+def remove_security_question():
+    '''
+    This function handles the remove_security_question route and can only be accessed with a JWT Token.
+
+    Returns redirect to user_info if the security question was successfully removed. (+ Updates the user security questions in the database)
+    '''
+
+    # = Input Validation =
+    # Security Question
+    # Check if value is between 1 and 5
+    if not request.form['security_question'] in security_questions:
+        logger.warning("User provided a invalid security question input")
+        flash('Invalid input on "Security Question"', 'failed')
+        return redirect(url_for('user_info'))
+    
+    # Answer
+    if not validate_text(request.form['answer']):
+        logger.warning("User provided a invalid answer input")
+        return redirect(url_for('user_info'))
+
+    
+    # Check if security question is answered
+    if request.form['security_question'] not in g.user.get_attribute('security_questions'):
+        logger.warning("User provided a security question that is not answered")
+        flash('You did not answer this security question', 'failed')
+        return redirect(url_for('user_info'))
+    
+    # Check if answer is correct for the selected security question
+    hashed_answer = g.user.get_security_questions()[request.form['security_question']]
+
+    if bcrypt.check_password_hash(hashed_answer, request.form['answer']) == False:
+        flash('Your answer is incorrect', 'failed')
+        logger.debug(f"User: '{g.user.get_attribute('username')}' provided a wrong answer to the security question during the remove security question")
+        return redirect(url_for('user_info'))
+    
+    # Remove security question from user security questions
+    g.user.remove_security_question(db=db, question=request.form['security_question'])
+
+    flash('Your security question has been removed!', 'success')
+    logger.debug(f"User: '{g.user.get_attribute('username')}' has successfully removed a security question")
     return redirect(url_for('user_info'))
 
 
@@ -521,14 +576,12 @@ def export_user():
         flash('You have 2fa activated, you need to authenticate with 2fa to export your account information', 'failed')
         raise Invalid2FA
     
-    # get user data from user object
-    user_data = g.user.get_all_key_values()
+    # get user data from user object and save it in g object
+    user_information_json = g.user.get_all_key_values()
 
-    # render export_user.html with user_data
-    #return render_template('export_user.html', user_data=user_data)
 
-    # return response with json formatted user_data
-    return user_data
+    # return to user_info.html
+    return redirect(url_for('user_info', user_information_json=user_information_json))
 
 
 # ===== Before Request =====
@@ -540,6 +593,7 @@ def before_request_auth():
 
     It logs the request method and the request path. It also checks wether the user has a valid JWT and 2fa authentication and stores the result in the g object.
     '''
+    logger.info(f"Request: {request.method} {request.path}")
     try: # last resort error handling
 
         g.jwt_authenticated = False
@@ -573,7 +627,7 @@ def before_request_auth():
                         g.twofa_authenticated = True
             
     except Exception as e:
-        logger.error(f"Error in before_request: {e}")
+        logger.error(f"Error in before_request_auth: {e}")
 
 
 # === Refresh JWT ===

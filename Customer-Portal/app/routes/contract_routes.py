@@ -1,11 +1,12 @@
 # Contributions by: Vitali Bier, Julian Flock
 # Description: This file contains the contract routes of the web application.
 
-from flask import request, flash, redirect, url_for, g
+from flask import request, flash, redirect, url_for, g, render_template
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from app import app, logger, db, Invalid2FA
-from app.models.contract import Contract
+from app.models.contract import Contract, load_contract
 from app.models.user import load_user
+from app.routes.auth_routes import validate_text
 
 @app.route('/add-contract', methods=['POST'])
 @jwt_required(fresh=True)
@@ -42,8 +43,127 @@ def add_contract():
         flash("Contract successfully added", "success")
 
         return redirect(url_for('dashboard'))
+
+@app.route('/dashboard/<contract_id>', methods=['GET'])
+@jwt_required()
+def contract(contract_id: str):
+    '''
+    This function handles the contract page of the web application. The JWT Token is required. 
+
+    If the contract_id is correct, the contract page is rendered.
+    '''
+
+    # Check if user has the contract, get contract_list from user
+    contract_list = g.user.get_contract_list()
+
+    if contract_id not in contract_list:
+        logger.warning(f"Contract with ID: '{contract_id}' does not exist for user with ID: '{g.user.get_id()}'.")
+        flash("Contract does not exist")
+        return redirect(url_for('dashboard'))
     
+    # Load contract
+    contract = load_contract(db=db, contract_id=contract_id)
+
+    # Check if contract is still active
+    # if contract.get_attribute("active") == False:#TODO
+    #     logger.warning(f"Contract with ID: '{contract_id}' is not active.")
+    #     flash("Contract is not active")
+
+    # Build contract_show dict
+    contract_show = {"_id": contract.get_id(), "electricity_meter_id": contract.get_attribute("electricity_meter_id")}#TODO
+
+    # Build attributes dict for update-contract -> remove _id and electricity_meter_id from
+    contract_show["attributes"] = list(contract.contract_data.keys())
+    contract_show["attributes"].remove("_id")
+    contract_show["attributes"].remove("electricity_meter_id")
+
+    # Add text in first item of attributes to be shown in the frontend
+    contract_show["attributes"] = ["Select attribute"] + contract_show["attributes"]
+
+    return render_template('contract.html', contract=contract_show, jwt_authenticated=g.jwt_authenticated, twofa_activated=g.twofa_activated, twofa_authenticated=g.twofa_authenticated, admin=g.admin)
+
+@app.route('/update-contract/<contract_id>', methods=['POST'])
+@jwt_required(fresh=True)
+def update_contract(contract_id: str):
+    '''
+    This function handles the update-contract page of the web application. The JWT Token is required and the 2fa is checked. 
+    '''
+
+    if not g.twofa_authenticated:
+        raise Invalid2FA
+
+    # Check if user has the contract, get contract_list from user
+    contract_list = g.user.get_contract_list()
+
+    if contract_id not in contract_list:
+        logger.warning(f"Contract with ID: '{contract_id}' does not exist for user with ID: '{g.user.get_id()}'.")
+        flash("Contract does not exist")
+        return redirect(url_for('dashboard'))
     
+    # Load contract
+    contract = load_contract(db=db, contract_id=contract_id)
+
+    # Check if contract is still active
+    # if contract.get_attribute("active") == False:#TODO
+    #     logger.warning(f"Contract with ID: '{contract_id}' is not active.")
+    #     flash("Contract is not active")
+    
+    # Check attribute for correct format
+    if not validate_text(request.form['attribute']) or request.form['attribute'] not in contract.contract_data.keys():
+        flash("Invalid attribute")
+        return redirect(url_for('contract', contract_id=contract_id))
+    
+    # Check value for correct format #TODO also check if value is sutiable for attribute
+    if not validate_text(request.form['value']) or request.form['value'] == "electricity_meter_id" or request.form['value'] == "_id":
+        flash("Invalid value")
+        return redirect(url_for('contract', contract_id=contract_id))
+
+    # Update contract
+    contract.update_attribute(db=db, attribute=request.form['attribute'], value=request.form['value'])
+
+    logger.debug(f"Contract with ID '{contract_id}' successfully updated attribute '{request.form['attribute']}'.")
+    flash("Contract successfully updated", "success")
+    return redirect(url_for('contract', contract_id=contract_id))
+
+
+@app.route('/remove-contract/<contract_id>', methods=['POST'])
+@jwt_required(fresh=True)
+def remove_contract(contract_id: str):
+    '''
+    This function handles the remove-contract page of the web application. The JWT Token is required and the 2fa is checked. 
+    '''
+
+    if not g.twofa_authenticated:
+        raise Invalid2FA
+
+    # Check if user has the contract, get contract_list from user
+    contract_list = g.user.get_contract_list()
+
+    if contract_id not in contract_list:
+        logger.warning(f"Contract with ID: '{contract_id}' does not exist for user with ID: '{g.user.get_id()}'.")
+        flash("Contract does not exist")
+        return redirect(url_for('dashboard'))
+    
+    # Load contract
+    contract = load_contract(db=db, contract_id=contract_id)
+
+    # Check if contract is still active
+    # if contract.get_attribute("active") == False:#TODO
+    #     logger.warning(f"Contract with ID: '{contract_id}' is not active.")
+    #     flash("Contract is not active")
+
+    #TODO Send API request to metering point operator to say the em is free again
+    
+    # Delete contract
+    contract.delete(db=db)
+
+    # Remove contract from user
+    g.user.remove_contract(db=db, contract_id=contract_id)
+
+    logger.debug(f"Contract with ID '{contract_id}' successfully deleted.")
+    flash("Contract successfully deleted", "success")
+    return redirect(url_for('dashboard'))
+
 # # Change to "Netzstellenbetreiber" routes in other app
 # @app.route('/api/register', methods=['GET'])
 # def api_register():

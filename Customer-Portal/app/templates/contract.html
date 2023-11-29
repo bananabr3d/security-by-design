@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block header_title %}
+{% block title %}
+Contract {{ contract._id }}
+{% endblock %}
+{% endblock %}
+
+
+{% block content %}
+<section>
+  <!-- <h3>Contract Adress: {{ contract.contract_address_street}}, {{ contract.contract_address_postal_code}}, {{ contract.contract_address_city}}, {{ contract.contract_address_country }}</h3> -->
+  <h3>Electricity Meter ID: {{ contract.electricity_meter_id }}</h3>
+  <!-- <h3>Electricity Meter Type: {{ electricity_meter_type }}</h3>#TODO change values to contract.
+    em address
+  <h3>Electricity Meter Manufacturer: {{ electricity_meter_manufacturer }}</h3>
+  <h3>Electricity Meter Model: {{ electricity_meter_model }}</h3>
+  <h3>Electricity Meter Serial Number: {{ electricity_meter_serial_number }}</h3>
+  <h3>Electricity Meter Firmware Version: {{ electricity_meter_firmware_version }}</h3>
+  <h3>Electricity Meter Status: {{ electricity_meter_status }}</h3>
+  <h3>Electricity Meter Last Updated: {{ electricity_meter_last_updated }}</h3>
+  <h3>Electricity Meter Last Updated Value: {{ electricity_meter_last_updated_value }}</h3>
+  <h3>Electricity Meter Last Updated Value Unit: {{ electricity_meter_last_updated_value_unit }}</h3> Change to static unit in html -->
+
+  <!-- Update contract with attribute and value -->
+  <h2>Update Attribute</h2>
+  <form method="post" action="/update-contract/{{ contract._id }}" onsubmit="return confirm('Are you sure you want to submit this form?');">
+    <label for="attribute">Attribute:</label>
+    <select name="attribute" id="attribute" required>
+      {% for attribute in contract.attributes %}
+        <option value="{{ attribute }}">{{ attribute }}</option>
+      {% endfor %}
+    </select>
+    <label for="value">Value:</label>
+    <input type="text" id="value" name="value" value="" required>
+    <button type="submit">Update Contract</button>
+  </form>
+  <!-- Remove contract -->
+  <form method="post" action="/remove-contract/{{ contract._id }}" onsubmit="return confirm('Are you sure you want to submit this form?');">
+    <button type="submit">Remove Contract</button>
+  </form>
+</div>
+</section>
+{% endblock %}

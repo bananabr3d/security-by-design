@@ -48,10 +48,26 @@ def dashboard():
 
     # Transform contract objects in list to dicts
     for contract in contract_list:
-        temp_contract = {"_id": contract.get_id(), "electricity_meter_id": contract.get_attribute("electricity_meter_id")}
+        temp_contract = {"_id": contract.get_id(), "electricity_meter_id": contract.get_attribute("electricity_meter_id")}#TODO: Add more attributes
         transformed_contract_list.append(temp_contract)
 
     # 2. make request on Messstellenbetreiber for data of each contract => How to implement? Do we load a contract.html in the dashboard.html or can we add it here in the return?
     
     #render_template with contract objects for each contract
-    return render_template('dashboard.html', jwt_authenticated=g.jwt_authenticated, twofa_activated=g.twofa_activated, twofa_authenticated=g.twofa_authenticated, username=g.user.get_attribute('username'), contract_list=transformed_contract_list)
+    return render_template('dashboard.html', jwt_authenticated=g.jwt_authenticated, twofa_activated=g.twofa_activated, twofa_authenticated=g.twofa_authenticated, admin=g.admin, username=g.user.get_attribute('username'), contract_list=transformed_contract_list)
+
+# === About ===
+@app.route('/about', methods=['GET'])
+def about():
+    '''
+    This function handles the about page of the web application.
+    '''
+    return render_template('about.html', jwt_authenticated=g.jwt_authenticated, twofa_activated=g.twofa_activated, twofa_authenticated=g.twofa_authenticated)
+
+# === Impressum ===
+@app.route('/impressum', methods=['GET'])
+def impressum():
+    '''
+    This function handles the impressum page of the web application.
+    '''
+    return render_template('impressum.html', jwt_authenticated=g.jwt_authenticated, twofa_activated=g.twofa_activated, twofa_authenticated=g.twofa_authenticated)

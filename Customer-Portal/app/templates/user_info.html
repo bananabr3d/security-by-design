@@ -15,6 +15,7 @@ User Information
     <p>Email: {{ email }}</p>
 
     <!-- Export user account information Button + div to show json output with correct indentation -->
+    {% if twofa_authenticated %}
     <div>
         <form method="get" action="/export-user">
             <button type="submit">Export User Information</button>
@@ -25,6 +26,7 @@ User Information
         </div>
         {% endif %}
     </div>
+    {% endif %}
 
     <!-- Set new password by sending old, new and new2 -->
     <div> <!-- Set new password -->
@@ -43,7 +45,7 @@ User Information
             <input type="password" id="password2" name="new_password2" required onkeyup="checkPasswordMatch()">
             <span id="password-match"></span>
             <p>Your password must contain at least one digit (0-9), one lowercase and one uppercase character (a-z, A-Z), one special character (!#$%&?") and a length of 12 - 128</p>
-            <button type="submit">Set New Password</button>
+            <button type="submit" id="form-button">Set New Password</button>
         </form>
     </div>
 
@@ -90,7 +92,24 @@ User Information
             <button type="submit">Add Security Question</button>
         </form>
     </div>
-    <!-- Remove security question TODO -->
+    <!-- Remove security question -->
+    {% if security_questions_user %}
+        <div>
+            <h2>Remove Security Question</h2>
+            <form method="post" action="/remove-security-question">
+                <label for="security_question">Security Question</label>
+                <select id="security_question" name="security_question" required>
+                {% for question in security_questions_user %}
+                    <option value="{{ question }}">{{ question }}</option>
+                {% endfor %}
+                </select>
+                <br>
+                <label for="security_answer">Answer</label>
+                <input type="text" id="security_answer" name="answer" required>
+                <button type="submit">Remove Security Question</button>
+            </form>
+        </div>
+    {% endif %}
     <!-- Delete user -->
     <div>
         <form method="post" action="/delete-user" onsubmit="return confirm('Are you sure you want to submit this form?');">
