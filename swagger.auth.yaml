@@ -292,3 +292,25 @@ paths:
       responses:
         '200':
           description: Returned on success.
+
+  /reset-2fa:
+    post:
+      summary: Resets the 2fa (JWT required, 2fa optionally)
+      description: Resets the 2fa of a user. If the user is 2fa authenticated you dont need a backup code.
+      consumes:
+        - application/x-www-form-urlencoded
+      produces:
+        - text/html; charset=utf-8
+      parameters:
+        - name: backup_code
+          in: formData
+          description: One of the ten backup codes of the user.
+          required: true
+          type: string
+      responses:
+        '302':
+          description: Returned on success. The user 2fa has been reset. Redirect to login page and reset jwt.
+          schema:
+            type: object
+        '500':
+          description: Internal server error
