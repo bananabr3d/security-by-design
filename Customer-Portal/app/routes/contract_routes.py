@@ -24,7 +24,7 @@ def add_contract():
 
     # Add here information from form to contract object and then save it in the db
     electricity_meter_id = request.form['electricity_meter_id']
-
+    notes = request.form['notes']
     # Regex for address_plz, address_street_house_number (5 digits)
     address_plz_regex = compile(r'^\d{5}$')
 
@@ -93,7 +93,6 @@ def add_contract():
     elif blocked == False:
         auto_renew = False
         renew_period = 1
-        notes = ""
 
         date = datetime.now
         date2 = date + timedelta(days=90)
