@@ -7,6 +7,8 @@ from app import app, logger, db, Invalid2FA
 from app.models.contract import Contract, load_contract
 from app.models.user import load_user
 from app.routes.auth_routes import validate_text
+from requests import get, post
+from datetime import datetime, timedelta
 
 @app.route('/add-contract', methods=['POST'])
 @jwt_required(fresh=True)
@@ -22,8 +24,65 @@ def add_contract():
 
     # Add here information from form to contract object and then save it in the db
     electricity_meter_id = request.form['electricity_meter_id']
+
+    # Regex for address_plz, address_street_house_number (5 digits)
+    address_plz_regex = compile(r'^\d{5}$')
+
+    # Regex for address_street, address_city, address_country (only letters, äöüÄÖÜß and spaces)
+    address_street_city_country_regex = compile(r'^[a-zA-ZäöüÄÖÜß ]+$')
+
+    # Regex for address_street_house_number (only digits, up to 5)
+    address_street_house_number_regex = compile(r'^\d{1,5}$')
+
+    address_plz = request.form['address_plz']
+    address_street = request.form['address_street']
+    address_street_number = request.form['address_street_number']
+    address_city = request.form['address_city']
+    address_country = request.form['address_country']
+
+    if address_plz != address_plz_regex:
+        logger.warning(f"Contract Denied PLZ in wrong format")
+        flash("Your PLZ is in an wrong format")
+        return redirect(url_for('dashboard'))
+    elif address_street != address_street_city_country_regex:
+        logger.warning(f"Contract Denied street in wrong format")
+        flash("Your Street is in an wrong format")
+        return redirect(url_for('dashboard'))
+    elif address_city != address_street_city_country_regex:
+        logger.warning(f"Contract Denied City in wrong format")
+        flash("Your City is in an wrong format")
+        return redirect(url_for('dashboard'))
+    elif address_country != address_street_city_country_regex:
+        logger.warning(f"Contract Denied Country in wrong format")
+        flash("Your Country is in an wrong format")
+        return redirect(url_for('dashboard'))
+    elif address_street_number != address_street_house_number_regex:
+        logger.warning(f"Contract Denied Street Number in wrong format")
+        flash("Your Street Number is in an wrong format")
+        return redirect(url_for('dashboard'))
     # Check electricity_meter_id for correct format and check with metering point operator if it exists and is free
     #TODO
+    shared_secret =  None
+    url = "127.0.0.1:8443/getcounterstatus/" + electricity_meter_id
+
+
+    response = get(url,  headers={"Authorization":shared_secret})
+    blocked = True
+
+    if response.status_code == 401:
+        logger.warning(f"Contract with electricity_meter_id: '{electricity_meter_id}' shared secret wrong.")
+        flash("Contract could not be created Please contact an Administrator")
+        return redirect(url_for('dashboard'))
+    elif response.status_code == 301:
+        logger.warning(f"Contract with electricity_meter_id: '{electricity_meter_id}' is checked out already.")
+        flash(f"The electricity meter with ID '{electricity_meter_id}' is blocked")
+        return redirect(url_for('dashboard'))
+    elif response.status_code == 200:
+        logger.debug("Electricitymeter is not taken")
+        
+        blocked = False
+        # hier drin sind die eem daten
+        # diese dann in dem contract speichern
 
     # Check if contract with electricity_meter_id already exists
     if Contract.find_contract_by_electricity_meter_id(db=db, electricity_meter_id=electricity_meter_id) != None:
@@ -31,8 +90,19 @@ def add_contract():
         flash("A contract with the provided Electricity Meter ID already exists")
         return redirect(url_for('dashboard'))
     
-    else:
-        contract = Contract(db=db, electricity_meter_id=electricity_meter_id)
+    elif blocked == False:
+        auto_renew = False
+        renew_period = 1
+        notes = ""
+
+        date = datetime.now
+        date2 = date + timedelta(days=90)
+
+        startdate = date.strftime("%Y-%m-%d")
+        enddate = date2.strftime("%Y-%m-%d")
+
+
+        contract = Contract(db=db, electricity_meter_id=electricity_meter_id, startdate=startdate, enddate=enddate, renew_period=renew_period, auto_renew=auto_renew, notes=notes, address_plz=address_plz, address_street=address_street, address_street_number=address_street_number, address_city=address_city, address_country=address_country)
         contract.save(db=db)
         logger.debug(f"Contract with Electricity Meter ID '{electricity_meter_id}' successfully created.")
 
