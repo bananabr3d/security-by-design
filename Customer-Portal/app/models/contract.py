@@ -25,8 +25,8 @@ def load_contract_data(user, db: pymongo.database.Database) -> list:
     return contract_data_list
 
 class Contract():
-    def __init__(self, db: pymongo.database.Database, electricity_meter_id: int) -> None:
-        self.contract_data = {"electricity_meter_id": electricity_meter_id}
+    def __init__(self, db: pymongo.database.Database, electricity_meter_id: int, startdate: str, enddate: str, renew_period: int, auto_renew: bool, notes:str, address_plz:str, address_street:str, address_street_number:str, address_city:str, address_country: str) -> None:
+        self.contract_data = {"electricity_meter_id": electricity_meter_id, "startdate": startdate, "enddate": enddate, "renew_period": renew_period, "auto_renew": auto_renew, "notes": notes, "address": {"PLZ": address_plz, "Street": address_street, "Street_Number": address_street_number, "City": address_city, "Country": address_country}}
 
         try:
             contract_data = db.contracts.find_one({'electricity_meter_id': electricity_meter_id}, allow_partial_results=False)
