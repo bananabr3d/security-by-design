@@ -80,7 +80,20 @@ def contract(contract_id: str):
     # Add text in first item of attributes to be shown in the frontend
     contract_show["attributes"] = ["Select attribute"] + contract_show["attributes"]
 
-    return render_template('contract.html', contract=contract_show, jwt_authenticated=g.jwt_authenticated, twofa_activated=g.twofa_activated, twofa_authenticated=g.twofa_authenticated, admin=g.admin)
+    try:
+        # Get contract_information_json from contract
+        contract_information_json = request.args.get('contract_information_json')
+    except:
+        contract_information_json = None
+
+    return render_template('contract.html', 
+                           contract=contract_show, 
+                           jwt_authenticated=g.jwt_authenticated, 
+                           twofa_activated=g.twofa_activated, 
+                           twofa_authenticated=g.twofa_authenticated, 
+                           admin=g.admin,
+                           contract_information_json=contract_information_json
+                           )
 
 @app.route('/update-contract/<contract_id>', methods=['POST'])
 @jwt_required(fresh=True)
@@ -164,21 +177,40 @@ def remove_contract(contract_id: str):
     flash("Contract successfully deleted", "success")
     return redirect(url_for('dashboard'))
 
-# # Change to "Netzstellenbetreiber" routes in other app
-# @app.route('/api/register', methods=['GET'])
-# def api_register():
-#     logger.info("Get-Request: Electricity-Meter /register")
-#     # register a new electricity-meter:
-#     # 1. Generate a random number (ID) # Maybe id + password auth?
-#     # 2. Check if the number is already in the "electricity-meter" collection
-#     # 3.1 If so, generate new one, until its new
-#     # 3.2 If not, save hash in db and give number to the electricity-meter's get-response body
-#     return 1
+@app.route('/export-contract/<contract_id>', methods=['GET'])
+@jwt_required(fresh=True)
+def export_contract(contract_id: str):
+    '''
+    This function handles the export_contract route and can only be accessed with a fresh JWT Token.
 
-# @app.route('/api/heartbeat', methods=['POST'])
-# def api_heartbeat():
-#     electricity_meter = 1 # Change to its ID from the POST
-#     logger.info("POST-Request: Electricity-Meter heartbeat: ", electricity_meter)
-#     # Set status of electricity-meter to "online" and update "last_heartbeat" 
-#     # (anywhere in the code the electricity-meters will get checked every 5 mins and if the last heartbeat was more than 3min ago, the em will be displayed offline)
-#     # Also update the values provided by the em
+    Raise Invalid2FA if the user is not 2fa authenticated.
+
+    Returns the export_user.html template.    '''
+
+    if not g.twofa_authenticated:
+        raise Invalid2FA
+
+    # Check if user has the contract, get contract_list from user
+    contract_list = g.user.get_contract_list()
+
+    if contract_id not in contract_list:
+        logger.warning(f"Contract with ID: '{contract_id}' does not exist for user with ID: '{g.user.get_id()}'.")
+        flash("Contract does not exist")
+        return redirect(url_for('dashboard'))
+    
+    # Load contract
+    contract = load_contract(db=db, contract_id=contract_id)
+
+    # Check if contract is still active
+    # if contract.get_attribute("active") == False:#TODO
+    #     logger.warning(f"Contract with ID: '{contract_id}' is not active.")
+    #     flash("Contract is not active")
+
+    # Get contract data
+    contract_information_json = contract.get_contract_data()
+
+    contract_information_json.pop("_id")
+    
+    return redirect(url_for('contract',
+                            contract_id=contract_id,
+                            contract_information_json=contract_information_json))
