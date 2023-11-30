@@ -41,6 +41,12 @@ class Contract():
     def get_attribute(self, attribute: str) -> str:
         return str(self.contract_data[attribute])
     
+    def get_contract_data(self) -> dict:
+        '''
+        Returns all key-value pairs of the contract.
+        '''
+        return self.contract_data
+    
     def update_attribute(self, db: pymongo.database.Database, attribute: str, value: str) -> None:
         if self.get_attribute(attribute=attribute) != None: # Check if contract has the attribute
             try:

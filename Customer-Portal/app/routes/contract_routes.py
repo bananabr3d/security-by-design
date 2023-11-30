@@ -80,7 +80,20 @@ def contract(contract_id: str):
     # Add text in first item of attributes to be shown in the frontend
     contract_show["attributes"] = ["Select attribute"] + contract_show["attributes"]
 
-    return render_template('contract.html', contract=contract_show, jwt_authenticated=g.jwt_authenticated, twofa_activated=g.twofa_activated, twofa_authenticated=g.twofa_authenticated, admin=g.admin)
+    try:
+        # Get contract_information_json from contract
+        contract_information_json = request.args.get('contract_information_json')
+    except:
+        contract_information_json = None
+
+    return render_template('contract.html', 
+                           contract=contract_show, 
+                           jwt_authenticated=g.jwt_authenticated, 
+                           twofa_activated=g.twofa_activated, 
+                           twofa_authenticated=g.twofa_authenticated, 
+                           admin=g.admin,
+                           contract_information_json=contract_information_json
+                           )
 
 @app.route('/update-contract/<contract_id>', methods=['POST'])
 @jwt_required(fresh=True)
@@ -163,3 +176,41 @@ def remove_contract(contract_id: str):
     logger.debug(f"Contract with ID '{contract_id}' successfully deleted.")
     flash("Contract successfully deleted", "success")
     return redirect(url_for('dashboard'))
+
+@app.route('/export-contract/<contract_id>', methods=['GET'])
+@jwt_required(fresh=True)
+def export_contract(contract_id: str):
+    '''
+    This function handles the export_contract route and can only be accessed with a fresh JWT Token.
+
+    Raise Invalid2FA if the user is not 2fa authenticated.
+
+    Returns the export_user.html template.    '''
+
+    if not g.twofa_authenticated:
+        raise Invalid2FA
+
+    # Check if user has the contract, get contract_list from user
+    contract_list = g.user.get_contract_list()
+
+    if contract_id not in contract_list:
+        logger.warning(f"Contract with ID: '{contract_id}' does not exist for user with ID: '{g.user.get_id()}'.")
+        flash("Contract does not exist")
+        return redirect(url_for('dashboard'))
+    
+    # Load contract
+    contract = load_contract(db=db, contract_id=contract_id)
+
+    # Check if contract is still active
+    # if contract.get_attribute("active") == False:#TODO
+    #     logger.warning(f"Contract with ID: '{contract_id}' is not active.")
+    #     flash("Contract is not active")
+
+    # Get contract data
+    contract_information_json = contract.get_contract_data()
+
+    contract_information_json.pop("_id")
+    
+    return redirect(url_for('contract',
+                            contract_id=contract_id,
+                            contract_information_json=contract_information_json))
