@@ -138,21 +138,22 @@ def contract(contract_id: str):
     # Load contract
     contract = load_contract(db=db, contract_id=contract_id)
 
-    # Check if contract is still active
-    # if contract.get_attribute("active") == False:#TODO
-    #     logger.warning(f"Contract with ID: '{contract_id}' is not active.")
-    #     flash("Contract is not active")
+    #Check if contract is still active
+    if contract.get_attribute("enddate") < datetime.now().strftime("%Y-%m-%d"):
+        logger.warning(f"Contract with ID: '{contract_id}' is not active.")
+        flash("Contract is not active")
+        return redirect(url_for('dashboard'))
 
     # Build contract_show dict
-    contract_show = {"_id": contract.get_id(), "electricity_meter_id": contract.get_attribute("electricity_meter_id")}#TODO
-
-    # Build attributes dict for update-contract -> remove _id and electricity_meter_id from
-    contract_show["attributes"] = list(contract.contract_data.keys())
-    contract_show["attributes"].remove("_id")
-    contract_show["attributes"].remove("electricity_meter_id")
+    contract_show = contract.get_contract_data()
+    contract_show["active"] = True # As the contract is still active, see if statement before
 
     # Add text in first item of attributes to be shown in the frontend
-    contract_show["attributes"] = ["Select attribute"] + contract_show["attributes"]
+    contract_show["attributes"] = ["Select attribute"]
+
+    # Build attributes list for update_contract
+    contract_show["attributes"] += ["notes", "auto_renew"] # Attributes that the user will be shown and he can choose to update
+
 
     try:
         # Get contract_information_json from contract
