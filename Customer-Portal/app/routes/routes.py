@@ -47,7 +47,7 @@ def home():
     '''
     This function handles the home page of the web application.
     '''
-    return render_template('index.html', jwt_authenticated=g.jwt_authenticated, twofa_activated=g.twofa_activated, twofa_authenticated=g.twofa_authenticated)
+    return render_template('index.html', jwt_authenticated=g.jwt_authenticated, twofa_activated=g.twofa_activated, twofa_authenticated=g.twofa_authenticated, admin=g.admin)
 
 # === Dashboard ===
 @app.route('/dashboard', methods=['GET'])
@@ -83,7 +83,7 @@ def about():
     '''
     This function handles the about page of the web application.
     '''
-    return render_template('about.html', jwt_authenticated=g.jwt_authenticated, twofa_activated=g.twofa_activated, twofa_authenticated=g.twofa_authenticated)
+    return render_template('about.html', jwt_authenticated=g.jwt_authenticated, twofa_activated=g.twofa_activated, twofa_authenticated=g.twofa_authenticated, admin=g.admin)
 
 # === Impressum ===
 @app.route('/impressum', methods=['GET'])
@@ -91,7 +91,7 @@ def impressum():
     '''
     This function handles the impressum page of the web application.
     '''
-    return render_template('impressum.html', jwt_authenticated=g.jwt_authenticated, twofa_activated=g.twofa_activated, twofa_authenticated=g.twofa_authenticated)
+    return render_template('impressum.html', jwt_authenticated=g.jwt_authenticated, twofa_activated=g.twofa_activated, twofa_authenticated=g.twofa_authenticated, admin=g.admin)
 
 # === Add user info ===
 @app.route('/user-info/update', methods=['GET'])
@@ -121,7 +121,7 @@ def update_user_info():
     for key in remove_keys:
         user_information.pop(key)
 
-    return render_template('update_user_info.html', jwt_authenticated=g.jwt_authenticated, twofa_activated=g.twofa_activated, twofa_authenticated=g.twofa_authenticated, not_provided_information=not_provided_information, user_information=user_information)
+    return render_template('update_user_info.html', jwt_authenticated=g.jwt_authenticated, twofa_activated=g.twofa_activated, twofa_authenticated=g.twofa_authenticated, admin=g.admin, not_provided_information=not_provided_information, user_information=user_information)
 
 @app.route('/user-info/update', methods=['POST'])
 @jwt_required()
