@@ -65,8 +65,9 @@ def add_contract():
         flash("Your Street Number is in an wrong format")
         return redirect(url_for('dashboard'))
     # Check electricity_meter_id for correct format and check with metering point operator if it exists and is free
-    #TODO
-    shared_secret =  os.getenv("authorization_header")
+    # Add notes regex check and em regex before checking with metering point operator
+    # TODO
+    shared_secret =  os.getenv("authorization_header")#TODO change name to shared secret
     url = "metering-point-operator:5000/getcounterstatus/" + electricity_meter_id
 
 
