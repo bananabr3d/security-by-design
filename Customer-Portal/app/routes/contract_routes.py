@@ -9,6 +9,10 @@ from app.models.user import load_user
 from app.routes.auth_routes import validate_text
 from requests import get, post
 from datetime import datetime, timedelta
+from re import compile, fullmatch
+from dotenv import load_dotenv
+load_dotenv()
+import os
 
 @app.route('/add-contract', methods=['POST'])
 @jwt_required(fresh=True)
@@ -40,30 +44,30 @@ def add_contract():
     address_city = request.form['address_city']
     address_country = request.form['address_country']
 
-    if address_plz != address_plz_regex:
+    if not fullmatch( address_plz_regex , address_plz):
         logger.warning(f"Contract Denied PLZ in wrong format")
         flash("Your PLZ is in an wrong format")
         return redirect(url_for('dashboard'))
-    elif address_street != address_street_city_country_regex:
+    elif not fullmatch( address_street_city_country_regex, address_street):
         logger.warning(f"Contract Denied street in wrong format")
         flash("Your Street is in an wrong format")
         return redirect(url_for('dashboard'))
-    elif address_city != address_street_city_country_regex:
+    elif not fullmatch( address_street_city_country_regex, address_city):
         logger.warning(f"Contract Denied City in wrong format")
         flash("Your City is in an wrong format")
         return redirect(url_for('dashboard'))
-    elif address_country != address_street_city_country_regex:
+    elif not fullmatch( address_street_city_country_regex, address_country,):
         logger.warning(f"Contract Denied Country in wrong format")
         flash("Your Country is in an wrong format")
         return redirect(url_for('dashboard'))
-    elif address_street_number != address_street_house_number_regex:
+    elif not fullmatch( address_street_house_number_regex, address_street_number):
         logger.warning(f"Contract Denied Street Number in wrong format")
         flash("Your Street Number is in an wrong format")
         return redirect(url_for('dashboard'))
     # Check electricity_meter_id for correct format and check with metering point operator if it exists and is free
     #TODO
-    shared_secret =  None
-    url = "127.0.0.1:8443/getcounterstatus/" + electricity_meter_id
+    shared_secret =  os.getenv("authorization_header")
+    url = "metering-point-operator:5000/getcounterstatus/" + electricity_meter_id
 
 
     response = get(url,  headers={"Authorization":shared_secret})
