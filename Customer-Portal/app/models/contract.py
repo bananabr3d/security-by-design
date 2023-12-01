@@ -8,7 +8,19 @@ def load_contract(db: pymongo.database.Database, contract_id: str):
     except:
         raise DBConnectionError
     
-    return Contract(db=db, electricity_meter_id=contract_data["electricity_meter_id"]) if contract_data else None
+    return Contract(db=db,
+                     electricity_meter_id=contract_data["electricity_meter_id"],
+                     startdate=contract_data["startdate"],
+                     enddate=contract_data["enddate"],
+                     renew_period=contract_data["renew_period"],
+                     auto_renew=contract_data["auto_renew"],
+                     notes = contract_data["notes"],
+                     address_plz=contract_data["address"]["PLZ"],
+                     address_street=contract_data["address"]["Street"],
+                     address_street_number=contract_data["address"]["Street_Number"],
+                     address_city=contract_data["address"]["City"],
+                     address_country=contract_data["address"]["Country"]
+                     ) if contract_data else None
 
 def load_contract_data(user, db: pymongo.database.Database) -> list:
     contract_list = user.get_contract_list()
