@@ -99,7 +99,7 @@ def add_contract():
         auto_renew = False
         renew_period = 1
 
-        date = datetime.now
+        date = datetime.now()
         date2 = date + timedelta(days=90)
 
         startdate = date.strftime("%Y-%m-%d")
