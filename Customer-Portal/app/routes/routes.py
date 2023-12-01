@@ -16,6 +16,7 @@ from app.models.contract import load_contract_data
 
 # Import regex
 from re import compile, fullmatch
+from app.routes.auth_routes import regex_text
 
 # Import datetime
 from datetime import datetime
@@ -132,8 +133,6 @@ def update_user_info_post():
     # Check which key value pairs came in the request, update user object accordingly and save
     request_data = request.form
 
-    print(request_data)
-
     keys = list()
 
     # Check regex for each key value pair and if valid, add to list
@@ -206,6 +205,22 @@ def update_user_info_post():
                 # Check if phone_number is valid 
                 if not fullmatch(phone_number_regex, request_data[key]):
                     flash('Please enter a valid phone number.', 'error')
+                    return redirect(url_for('update_user_info'))
+                
+                keys.append(key)
+
+            elif key == 'name':
+                # Check if name is valid
+                if not fullmatch(regex_text, request_data[key]):
+                    flash('Please enter a valid name.', 'error')
+                    return redirect(url_for('update_user_info'))
+                
+                keys.append(key)
+
+            elif key == 'surname':
+                # Check if surname is valid
+                if not fullmatch(regex_text, request_data[key]):
+                    flash('Please enter a valid surname.', 'error')
                     return redirect(url_for('update_user_info'))
                 
                 keys.append(key)
