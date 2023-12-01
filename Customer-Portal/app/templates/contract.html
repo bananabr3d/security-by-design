@@ -11,14 +11,7 @@ Contract {{ contract._id }}
 <section>
   <!-- <h3>Contract Adress: {{ contract.contract_address_street}}, {{ contract.contract_address_postal_code}}, {{ contract.contract_address_city}}, {{ contract.contract_address_country }}</h3> -->
   <h3>Electricity Meter ID: {{ contract.electricity_meter_id }}</h3>
-  <!-- <h3>Electricity Meter Type: {{ electricity_meter_type }}</h3>#TODO change values to contract.
-    em address
-  <h3>Electricity Meter Manufacturer: {{ electricity_meter_manufacturer }}</h3>
-  <h3>Electricity Meter Model: {{ electricity_meter_model }}</h3>
-  <h3>Electricity Meter Serial Number: {{ electricity_meter_serial_number }}</h3>
-  <h3>Electricity Meter Firmware Version: {{ electricity_meter_firmware_version }}</h3>
-  <h3>Electricity Meter Status: {{ electricity_meter_status }}</h3>
-  <h3>Electricity Meter Last Updated: {{ electricity_meter_last_updated }}</h3>
+
   <h3>Electricity Meter Last Updated Value: {{ electricity_meter_last_updated_value }}</h3>
   <h3>Electricity Meter Last Updated Value Unit: {{ electricity_meter_last_updated_value_unit }}</h3> Change to static unit in html -->
 
@@ -39,6 +32,19 @@ Contract {{ contract._id }}
   <form method="post" action="/remove-contract/{{ contract._id }}" onsubmit="return confirm('Are you sure you want to submit this form?');">
     <button type="submit">Remove Contract</button>
   </form>
+  <!-- Export contract information button + div to show json output with correct indentation -->
+  {% if twofa_authenticated %}
+  <div>
+      <form method="get" action="/export-contract/{{ contract._id }}">
+          <button type="submit">Export Contract Information</button>
+      </form>
+      {% if contract_information_json %}
+      <div>
+          <pre id="contract_information_json">{{ contract_information_json }}</pre>
+      </div>
+      {% endif %}
+  </div>
+  {% endif %}
 </div>
 </section>
 {% endblock %}
