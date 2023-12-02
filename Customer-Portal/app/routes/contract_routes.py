@@ -167,7 +167,11 @@ def contract(contract_id: str):
 @jwt_required(fresh=True)
 def update_contract(contract_id: str):
     '''
-    This function handles the update-contract page of the web application. The JWT Token is required and the 2fa is checked. 
+    This function handles the update-contract page of the web application. The JWT Token is required and the 2fa is checked.
+
+    It is only possible to change the notes and the auto_renew attribute of the contract.
+
+    Raise Invalid2FA if the user is not 2fa authenticated.
     '''
 
     if not g.twofa_authenticated:
@@ -184,14 +188,16 @@ def update_contract(contract_id: str):
     # Load contract
     contract = load_contract(db=db, contract_id=contract_id)
 
-    # Check if contract is still active
-    # if contract.get_attribute("active") == False:#TODO
-    #     logger.warning(f"Contract with ID: '{contract_id}' is not active.")
-    #     flash("Contract is not active")
-    
-    # Check attribute for correct format
-    if not validate_text(request.form['attribute']) or request.form['attribute'] not in contract.contract_data.keys():
-        flash("Invalid attribute")
+    #Check if contract is still active
+    if contract.get_attribute("enddate") < datetime.now().strftime("%Y-%m-%d"):
+        logger.warning(f"Contract with ID: '{contract_id}' is not active.")
+        flash("Contract is not active")
+        return redirect(url_for('dashboard'))
+        
+    # Check if "notes" or "auto_renew" in request.form
+    if "notes" not in request.form and "auto_renew" not in request.form:
+        logger.warning(f"Attribute is not allowed to be updated.")
+        flash("Attribute is not allowed to be updated")
         return redirect(url_for('contract', contract_id=contract_id))
     
     # Check value for correct format #TODO also check if value is sutiable for attribute
@@ -202,7 +208,7 @@ def update_contract(contract_id: str):
     # Update contract
     contract.update_attribute(db=db, attribute=request.form['attribute'], value=request.form['value'])
 
-    logger.debug(f"Contract with ID '{contract_id}' successfully updated attribute '{request.form['attribute']}'.")
+    logger.debug(f"Contract with ID '{contract_id}' successfully updated.")
     flash("Contract successfully updated", "success")
     return redirect(url_for('contract', contract_id=contract_id))
 
@@ -228,10 +234,11 @@ def remove_contract(contract_id: str):
     # Load contract
     contract = load_contract(db=db, contract_id=contract_id)
 
-    # Check if contract is still active
-    # if contract.get_attribute("active") == False:#TODO
-    #     logger.warning(f"Contract with ID: '{contract_id}' is not active.")
-    #     flash("Contract is not active")
+    #Check if contract is still active
+    if contract.get_attribute("enddate") < datetime.now().strftime("%Y-%m-%d"):
+        logger.warning(f"Contract with ID: '{contract_id}' is not active.")
+        flash("Contract is not active")
+        return redirect(url_for('dashboard'))
 
     #TODO Send API request to metering point operator to say the em is free again
     
@@ -269,10 +276,11 @@ def export_contract(contract_id: str):
     # Load contract
     contract = load_contract(db=db, contract_id=contract_id)
 
-    # Check if contract is still active
-    # if contract.get_attribute("active") == False:#TODO
-    #     logger.warning(f"Contract with ID: '{contract_id}' is not active.")
-    #     flash("Contract is not active")
+    #Check if contract is still active
+    if contract.get_attribute("enddate") < datetime.now().strftime("%Y-%m-%d"):
+        logger.warning(f"Contract with ID: '{contract_id}' is not active.")
+        flash("Contract is not active")
+        return redirect(url_for('dashboard'))
 
     # Get contract data
     contract_information_json = contract.get_contract_data()
