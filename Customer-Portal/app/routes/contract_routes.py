@@ -217,13 +217,28 @@ def update_contract(contract_id: str):
         flash("Attribute is not allowed to be updated")
         return redirect(url_for('contract', contract_id=contract_id))
     
-    # Check value for correct format #TODO also check if value is sutiable for attribute
-    if not validate_text(request.form['value']) or request.form['value'] == "electricity_meter_id" or request.form['value'] == "_id":
-        flash("Invalid value")
+    # Check regex for "notes" and format of "auto_renew"
+    if "auto_renew" in request.form and request.form["auto_renew"] not in ["true", "false"]:
+        logger.warning(f"Auto renew in wrong format.")
+        flash("Auto renew in wrong format")
         return redirect(url_for('contract', contract_id=contract_id))
 
-    # Update contract
-    contract.update_attribute(db=db, attribute=request.form['attribute'], value=request.form['value'])
+    if "notes" in request.form and not validate_text(request.form['notes']):
+        logger.warning(f"Notes in wrong format.")
+        flash("Notes in wrong format")
+        return redirect(url_for('contract', contract_id=contract_id))
+        
+    if "notes" in request.form:
+        # Update contract
+        contract.update_attribute(db=db, attribute="notes", value=request.form['notes'])
+
+    if "auto_renew" in request.form:
+        # Update contract
+        if request.form["auto_renew"] == "true":
+            contract.update_attribute(db=db, attribute="auto_renew", value=True)
+        elif request.form["auto_renew"] == "false":
+            contract.update_attribute(db=db, attribute="auto_renew", value=False)
+
 
     logger.debug(f"Contract with ID '{contract_id}' successfully updated.")
     flash("Contract successfully updated", "success")
