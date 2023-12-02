@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block header_title %}
+{% block title %}
+Contract {{ contract._id }}
+{% endblock %}
+{% endblock %}
+
+
+{% block content %}
+<section>
+  <h3>Active: {{ contract.active }}</h3>
+  <h3>Start- & Enddate: {{ contract.startdate }} - {{ contract.enddate }}</h3>
+  <h3>Contract Address: {{ contract.address.Street}} {{ contract.address.Street_Number }}, {{ contract.address.PLZ }} {{ contract.address.City }}, {{ contract.address.Country }}</h3>
+  <h3>Auto-Renew:
+    <form method="post" action="/update-contract/{{ contract._id }}" onsubmit="return confirm('Are you sure you want to submit this form?');">
+      <input type="radio" name="auto_renew" value="true" {% if contract.auto_renew %}checked{% endif %}>
+      <label for="true">Yes</label>
+      <input type="radio" name="auto_renew" value="false" {% if not contract.auto_renew %}checked{% endif %}>
+      <label for="false">No</label>
+      <button type="submit">Update</button>
+    </form>
+  </h3>
+  <h3>Renew-Period: {{ contract.renew_period }}</h3>
+  
+  <h3>Electricity Meter ID: {{ contract.electricity_meter_id }}</h3>
+  <h3>Electricity Meter Last Updated Value: {{ electricity_meter_last_updated_value }} kWh</h3>
+
+  <h3>Notes: 
+    <form method="post" action="/update-contract/{{ contract._id }}" onsubmit="return confirm('Are you sure you want to submit this form?');">
+      <input type="text" id="notes" name="notes" placeholder="{{ contract.notes }}">
+      <button type="submit">Update</button>
+    </form>
+  </h3>
+  <br>
+  <br>
+  <!-- Remove contract -->
+  <form method="post" action="/remove-contract/{{ contract._id }}" onsubmit="return confirm('Are you sure you want to submit this form?');">
+    <button type="submit">Remove Contract</button>
+  </form>
+  <!-- Export contract information button + div to show json output with correct indentation -->
+  {% if twofa_authenticated %}
+  <div>
+      <form method="get" action="/export-contract/{{ contract._id }}">
+          <button type="submit">Export Contract Information</button>
+      </form>
+      {% if contract_information_json %}
+      <div>
+          <pre id="contract_information_json">{{ contract_information_json }}</pre>
+      </div>
+      {% endif %}
+  </div>
+  {% endif %}
+</div>
+</section>
+{% endblock %}

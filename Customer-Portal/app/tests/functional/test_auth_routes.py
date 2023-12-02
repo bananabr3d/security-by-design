@@ -45,8 +45,7 @@ class TestAuthRoutes:
         request_data = {
             "email": "Pytest",
             "username": "pytest1",
-            "password": "TestTest123!",
-            "password2": "TestTest123!"
+            "password": "PytestPytest123!"
         }
 
         response = self.client.post('/register', data=request_data)
@@ -59,8 +58,7 @@ class TestAuthRoutes:
         request_data = {
             "email": "Pytest1@test.test",
             "username": "pytest!",
-            "password": "TestTest123!",
-            "password2": "TestTest123!"
+            "password": "PytestPytest123!"
         }
 
         response = self.client.post('/register', data=request_data)
@@ -73,22 +71,7 @@ class TestAuthRoutes:
         request_data = {
             "email": "Pytest1@test.test",
             "username": "pytest1",
-            "password": "testtest123!",
-            "password2": "testtest123!"
-        }
-
-        response = self.client.post('/register', data=request_data)
-
-        # Check if redirect to register page
-        assert response.status_code == 302
-        assert response.headers['Location'] == '/register'
-
-    def test_post_register_passwords_not_matching(self):
-        request_data = {
-            "email": "Pytest1@test.test",
-            "username": "pytest1",
-            "password": "TestTest123!",
-            "password2": "TestTest123"
+            "password": "testtest123!"
         }
 
         response = self.client.post('/register', data=request_data)
@@ -101,8 +84,7 @@ class TestAuthRoutes:
         request_data = {
             "email": "Pytest@test.test",
             "username": "pytest1",
-            "password": "TestTest123!",
-            "password2": "TestTest123!"
+            "password": "PytestPytest123!"
         }
 
         response = self.client.post('/register', data=request_data)
@@ -115,8 +97,7 @@ class TestAuthRoutes:
         request_data = {
             "email": "Pytest1@test.test",
             "username": "pytest",
-            "password": "TestTest123!",
-            "password2": "TestTest123!"
+            "password": "PytestPytest123!"
         }
 
         response = self.client.post('/register', data=request_data)
@@ -129,7 +110,7 @@ class TestAuthRoutes:
     def test_post_login_username_invalid(self):
         request_data = {
             "username": "pytest!",
-            "password": "TestTest123!",
+            "password": "PytestPytest123!",
         }
 
         response = self.client.post('/login', data=request_data)
@@ -153,7 +134,7 @@ class TestAuthRoutes:
     def test_post_login_username_not_found(self):
         request_data = {
             "username": "Pytest",
-            "password": "TestTest123!",
+            "password": "PytestPytest123!",
         }
 
         response = self.client.post('/login', data=request_data)
@@ -165,7 +146,7 @@ class TestAuthRoutes:
     def test_post_login_password_not_matching(self):
         request_data = {
             "username": "pytest",
-            "password": "TestTest123!!",
+            "password": "PytestPytest123!!",
         }
 
         response = self.client.post('/login', data=request_data)
@@ -192,7 +173,7 @@ class TestAuthRoutes:
 
         # Check if redirect to user info page
         assert response.status_code == 302
-        assert response.headers['Location'] == '/user_info'
+        assert response.headers['Location'] == '/user-info'
 
     # Security Question Failed
     def test_post_security_question_not_useable(self):
@@ -208,7 +189,7 @@ class TestAuthRoutes:
 
         # Check if redirect to user info page
         assert response.status_code == 302
-        assert response.headers['Location'] == '/user_info'
+        assert response.headers['Location'] == '/user-info'
 
     def test_post_security_question_already_answered(self):
         request_data = {
@@ -223,7 +204,7 @@ class TestAuthRoutes:
 
         # Check if redirect to user info page
         assert response.status_code == 302
-        assert response.headers['Location'] == '/user_info'
+        assert response.headers['Location'] == '/user-info'
 
     def test_post_security_question_invalid_answer(self):
         request_data = {
@@ -238,7 +219,7 @@ class TestAuthRoutes:
 
         # Check if redirect to user info page
         assert response.status_code == 302
-        assert response.headers['Location'] == '/user_info'
+        assert response.headers['Location'] == '/user-info'
 
     # Reset Password with Security Question Failed
     def test_post_reset_password_email_invalid(self):
@@ -246,8 +227,8 @@ class TestAuthRoutes:
             "email": "pytest",
             "security_question": "What is your favorite color?",
             "answer": "Blue",
-            "password": "TestTest123!",
-            "password2": "TestTest123!"
+            "password": "PytestPytest123!",
+            "password2": "PytestPytest123!"
         }
 
         response = self.client.post('/reset-password', data=request_data)
@@ -261,7 +242,7 @@ class TestAuthRoutes:
             "email": "pytest@test.test",
             "security_question": "What is your favorite color?PWNED",
             "answer": "Blue",
-            "new_password": "TestTest123!"
+            "new_password": "PytestPytest123!"
         }
 
         response = self.client.post('/reset-password', data=request_data)
@@ -275,7 +256,7 @@ class TestAuthRoutes:
             "email": "pytest@test.test",
             "security_question": "What is your favorite color?",
             "answer": "Red",
-            "new_password": "TestTest123!"
+            "new_password": "PytestPytest123!"
         }
 
         response = self.client.post('/reset-password', data=request_data)
@@ -304,7 +285,7 @@ class TestAuthRoutes:
             "email": "pytest@test.test",
             "security_question": "What is your favorite color?",
             "answer": "Blue",
-            "new_password": "TestTest123!"
+            "new_password": "PytestPytest123!"
         }
 
         response = self.client.post('/reset-password', data=request_data)
@@ -326,15 +307,14 @@ class TestAuthRoutes:
 
         request_data = {
             "old_password": "testtest123!",
-            "new_password": "TestTest1234!",
-            "new_password2": "TestTest1234!"
+            "new_password": "TestTest1234!"
         }
 
         response = self.client.post('/set-new-password', data=request_data)
 
         # Check if redirect to login page and cookies are unset
         assert response.status_code == 302
-        assert response.headers['Location'] == '/dashboard'
+        assert response.headers['Location'] == '/user-info'
         assert self.client.get_cookie("access_token_cookie") is not None
 
     def test_post_set_new_password_new_password_invalid(self):
@@ -348,16 +328,15 @@ class TestAuthRoutes:
         self.client = validate_2fa(self.client, otp)
 
         request_data = {
-            "old_password": "TestTest123!",
-            "new_password": "testtest123!",
-            "new_password2": "testtest123!"
+            "old_password": "PytestPytest123!",
+            "new_password": "testtest123!"
         }
 
         response = self.client.post('/set-new-password', data=request_data)
 
         # Check if redirect to login page and cookies are unset
         assert response.status_code == 302
-        assert response.headers['Location'] == '/dashboard'
+        assert response.headers['Location'] == '/user-info'
         assert self.client.get_cookie("access_token_cookie") is not None
 
     def test_post_set_new_password_old_password_doesnt_match(self):
@@ -371,39 +350,15 @@ class TestAuthRoutes:
         self.client = validate_2fa(self.client, otp)
 
         request_data = {
-            "old_password": "TestTest123!!",
-            "new_password": "TestTest1234!",
-            "new_password2": "TestTest1234!"
+            "old_password": "PytestPytest123!!",
+            "new_password": "TestTest1234!"
         }
 
         response = self.client.post('/set-new-password', data=request_data)
 
         # Check if redirect to login page and cookies are unset
         assert response.status_code == 302
-        assert response.headers['Location'] == '/dashboard'
-        assert self.client.get_cookie("access_token_cookie") is not None
-
-    def test_post_set_new_password_new_passwords_dont_match(self):
-        # Login with jwt
-        self.client = login_jwt(self.client)
-
-        # Activate 2fa for user pytest
-        otp = activate_2fa(self.client)
-        
-        # Get 2fa access_token_cookie and session
-        self.client = validate_2fa(self.client, otp)
-
-        request_data = {
-            "old_password": "TestTest123!",
-            "new_password": "TestTest1234!",
-            "new_password2": "TestTest1234!!"
-        }
-
-        response = self.client.post('/set-new-password', data=request_data)
-
-        # Check if redirect to login page and cookies are unset
-        assert response.status_code == 302
-        assert response.headers['Location'] == '/dashboard'
+        assert response.headers['Location'] == '/user-info'
         assert self.client.get_cookie("access_token_cookie") is not None
 
     # Set new Password Successfull
@@ -418,9 +373,8 @@ class TestAuthRoutes:
         self.client = validate_2fa(self.client, otp)
 
         request_data = {
-            "old_password": "TestTest123!",
-            "new_password": "TestTest123!",
-            "new_password2": "TestTest123!"
+            "old_password": "PytestPytest123!",
+            "new_password": "PytestPytest123!"
         }
 
         response = self.client.post('/set-new-password', data=request_data)

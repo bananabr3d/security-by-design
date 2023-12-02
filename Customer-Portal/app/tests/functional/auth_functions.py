@@ -35,8 +35,7 @@ def register(client) -> None:
     request_data = {
         "email": "Pytest@test.test",
         "username": "pytest",
-        "password": "TestTest123!",
-        "password2": "TestTest123!"
+        "password": "PytestPytest123!"
     }
 
     response = client.post('/register', data=request_data)
@@ -56,7 +55,7 @@ def login_jwt(client):
     '''
     request_data = {
         "username": "pytest",
-        "password": "TestTest123!",
+        "password": "PytestPytest123!",
     }
 
     response = client.post('/login', data=request_data)

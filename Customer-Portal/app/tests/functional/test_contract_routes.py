@@ -42,7 +42,13 @@ class TestContractRoutes:
     # Add Contract Route Success
     def test_add_contract_route(self):
         request_data = {
-            "electricity_meter_id": "pytest" #TODO Adjust after updating the contract route
+            "electricity_meter_id": "pytest", #TODO Adjust after updating the contract route
+            "notes": "Test contract",
+            "address_plz": "12345",
+            "address_street": "Teststreet",
+            "address_street_house_number": "1",
+            "address_city": "Testcity",
+            "address_country": "Testcountry",
         }
 
         response = self.client.post('/add-contract', data=request_data)
@@ -69,7 +75,13 @@ class TestContractRoutes:
     # Add Contract Route Fail
     def test_add_contract_route_em_already_exists(self):
         request_data = {
-            "electricity_meter_id": "pytest" #TODO Adjust after updating the contract route
+            "electricity_meter_id": "pytest", #TODO Adjust after updating the contract route
+            "notes": "Test contract",
+            "address_plz": "12345",
+            "address_street": "Teststreet",
+            "address_street_house_number": "1",
+            "address_city": "Testcity",
+            "address_country": "Testcountry"
         }
 
         # Add contract to user

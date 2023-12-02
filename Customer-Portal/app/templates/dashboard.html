@@ -14,25 +14,31 @@ Dashboard
   <div class="contract-list">
     {% for contract in contract_list %}
       <div class="contract">
-        <h5>Contract ID: {{ contract._id }}</h3>
+        <h5>Contract ID: <a href="/dashboard/{{ contract._id }}">{{ contract._id }}</a></h3>
         <h6>Electricity Meter ID: {{ contract.electricity_meter_id }}</h6>
-          <!-- Add more contract details when we need them  -->
+          <!-- Add more contract details when we have them  -->
       </div>
     {% endfor %}
   </div>
-  <!--TEST START-->
   <div>
     <!-- Add a contract with em-id -->
-    <form method="post" action="/add-contract">
+    <form method="post" action="/add-contract" onsubmit="return confirm('Are you sure you want to submit this form?');">
       <label for="">Electricity Meter ID</label>
       <input type="text" id="electricity_meter_id" name="electricity_meter_id">
+      <label for="">PLZ</label>
+      <input type="text" id="address_plz" name="address_plz">
+      <label for="">Street</label>
+      <input type="text" id="address_street" name="address_street">
+      <label for="">Street Number</label>
+      <input type="text" id="address_street_number" name="address_street_number">
+      <label for="">City</label>
+      <input type="text" id="address_city" name="address_city">
+      <label for="">Country</label>
+      <input type="text" id="address_country" name="address_country">
+      <label for="">Notes</label>
+      <input type="text" id="notes" name="notes">
       <button type="submit">Add Contract</button>
     </form>
-    <!-- Reset 2FA Button -->
-    <form method="post" action="/reset-2fa">
-      <button type="submit">Reset 2FA</button>
-    </form>
   </div>
-  <!--TEST END-->
 </section>
 {% endblock %}

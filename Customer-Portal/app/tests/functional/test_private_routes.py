@@ -42,5 +42,5 @@ class TestPrivateRoutes:
         # Login with 2fa
         self.client = validate_2fa(self.client, otp)
 
-        response = self.client.get('/user_info')
+        response = self.client.get('/user-info')
         assert response.status_code == 200

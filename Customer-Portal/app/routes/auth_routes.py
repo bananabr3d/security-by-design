@@ -22,8 +22,13 @@ from datetime import datetime, timedelta, timezone
 # Import regex for input validation
 import re
 
+# Import requests and hashlib for pwnedpasswords API
+from requests import get
+from hashlib import sha1
+
+
 # Regex for input validation
-regex_email = re.compile(r'([A-Za-z0-9]+[.-_])*[A-Za-z0-9]+@[A-Za-z0-9-]+(\.[A-Z|a-z]{2,})+')
+regex_email = re.compile(r'([A-Za-z0-9]+[.-_])*[A-Za-z0-9]+@[A-Za-z0-9-]+(\.[A-Z|a-z]{2,320})+')
 regex_username = re.compile(r'^[a-zA-Z0-9]+([_ -]?[a-zA-Z0-9])*$')
 # regex password with at least 1 uppercase, 1 lowercase, 1 number and 1 special character
 regex_password = re.compile(r'^.*(?=.{12,128})(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!#$%&?"]).*$')
@@ -94,6 +99,31 @@ def validate_text(text: str) -> bool:
         flash('Invalid input', 'failed')
         return False
 
+def check_password_breach(password: str) -> bool:
+    '''
+    This function checks if the password hash is breached. It calls the pwnedpasswords API with the first 5 characters of the password hash.
+
+    password: str
+
+    Returns True if the password is breached, else False.
+    '''
+    # Hash the password with SHA1
+    password_hash = sha1(password.encode('utf-8')).hexdigest()
+
+    # Get the first 5 characters of the password hash in hex format
+    password_hash_first_5 = password_hash[:5]
+
+    # Call the pwnedpasswords API
+    respond = get(f"https://api.pwnedpasswords.com/range/{password_hash_first_5}")
+
+    # Check if the password hash is breached
+    if password_hash[5:].upper() in respond.text:
+        logger.warning("User provided a breached password")
+        flash('Your provided password is breached, choose another password.', 'failed')
+        return True
+    else:
+        return False
+
 # ===== Routes =====
 
 # === Register ===
@@ -130,7 +160,7 @@ def register_post():
     # = Input Validation =
     # Email address and password
 
-    if not validate_email(request.form['email']) or not validate_username(request.form['username']) or not validate_password(request.form['password']) or not validate_password(request.form['password2']):
+    if not validate_email(request.form['email']) or not validate_username(request.form['username']) or check_password_breach(request.form['password']):
         return redirect(url_for("register"))
     
     # set email in lowercase and username in original case           
@@ -150,17 +180,7 @@ def register_post():
         flash('Username already exists', 'failed')
         return redirect(url_for("register"))
     
-
-    # Compare passwords
-    password = request.form['password']
-    password2 = request.form['password2']
-
-    if password != password2:
-        logger.warning("Different passwords provided during the registration")
-        logger.debug(f"User: '{username}' provided different passwords during the registration")
-        flash('Passwords dont match', 'failed')
-        return redirect(url_for("register"))
-    
+    password = request.form['password'] 
 
     # hash pw, set user as object and save user
     hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
@@ -260,6 +280,44 @@ def logout():
     return resp
 
 
+# === User Info Page ===
+@app.route('/user-info', methods=['GET'])
+@jwt_required()
+def user_info():
+    '''
+    This function handles the user info page of the web application.
+
+    The JWT Token is required and the 2fa is checked. Then the user info page is displayed accordingly.
+    '''
+    # Show user only security questions, that are not answered yet
+    security_questions_show = list()
+    security_questions_show.append("Please select a security question...")
+
+    security_questions_user = g.user.get_security_questions().keys()
+    for question in security_questions:
+        if question not in security_questions_user:
+            security_questions_show.append(question)
+
+    try:
+        # Get user_information_json from url if exists, else None
+        user_information_json = request.args.get('user_information_json')
+    except:
+        user_information_json = None
+    
+
+
+    # Render the user_info.html template with user data
+    return render_template('user_info.html', 
+                            jwt_authenticated=g.jwt_authenticated, 
+                            username=g.user.get_attribute("username"), 
+                            email=g.user.get_attribute('email'),
+                            twofa_activated=g.twofa_activated, 
+                            twofa_authenticated=g.twofa_authenticated,
+                            security_questions=security_questions_show,
+                            security_questions_user=security_questions_user,
+                            user_information_json=user_information_json)
+
+
 # === Reset password ===
 @app.route('/reset-password', methods=['GET'])
 @jwt_required(optional=True)
@@ -304,7 +362,7 @@ def reset_password_post():
         return redirect(url_for('reset_password'))
     
     # New Password
-    if not validate_password(request.form['new_password']):
+    if not validate_password(request.form['new_password']) or check_password_breach(request.form['new_password']):
         logger.warning("User provided a invalid new password input")
         return redirect(url_for('reset_password'))
     
@@ -347,7 +405,7 @@ def add_security_question():
     '''
     This function handles the add_security_question route and can only be accessed with a JWT Token.
 
-    Returns redirect to dashboard if the security question was successfully added. (+ Updates the user security questions in the database)
+    Returns redirect to user_info if the security question was successfully added. (+ Updates the user security questions in the database)
     '''
 
     # = Input Validation =
@@ -378,6 +436,52 @@ def add_security_question():
     return redirect(url_for('user_info'))
 
 
+# === Remove security question ===
+@app.route('/remove-security-question', methods=['POST'])
+@jwt_required()
+def remove_security_question():
+    '''
+    This function handles the remove_security_question route and can only be accessed with a JWT Token.
+
+    Returns redirect to user_info if the security question was successfully removed. (+ Updates the user security questions in the database)
+    '''
+
+    # = Input Validation =
+    # Security Question
+    # Check if value is between 1 and 5
+    if not request.form['security_question'] in security_questions:
+        logger.warning("User provided a invalid security question input")
+        flash('Invalid input on "Security Question"', 'failed')
+        return redirect(url_for('user_info'))
+    
+    # Answer
+    if not validate_text(request.form['answer']):
+        logger.warning("User provided a invalid answer input")
+        return redirect(url_for('user_info'))
+
+    
+    # Check if security question is answered
+    if request.form['security_question'] not in g.user.get_attribute('security_questions'):
+        logger.warning("User provided a security question that is not answered")
+        flash('You did not answer this security question', 'failed')
+        return redirect(url_for('user_info'))
+    
+    # Check if answer is correct for the selected security question
+    hashed_answer = g.user.get_security_questions()[request.form['security_question']]
+
+    if bcrypt.check_password_hash(hashed_answer, request.form['answer']) == False:
+        flash('Your answer is incorrect', 'failed')
+        logger.debug(f"User: '{g.user.get_attribute('username')}' provided a wrong answer to the security question during the remove security question")
+        return redirect(url_for('user_info'))
+    
+    # Remove security question from user security questions
+    g.user.remove_security_question(db=db, question=request.form['security_question'])
+
+    flash('Your security question has been removed!', 'success')
+    logger.debug(f"User: '{g.user.get_attribute('username')}' has successfully removed a security question")
+    return redirect(url_for('user_info'))
+
+
 # === Set new password ===      
 @app.route('/set-new-password', methods=['POST'])
 @jwt_required()
@@ -391,26 +495,18 @@ def set_new_password():
 
     Returns redirect to login, unset JWT and flash message if new password was successfully set. (+ Updates the user password in the database)
     '''
-
-    # Check if user is 2FA authenticated
-    if not g.twofa_authenticated:
-        raise Invalid2FA
     
     # = Input Validation =
     # Password
-    if not validate_password(request.form['old_password']) or not validate_password(request.form['new_password']) or not validate_password(request.form['new_password2']):
-        return redirect(url_for('dashboard'))
-
-    # Compare new passwords
-    if request.form['new_password'] != request.form['new_password2']:
-        flash('New passwords dont match', 'failed')
-        return redirect(url_for('dashboard'))
+    if not validate_password(request.form['old_password']) or not validate_password(request.form['new_password']) or check_password_breach(request.form['new_password']):
+        flash('Invalid input', 'failed')
+        return redirect(url_for('user_info'))
         
     # Check if current password is correct
     if bcrypt.check_password_hash(g.user.get_attribute('password'), request.form['old_password']) == False:
         flash('Current password is incorrect', 'failed')
         logger.debug(f"User: '{g.user.get_attribute('username')}' provided a wrong old password during the set new password")
-        return redirect(url_for('dashboard'))
+        return redirect(url_for('user_info'))
 
     # Set new password
     hashed_password = bcrypt.generate_password_hash(request.form['new_password']).decode('utf-8')
@@ -462,6 +558,31 @@ def delete_user():
     flash('Your account has been deleted!', 'success')
     return resp
 
+# === Export user account information ===
+@app.route('/export-user', methods=['GET'])
+@jwt_required(fresh=True)
+def export_user():
+    '''
+    This function handles the export_user route and can only be accessed with a fresh JWT Token.
+
+    Raise Invalid2FA if the user is not 2fa authenticated.
+
+    Returns the export_user.html template.
+    '''
+
+    # Check if user has 2fa activated, then 2fa authenticated is needed
+    if g.twofa_activated and not g.twofa_authenticated:
+        logger.warning(f"User: '{g.user.get_attribute('username')}' has 2fa activated, but is not 2fa authenticated")
+        flash('You have 2fa activated, you need to authenticate with 2fa to export your account information', 'failed')
+        raise Invalid2FA
+    
+    # get user data from user object and save it in g object
+    user_information_json = g.user.get_all_key_values()
+
+
+    # return to user_info.html
+    return redirect(url_for('user_info', user_information_json=user_information_json))
+
 
 # ===== Before Request =====
 @app.before_request
@@ -472,40 +593,45 @@ def before_request_auth():
 
     It logs the request method and the request path. It also checks wether the user has a valid JWT and 2fa authentication and stores the result in the g object.
     '''
-    try: # last resort error handling
+    g.jwt_authenticated = False
+    g.twofa_activated = False
+    g.twofa_authenticated = False
+    g.user = None
 
-        g.jwt_authenticated = False
-        g.twofa_activated = False
-        g.twofa_authenticated = False
-        g.user = None
+    # Only log the request path if the request is not a static file
+    if not request.path.startswith("/static"):
+        logger.info(f"Request: {request.method} {request.path}")
+        
+        
+        try: # last resort error handling
 
-        # Check if user has a valid JWT
-        if get_jwt_identity():
-            logger.debug("User has a valid JWT")
-            g.jwt_authenticated = True
-            g.user = load_user(db=db, user_id=get_jwt_identity())
+            # Check if user has a valid JWT
+            if get_jwt_identity():
+                logger.debug("User has a valid JWT")
+                g.jwt_authenticated = True
+                g.user = load_user(db=db, user_id=get_jwt_identity())
 
-            twofa_activated = g.user.get_attribute('twofa_activated')
+                twofa_activated = g.user.get_attribute('twofa_activated')
 
-            # Check if user has 2fa activated
-            if twofa_activated == "True":
-                logger.debug("User has 2fa activated")
-                g.twofa_activated = True
-                
-                if "2fa_timestamp" in get_jwt():
-                    # Check if user is 2fa authenticated
+                # Check if user has 2fa activated
+                if twofa_activated == "True":
+                    logger.debug("User has 2fa activated")
+                    g.twofa_activated = True
                     
-                    # Get the current time and the timestamp of when the user authenticated with 2fa
-                    date_now = datetime.strptime(str(datetime.now())[:19], '%Y-%m-%d %H:%M:%S')
-                    date_2fa = datetime.strptime(get_jwt()["2fa_timestamp"], '%a, %d %b %Y %H:%M:%S %Z')
+                    if "2fa_timestamp" in get_jwt():
+                        # Check if user is 2fa authenticated
+                        
+                        # Get the current time and the timestamp of when the user authenticated with 2fa
+                        date_now = datetime.strptime(str(datetime.now())[:19], '%Y-%m-%d %H:%M:%S')
+                        date_2fa = datetime.strptime(get_jwt()["2fa_timestamp"], '%a, %d %b %Y %H:%M:%S %Z')
 
-                    # Check if the 2fa timestamp is older than time specified in environment variable
-                    if (date_now - date_2fa) <= timedelta(minutes=int(os.getenv("2FA_EXPIRATION_MINUTES"))):
-                        logger.debug("User is 2fa authenticated")
-                        g.twofa_authenticated = True
-            
-    except Exception as e:
-        logger.error(f"Error in before_request: {e}")
+                        # Check if the 2fa timestamp is older than time specified in environment variable
+                        if (date_now - date_2fa) <= timedelta(minutes=int(os.getenv("2FA_EXPIRATION_MINUTES"))):
+                            logger.debug("User is 2fa authenticated")
+                            g.twofa_authenticated = True
+                
+        except Exception as e:
+            logger.error(f"Error in before_request_auth: {e}")
 
 
 # === Refresh JWT ===

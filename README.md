@@ -3,72 +3,184 @@
 ## Introduction
 Hi, and welcome!
 
-In this project, we are going to create a Customer-Portal-Website with a user management in order to monitor and control the contracts for Electricity meter of a user. The Electricity meters are going to be simulated by another application and send their information to the central Metering-Point-Operator.
+In this project, we are going to develop 3 components. The first one is a customer portal with a user management, where the customer can register and login. After that, he can add a contract with his electricity meter to his dashboard. In the dashboard, he can see his electricity meters and their current status. The customer portal also supports roles, so that a administrator has access to a special dashboard, where he can monitor the user activities, whitelist blocked IPs and active inactive users.
 
-The website and the application will be written in python. Therefore we use Flask for both the customer portal and the metering point operator and additionally MongoDB (+HTML, CSS (+Bootstrap), JS) for the website.
+The second component is a metering point operator, which is responsible for the electricity meters. It can add electricity meters to its database and update their status. When the customer wants to add a contract to his dashboard, the metering point operator will be informed and checks if the electricity meter is available. If it is, the contract will be added to the dashboard.
 
-The group of 4 people will be devided in half in order to create the components:
+The metering point operator also has a portal, where the technicians can login and maintain the electricity meters.
+
+The third component is the electricity meter itself. It will send the current status of the electricity meter to the metering point operator and can be maintained by technicians.
+
+#
+
+The websites support 2FA (2 factor authentication) with TOTP (time-based one-time password) and the communication between the components is secured by a shared authentication secret and TLS. The customer and technician can visit the websites based on secure HTTPS connections.
+
+The component backends will be written in python. Therefore we use Flask and additionally MongoDB for the database. The frontend will be designed by HTML, CSS (+Bootstrap) and JavaScript. The communication between the components will be done by REST APIs.
+
+#
+
+The group consists of 4 members, which are:
+
+- Andrey Dubilyer
+- Ellen Kistner
+- Julian Flock
+- Vitali Bier
+
+And the project leader is **Vitali Bier**.
+
+The responsibilities for each component are as follows:
 
 Customer-Portal:
 - Vitali Bier
 - Julian Flock
 
-Metering-Point-Operator + Electricity Meter:
+Metering-Point-Operator & Electricity Meter:
 - Ellen Kistner
 - Andrey Dubilyer
+- Vitali Bier
 
-Thereby is **Vitali Bier** the project leader.
+Authentication:
+- Vitali Bier
 
 ### Ideas
 In the Beginning, we decided on the chosen stack. But there were also other ideas, like the MERN Stack for the web-app, as we have collected a lot of experience with it, or a easy-to-use wordpress site. In the end, the python stack won for the usability, flexibility and our experience in its usage.
+
+## Table of Contents
+- [security-by-design](#security-by-design)
+  - [Introduction](#introduction)
+  - [Ideas](#ideas)
+  - [Table of Contents](#table-of-contents)
+  - [Structure](#structure)
+    - [Folder Structure](#folder-structure)
+    - [Website Structure](#website-structure)
+  - [Installation and Usage](#installation-and-usage)
+    - [Docker](#docker)
+      - [Build and run the containers](#build-and-run-the-containers)
+      - [Debug with Logs](#debug-with-logs)
+    - [User manual](#user-manual)
+      - [Register a user](#register-a-user)
+      - [Login as a user](#login-as-a-user)
+      - [Register your 2FA](#register-your-2fa)
+      - [Login with your 2FA](#login-with-your-2fa)
+      - [Dashboard](#dashboard)
+      - [Add a Contract to your Dashboard / Bind it to your user](#add-a-contract-to-your-dashboard--bind-it-to-your-user)
+    - [Technician Manual](#technician-manual)
+      - [Maintain a Electricity Meter](#maintain-a-electricity-meter)
+  - [Coding Instructions](#coding-instructions)
+    - [Logging](#logging)
+    - [Secure Coding Instructions](#secure-coding-instructions)
+    - [Swagger Documentation](#swagger-documentation)
+    - [Certificates](#certificates)
+    - [Helpful Docs](#helpful-docs)
 
 ## Structure
 ### Folder Structure
 ```
 security-by-design/
-    ├── Anwendung/
-    ├── Webanwendung/
+    ├── README.md
+    ├── docker-compose.yml
+    ├── docker-compose-localdb.yml
+    ├── nginx.conf
+    ├── pytest.ini
+    ├── certs/
+    |   ├── ssl-bundle.crt
+    |   ├── ...
+    ├── Metering-Point-Operator/
+    |   ├── Dockerfile
+    |   ├── requirements.txt
+    |   ├── run.py
+    |   ├── swagger.yaml
+    |   ├── test_run_tests.py
+    |   ├── app/
+    |       ├── __init__.py
+    |       ├── routes/
+    |       |    ├── routes.py
+    |       ├── models/
+    |       |    ├── user.py
+    |       ├── templates/
+    |       |    ├── ...
+    |       ├── static/
+    |            ├── style.css
+    |            ├── ...
+    ├── Electricity-Meter/
+    |   ├── Dockerfile
+    |   ├── requirements.txt
+    |   ├── run.py
+    |   ├── swagger.yaml
+    |   ├── test_run_tests.py
+    |   ├── app/
+    |       ├── __init__.py
+    |       ├── routes.py
+    ├── Customer-Portal/
+        ├── Dockerfile
+        ├── requirements.txt
+        ├── run.py
+        ├── swagger.yaml
+        ├── test_run_tests.py
         ├── app/
         |    ├── __init__.py
-        |    ├── routes.py
+        |    ├── routes/
+        |    |    ├── routes.py
+        |    |    ├── admin_routes.py
+        |    |    ├── auth_routes.py
+        |    |    ├── auth_routes_2fa.py
+        |    |    ├── contract_routes.py
+        |    |    ├── error_routes.py
         |    ├── models/
-        |    |    ├── __init__.py
-        |    |    ├── electricity_meter.py
+        |    |    ├── contract.py
         |    |    ├── user.py
         |    ├── templates/
         |    |    ├── ...
         |    ├── static/
         |    |    ├── style.css
-        |    ├── verification/
-        |    |    ├── verify_env.py
         |    |    ├── ...
-        ├── run.py
-        ├── requirements.txt
-        ├── .env
-        ├── Dockerfile
+        |    ├── tests/
+        |    |    ├── ...
 ```
 
-### Webpage Structure
+### Website Structure
+#TODO
 ```
-http://coming.soon/
+https://voltwave.systems/
+    ├── home/
+    ├── index/
+    ├── about/
+    ├── impressum/
     ├── register/
+    |    ├── 2fa/
     ├── login/
+    |    ├── 2fa/
+    ├── user-info
+    ├── dashboard/
+    |    ├── ...
+https://systems.voltwave.systems/
+    ├── home/
+    ├── index/
+    ├── about/
+    ├── impressum/
+    ├── register/
+    |    ├── 2fa/
+    ├── login/
+    |    ├── 2fa/
     ├── dashboard/
     |    ├── ...
 ```
 
 ## Installation and Usage
 ### Docker
-The web-app and the app have been dockerized. Both of them can be deployed with the docker-compose.yml. Therefore it is important to edit the amount of deployed applications, as they represent the Electricity meter (a electricity meter is only available to add to a user, if the application is deployed):
+The 3 components are dockerized and can be deployed with the docker-compose.yml or docker-compose-localdb.yml file. Therefore it is important to edit the amount of deployed Electricity-Meter. (A electricity meter is only available to add to a user, if the em is deployed):
 
-(Code representation will be added later)
+(Representation will be added later) #TODO
+
+A nginx container is used as a reverse proxy and is also dockerized. It is used to redirect the traffic to the correct component. The nginx.conf file is used to configure the nginx container.
 
 #### Build and run the containers
 
-In order to then build and deploy the containers, you have to create a .env file in the following directory:
+In order to build and deploy the docker containers, you have to create a .env file in the following directories:
 
 ```
-Webanwendung/app/.env
+Customer-Portal/app/.env
+Metering-Point-Operator/app/.env
 ```
 
 and with the following environment variables (values are examples):
@@ -78,11 +190,21 @@ SECRET_KEY=secret-key
 JWT_SECRET_KEY=jwt-secret-key
 MONGODB_USER=user
 MONGODB_PW=password
-MONGODB_CLUSTER=security-by-design  <-- Only used in MongoDB Atlas
-MONGODB_SUBDOMAIN=f3vvcc5           <-- Only used in MongoDB Atlas
+MONGODB_CLUSTER=cluster    <-- Used in MongoDB Atlas
+MONGODB_SUBDOMAIN=f3vvcc5  <-- Used in MongoDB Atlas
 JWT_ACCESS_TOKEN_EXPIRATION_MINUTES=30
 2FA_EXPIRATION_MINUTES=60
 ```
+
+NOTE: Credentials
+
+The credentials for the MongoDB have to be different for each component, as they are used to connect to different databases.
+
+NOTE: MongoDB Atlas VS Local MongoDB
+
+All keys are needed in order to launch the applications, but only the relevant ones are used.
+
+#
 
 As there are 2 versions on how to deploy this app (local MongoDB / MongoDB Atlas) the keys are used as a part of the uri as following:
 
@@ -94,15 +216,18 @@ MongoDB Atlas:
 mongodb+srv://<MONGODB_USER>:<MONGODB_PW>@<MONGODB_CLUSTER>.<MONGODB_SUBDOMAIN>.mongodb.net/?retryWrites=true&w=majority
 ```
 
-If the local DB version is used, you also need a mongodb.env in the root directory (the same as the docker-compose.yml file) with the following content:
+If the local DB version is used, you also need a mongodb.env in the root directory (the same directory as the docker-compose.yml file) with the following content:
 
 ```
 MONGO_INITDB_ROOT_USERNAME=user
 MONGO_INITDB_ROOT_PASSWORD=password
 ```
 
-For the ssl certificate, you either have to insert a provided one or generate a self-signed key and cert (see Coding Instructions > Web App HTTPS). The key and cert have to be named "key.pem" and "cert.pem" and have to be placed in the "Customer-Portal" directory.
+#
 
+For the certificates, you have to provide a ssl-bundle.crt (certificate, intermediate certificate and root certificate concatenated) and the according key.pem and for the components a self signed certificate and key (cert.pem and key.pem). More informations about the certificates can be found in the Coding Instructions > Certificates.
+
+#
 
 Now the containers can be build with the following command executed in the root directory (and docker + docker-compose installed):
 
@@ -120,46 +245,58 @@ or:
 docker-compose -f docker-compose-localdb.yml up
 ```
 
-And the frontend of the web-app is visible on port 443 (https://localhost:443).
+The websites will then be accessable at "https://127.0.0.1:443" and "https://127.0.0.1:8443".
 
 #### Debug with Logs
-If the docker container does not work or has to be troubleshooted, the debug logs are displayed in the docker container console in "stderr" and logged in the debug.log (in the root directory), too. As long as the docker container was not restartet, the logs are inspectable inside the docker container. The content can be displayed when executing "cat debug.log" inside the docker container cli or new content can be displayed contiously with "tail -F debug.log".
+If the docker container does not work or has to be troubleshooted, the debug logs are displayed in the docker container console in "stderr" and in the debug.log (in the root directory), too. As long as the docker container was not restartet, the logs are inspectable inside the docker container. The content can be displayed when executing "cat debug.log" inside the docker container cli or new content can be displayed continiously with "tail -F debug.log".
 
 
-### Register a user
+### User manual
+#### Register a user
 In order to register a user you need the following information:
+- email-address
 - username
 - password
 - (birthday date)
 - (gender)
 - (...)
+#TODO
 
-With these information you can go to the website: "http://coming.soon/register" and register your user. Afterwards, you will be forwarded to the Login Page.
+With these information you can go to the website: "https://voltwave.systems/register" and register your user. Afterwards, you will be forwarded to the Login Page.
 
-### Login as a user
+#### Login as a user
 In order to login with a user you need the following information:
 - username
 - password
 
-With these information you can go to the website: "http://coming.soon/login" and login. Afterwards, you will be forwarded to the Dashboard.
+With these information you can go to the website: "https://voltwave.systems/login" and login. Afterwards, you will be forwarded to the 2FA Registration Page.
 
-### Register your 2FA
-...
+#### Register your 2FA
+On the 2FA Registration Page ("https://voltwave.systems/register/2fa") you will get displayed your 2FA secret. You can either scan the QR code with your 2FA app or copy the secret and paste it into your 2FA app. After that, you have to enter the 6 digit code, which is displayed in your 2FA app. If the code is correct, you will be forwarded to the 2FA Login Page.
 
-### Login with your 2FA
-..
+#### Login with your 2FA
+On the 2FA Login Page ("https://voltwave.systems/login/2fa") you have to enter the 6 digit code, which is displayed in your 2FA app. If the code is correct, you will be forwarded to the Dashboard.
 
-### Dashboard
-The Dasboard is a fully representation of your current Electricity Meters status and your energy consumption. If you want to get into a more detailed overview or maintainance of a electricity meter you can click on it's ID.
+#### Dashboard
+The Dasboard is a fully representation of your current Electricity Meters status and your energy consumption. If you want to get into a more detailed overview of a electricity meter you can click on it's ID. Also you can see your contracts or add new ones to your dashboard.
 
 Screenshots coming soon...
+#TODO
 
-### Add a Contract to your Dashboard / Bind it to your user
+#### User-info Page
+On the User-info Page ("https://voltwave.systems/user-info") you can see your user information, like email, username and authentication status. You can also change your password, add security quesitons, reset your 2FA and delete your account.
+
+#### Add a Contract to your Dashboard / Bind it to your user
 Coming soon...
+#TODO
 
-### Maintain your Electricity Meter
+### Technician Manual
 Coming soon...
+#TODO
 
+#### Maintain a Electricity Meter
+Coming soon...
+#TODO
 
 ## Coding Instructions
 ### Logging
@@ -222,7 +359,10 @@ def xyz(logger:logging.logger): # Here you have to import the logging module as 
 # If you call the function, dont forget to give the logger to it as a parameter
 xyz(logger=logger)
 
-# If you dont call a function, you can simply use the logger as follows:
+# Or you can import it directly from the app (module) and use it as follows:
+from app import logger
+
+# Then, you can simply use the logger as follows:
 logger.info("i love logging <3")
 ```
 
@@ -231,23 +371,26 @@ In order to code securely, there are some rules to follow. These are:
 - Implement Error and Exception Handling by using try-except blocks ("last resort error handling")
 - Use the logging module for logging
 - Use the python package "dotenv" for environment variables
-- Document your code and your functions
-- Use functions for handling repetitive code
-- Update your requirements.txt file after installing new packages
+- Document your code, your functions and your API endpoints
+- Update your requirements.txt file after installing new packages and check for newer versions of the packages
 - Check the needed imported packages, if they are really needed and only import the used functions and variables from them
-- Update the date on the contribution in the header of the files.
 - https://owasp.org/www-project-secure-coding-practices-quick-reference-guide/assets/docs/OWASP_SCP_Quick_Reference_Guide_v21.pdf
 
 
 
 ### Swagger Documentation
-A swagger documentation is available on each app in its directory.
+A swagger documentation is available on each component in its directory.
 
 
-### Web App HTTPS
+### Certificates
+For the websites, a ssl-bundle.crt (certificate, intermediate certificate and root certificate concatenated) and its corresponding key.pem is needed and for the components a self signed certificate and key (cert.pem and key.pem) are needed. The ssl-bundle.crt and its key.pem is used for the nginx container in order to establish https to external communications and the cert.pem and key.pem are used for https inside the components. The self-signed certificates can be generated with the following command:
+
+```
+openssl req -x509 -newkey rsa:4096 -nodes -out cert.pem -keyout key.pem -days 365
+```
 https://stackoverflow.com/questions/29458548/can-you-add-https-functionality-to-a-python-flask-web-server
--> openssl req -x509 -newkey rsa:4096 -nodes -out cert.pem -keyout key.pem -days 365
-into "Webanwendung" folder
+
+Then the cert.pem and key.pem have to be copied into the component directories and the ssl-bundle.crt + key.pem into the certs directory.
 
 ### Helpful Docs
 For pymongo help:

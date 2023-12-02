@@ -14,27 +14,61 @@ User Information
     <p>Username: {{ username }}</p>
     <p>Email: {{ email }}</p>
 
+    <!-- Update user information -->
+    <p>Want to update your user information? <a href="/user-info/update">Click here</a></p>
+
+    <!-- Export user account information Button + div to show json output with correct indentation -->
+    {% if twofa_authenticated %}
+    <div>
+        <form method="get" action="/export-user">
+            <button type="submit">Export User Information</button>
+        </form>
+        {% if user_information_json %}
+        <div>
+            <pre id="user_json_output">{{ user_information_json }}</pre>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
     <!-- Set new password by sending old, new and new2 -->
-    <div> <!-- Set new password is only available with 2fa authentication atm -->
-        <form method="post" action="/set-new-password">
-            <label for="">Old Password</label>
+    <div> <!-- Set new password -->
+        <form method="post" action="/set-new-password" onsubmit="return confirm('Are you sure you want to submit this form?');">
+            <label for="old_password">Old Password</label>
             <input type="password" id="old_password" name="old_password" required>
-            <label for="">New Password</label>
-            <input type="password" id="new_password" name="new_password" required>
-            <label for="">Repeat New Password</label>
-            <input type="password" id="new_password2" name="new_password2" required>
-            <button type="submit">Set New Password</button>
+            <div class="password-container">
+                <label for="password">New Password:</label>
+                <input type="password" id="password" name="new_password" required onkeyup="checkPasswordStrength(); checkPasswordMatch()">
+                <div class="password-strength-meter">
+                    <div class="strength-bar" id="strength-bar"></div>
+                    <div class="strength-text" id="strength-text"></div>
+                </div>
+            </div>
+            <label for="password2">Repeat new Password:</label>
+            <input type="password" id="password2" name="new_password2" required onkeyup="checkPasswordMatch()">
+            <span id="password-match"></span>
+            <p>Your password must contain at least one digit (0-9), one lowercase and one uppercase character (a-z, A-Z), one special character (!#$%&?") and a length of 12 - 128</p>
+            <button type="submit" id="form-button">Set New Password</button>
         </form>
     </div>
 
-    <!-- Set new password by sending old, new and new2 -->
-    <div>
-        <form method="post" action="/reset-2fa">
-            <label for="">Backup Code</label>
-            <input type="text" id="backup_code" name="backup_code" required>
-            <button type="submit">Reset 2FA</button>
-        </form>
-    </div>
+    {% if twofa_activated %}
+        {% if twofa_authenticated %}
+            <!-- Reset 2FA Button with 2FA auth -->
+            <form method="post" action="/reset-2fa" onsubmit="return confirm('Are you sure you want to submit this form?');">
+                <button type="submit">Reset 2FA</button>
+            </form>
+        {% else %}
+            <!-- Reset 2FA without 2fa auth by sending backup code -->
+            <div>
+                <form method="post" action="/reset-2fa" onsubmit="return confirm('Are you sure you want to submit this form?');">
+                    <label for="">Backup Code</label>
+                    <input type="text" id="backup_code" name="backup_code" required>
+                    <button type="submit">Reset 2FA</button>
+                </form>
+            </div>
+        {% endif %}
+    {% endif %}
 
     <!-- Show answered security questions -->
     <div>
@@ -61,23 +95,33 @@ User Information
             <button type="submit">Add Security Question</button>
         </form>
     </div>
-    <!-- Remove security question TODO -->
+    <!-- Remove security question -->
+    {% if security_questions_user %}
+        <div>
+            <h2>Remove Security Question</h2>
+            <form method="post" action="/remove-security-question">
+                <label for="security_question">Security Question</label>
+                <select id="security_question" name="security_question" required>
+                {% for question in security_questions_user %}
+                    <option value="{{ question }}">{{ question }}</option>
+                {% endfor %}
+                </select>
+                <br>
+                <label for="security_answer">Answer</label>
+                <input type="text" id="security_answer" name="answer" required>
+                <button type="submit">Remove Security Question</button>
+            </form>
+        </div>
+    {% endif %}
     <!-- Delete user -->
     <div>
-        <form method="post" action="/delete-user">
+        <form method="post" action="/delete-user" onsubmit="return confirm('Are you sure you want to submit this form?');">
             <button type="submit">Delete Account</button>
         </form>
     </div>
     <h2>Two-Factor Authentication</h2>
-    <p>2FA Activated: {% if twofa_activated %}Yes{% else %}No{% endif %}</p> <!-- TODO Mysteriously is always "True", even if user.get_attribute gives "False" -->
+    <p>2FA Activated: {% if twofa_activated %}Yes{% else %}No{% endif %}</p>
     <p>2FA Authenticated: {% if twofa_authenticated %}Yes{% else %}No{% endif %}</p>
-
-    <h2>Contract Information</h2>
-    <ul>
-        {% for contract_id in contract_list %}
-            <li>Contract ID: {{ contract_id }}</li>
-        {% endfor %}
-    </ul>
 </body>
 </section>
 {% endblock %}

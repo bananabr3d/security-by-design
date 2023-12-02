@@ -1,4 +1,4 @@
-# Contributions by: Vitali Bier, Julian Flock
+# Contributions by: xx, xx
 # Description: This file contains the regular routes of the web application.
 
 # ===== Packages =====

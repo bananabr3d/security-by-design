@@ -12,6 +12,7 @@
     <script type="text/javascript" src="../static/logo.js"></script>
     <script type="text/javascript" src="../static/cookiebanner.js"></script>
     <script type="text/javascript" src="../static/password-strength-meter.js"></script>
+    <script type="text/javascript" src="../static/passwords-match.js"></script>
 </head>
 <body>
     <header>
@@ -31,11 +32,14 @@
                     <li><a href="/login/2fa">Login 2FA</a></li>
                 {% endif %}
             {% elif jwt_authenticated and twofa_authenticated %}
+                {% if admin %}
+                    <li><a href="/admin">Admin Panel</a></li>
+                {% endif %}
                 <li><a href="/dashboard">Dashboard</a></li>
             {% endif %}
 
             {% if jwt_authenticated %}
-                <li><a href="/user_info">User Information</a></li>
+                <li><a href="/user-info">User Information</a></li>
                 <li><a href="/logout">Logout</a></li>
             {% endif %}
         </ul>
