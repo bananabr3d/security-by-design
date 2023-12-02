@@ -25,6 +25,23 @@ def add_contract():
 
     if not g.twofa_authenticated:
         raise Invalid2FA
+    
+    # Check if user has his user_info provided
+    for attribute in ["name", "surname", "phone_number", "email", "date_of_birth"]:
+        if g.user.get_attribute(attribute) == None or g.user.get_attribute(attribute) == "None":
+            logger.warning(f"Contract Denied. User with ID: '{g.user.get_id()}' has no '{attribute}' provided.")
+            flash("Please provide your personal information first")
+            return redirect(url_for('update_user_info'))
+        
+    # Check if user has his address provided
+    address_dict = g.user.get_address()
+
+    for attribute in ["plz", "street", "street_house_number", "city", "country"]:
+        if address_dict[attribute] == None:
+            logger.warning(f"Contract Denied. User with ID: '{g.user.get_id()}' has no '{attribute}' provided.")
+            flash("Please provide your address first")
+            return redirect(url_for('update_user_info'))
+
 
     # Add here information from form to contract object and then save it in the db
     electricity_meter_id = request.form['electricity_meter_id']
