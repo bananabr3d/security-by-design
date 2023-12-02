@@ -62,7 +62,7 @@ class Contract():
     def update_attribute(self, db: pymongo.database.Database, attribute: str, value: str) -> None:
         if self.get_attribute(attribute=attribute) != None: # Check if contract has the attribute
             try:
-                db.contracts.update_one({'_id': self.user_data['_id']}, {'$set': {attribute: value}})
+                db.contracts.update_one({'_id': self.contract_data['_id']}, {'$set': {attribute: value}})
             except:
                 raise DBConnectionError
     
