@@ -148,13 +148,6 @@ def contract(contract_id: str):
     contract_show = contract.get_contract_data()
     contract_show["active"] = True # As the contract is still active, see if statement before
 
-    # Add text in first item of attributes to be shown in the frontend
-    contract_show["attributes"] = ["Select attribute"]
-
-    # Build attributes list for update_contract
-    contract_show["attributes"] += ["notes", "auto_renew"] # Attributes that the user will be shown and he can choose to update
-
-
     try:
         # Get contract_information_json from contract
         contract_information_json = request.args.get('contract_information_json')
