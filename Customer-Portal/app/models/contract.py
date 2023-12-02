@@ -8,7 +8,19 @@ def load_contract(db: pymongo.database.Database, contract_id: str):
     except:
         raise DBConnectionError
     
-    return Contract(db=db, electricity_meter_id=contract_data["electricity_meter_id"]) if contract_data else None
+    return Contract(db=db,
+                     electricity_meter_id=contract_data["electricity_meter_id"],
+                     startdate=contract_data["startdate"],
+                     enddate=contract_data["enddate"],
+                     renew_period=contract_data["renew_period"],
+                     auto_renew=contract_data["auto_renew"],
+                     notes = contract_data["notes"],
+                     address_plz=contract_data["address"]["PLZ"],
+                     address_street=contract_data["address"]["Street"],
+                     address_street_number=contract_data["address"]["Street_Number"],
+                     address_city=contract_data["address"]["City"],
+                     address_country=contract_data["address"]["Country"]
+                     ) if contract_data else None
 
 def load_contract_data(user, db: pymongo.database.Database) -> list:
     contract_list = user.get_contract_list()
@@ -25,8 +37,8 @@ def load_contract_data(user, db: pymongo.database.Database) -> list:
     return contract_data_list
 
 class Contract():
-    def __init__(self, db: pymongo.database.Database, electricity_meter_id: int) -> None:
-        self.contract_data = {"electricity_meter_id": electricity_meter_id}
+    def __init__(self, db: pymongo.database.Database, electricity_meter_id: int, startdate: str, enddate: str, renew_period: int, auto_renew: bool, notes:str, address_plz:str, address_street:str, address_street_number:str, address_city:str, address_country: str) -> None:
+        self.contract_data = {"electricity_meter_id": electricity_meter_id, "startdate": startdate, "enddate": enddate, "renew_period": renew_period, "auto_renew": auto_renew, "notes": notes, "address": {"PLZ": address_plz, "Street": address_street, "Street_Number": address_street_number, "City": address_city, "Country": address_country}}
 
         try:
             contract_data = db.contracts.find_one({'electricity_meter_id': electricity_meter_id}, allow_partial_results=False)
@@ -50,7 +62,7 @@ class Contract():
     def update_attribute(self, db: pymongo.database.Database, attribute: str, value: str) -> None:
         if self.get_attribute(attribute=attribute) != None: # Check if contract has the attribute
             try:
-                db.contracts.update_one({'_id': self.user_data['_id']}, {'$set': {attribute: value}})
+                db.contracts.update_one({'_id': self.contract_data['_id']}, {'$set': {attribute: value}})
             except:
                 raise DBConnectionError
     

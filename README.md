@@ -225,7 +225,7 @@ MONGO_INITDB_ROOT_PASSWORD=password
 
 #
 
-For the certificates, you have to provide a ssl-bundle.crt (certificate, intermediate certificate and root certificate concatenated) and for the components a self signed certificate and key (cert.pem and key.pem). More informations about the certificates can be found in the Coding Instructions > Certificates.
+For the certificates, you have to provide a ssl-bundle.crt (certificate, intermediate certificate and root certificate concatenated) and the according key.pem and for the components a self signed certificate and key (cert.pem and key.pem). More informations about the certificates can be found in the Coding Instructions > Certificates.
 
 #
 
@@ -383,14 +383,14 @@ A swagger documentation is available on each component in its directory.
 
 
 ### Certificates
-For the websites, a ssl-bundle.crt (certificate, intermediate certificate and root certificate concatenated) is needed and for the components a self signed certificate and key (cert.pem and key.pem) are needed. The ssl-bundle.crt is used for the nginx container and the cert.pem and key.pem are used for the components. The self-signed certificates can be generated with the following command:
+For the websites, a ssl-bundle.crt (certificate, intermediate certificate and root certificate concatenated) and its corresponding key.pem is needed and for the components a self signed certificate and key (cert.pem and key.pem) are needed. The ssl-bundle.crt and its key.pem is used for the nginx container in order to establish https to external communications and the cert.pem and key.pem are used for https inside the components. The self-signed certificates can be generated with the following command:
 
 ```
 openssl req -x509 -newkey rsa:4096 -nodes -out cert.pem -keyout key.pem -days 365
 ```
 https://stackoverflow.com/questions/29458548/can-you-add-https-functionality-to-a-python-flask-web-server
 
-Then the cert.pem and key.pem have to be copied into the component directories and the ssl-bundle.crt into the certs directory.
+Then the cert.pem and key.pem have to be copied into the component directories and the ssl-bundle.crt + key.pem into the certs directory.
 
 ### Helpful Docs
 For pymongo help:

@@ -7,6 +7,12 @@ from app import app, logger, db, Invalid2FA
 from app.models.contract import Contract, load_contract
 from app.models.user import load_user
 from app.routes.auth_routes import validate_text
+from requests import get, post
+from datetime import datetime, timedelta
+from re import compile, fullmatch
+from dotenv import load_dotenv
+load_dotenv()
+import os
 
 @app.route('/add-contract', methods=['POST'])
 @jwt_required(fresh=True)
@@ -19,11 +25,86 @@ def add_contract():
 
     if not g.twofa_authenticated:
         raise Invalid2FA
+    
+    # Check if user has his user_info provided
+    for attribute in ["name", "surname", "phone_number", "email", "date_of_birth"]:
+        if g.user.get_attribute(attribute) == None or g.user.get_attribute(attribute) == "None":
+            logger.warning(f"Contract Denied. User with ID: '{g.user.get_id()}' has no '{attribute}' provided.")
+            flash("Please provide your personal information first")
+            return redirect(url_for('update_user_info'))
+        
+    # Check if user has his address provided
+    address_dict = g.user.get_address()
+
+    for attribute in ["plz", "street", "street_house_number", "city", "country"]:
+        if address_dict[attribute] == None:
+            logger.warning(f"Contract Denied. User with ID: '{g.user.get_id()}' has no '{attribute}' provided.")
+            flash("Please provide your address first")
+            return redirect(url_for('update_user_info'))
+
 
     # Add here information from form to contract object and then save it in the db
     electricity_meter_id = request.form['electricity_meter_id']
+    notes = request.form['notes']
+    # Regex for address_plz, address_street_house_number (5 digits)
+    address_plz_regex = compile(r'^\d{5}$')
+
+    # Regex for address_street, address_city, address_country (only letters, äöüÄÖÜß and spaces)
+    address_street_city_country_regex = compile(r'^[a-zA-ZäöüÄÖÜß ]+$')
+
+    # Regex for address_street_house_number (only digits, up to 5)
+    address_street_house_number_regex = compile(r'^\d{1,5}$')
+
+    address_plz = request.form['address_plz']
+    address_street = request.form['address_street']
+    address_street_number = request.form['address_street_number']
+    address_city = request.form['address_city']
+    address_country = request.form['address_country']
+
+    if not fullmatch( address_plz_regex , address_plz):
+        logger.warning(f"Contract Denied PLZ in wrong format")
+        flash("Your PLZ is in an wrong format")
+        return redirect(url_for('dashboard'))
+    elif not fullmatch( address_street_city_country_regex, address_street):
+        logger.warning(f"Contract Denied street in wrong format")
+        flash("Your Street is in an wrong format")
+        return redirect(url_for('dashboard'))
+    elif not fullmatch( address_street_city_country_regex, address_city):
+        logger.warning(f"Contract Denied City in wrong format")
+        flash("Your City is in an wrong format")
+        return redirect(url_for('dashboard'))
+    elif not fullmatch( address_street_city_country_regex, address_country,):
+        logger.warning(f"Contract Denied Country in wrong format")
+        flash("Your Country is in an wrong format")
+        return redirect(url_for('dashboard'))
+    elif not fullmatch( address_street_house_number_regex, address_street_number):
+        logger.warning(f"Contract Denied Street Number in wrong format")
+        flash("Your Street Number is in an wrong format")
+        return redirect(url_for('dashboard'))
     # Check electricity_meter_id for correct format and check with metering point operator if it exists and is free
-    #TODO
+    # Add notes regex check (import text regex from routes.py) and em regex before checking with metering point operator
+    # TODO
+    shared_secret =  os.getenv("authorization_header")#TODO change name to shared secret
+    url = "metering-point-operator:5000/getcounterstatus/" + electricity_meter_id
+
+
+    response = get(url,  headers={"Authorization":shared_secret})
+    blocked = True
+
+    if response.status_code == 401:
+        logger.warning(f"Contract with electricity_meter_id: '{electricity_meter_id}' shared secret wrong.")
+        flash("Contract could not be created Please contact an Administrator")
+        return redirect(url_for('dashboard'))
+    elif response.status_code == 301:
+        logger.warning(f"Contract with electricity_meter_id: '{electricity_meter_id}' is checked out already.")
+        flash(f"The electricity meter with ID '{electricity_meter_id}' is blocked")
+        return redirect(url_for('dashboard'))
+    elif response.status_code == 200:
+        logger.debug("Electricitymeter is not taken")
+        
+        blocked = False
+        # hier drin sind die eem daten
+        # diese dann in dem contract speichern
 
     # Check if contract with electricity_meter_id already exists
     if Contract.find_contract_by_electricity_meter_id(db=db, electricity_meter_id=electricity_meter_id) != None:
@@ -31,8 +112,18 @@ def add_contract():
         flash("A contract with the provided Electricity Meter ID already exists")
         return redirect(url_for('dashboard'))
     
-    else:
-        contract = Contract(db=db, electricity_meter_id=electricity_meter_id)
+    elif blocked == False:
+        auto_renew = False
+        renew_period = 1
+
+        date = datetime.now()
+        date2 = date + timedelta(days=90)
+
+        startdate = date.strftime("%Y-%m-%d")
+        enddate = date2.strftime("%Y-%m-%d")
+
+
+        contract = Contract(db=db, electricity_meter_id=electricity_meter_id, startdate=startdate, enddate=enddate, renew_period=renew_period, auto_renew=auto_renew, notes=notes, address_plz=address_plz, address_street=address_street, address_street_number=address_street_number, address_city=address_city, address_country=address_country)
         contract.save(db=db)
         logger.debug(f"Contract with Electricity Meter ID '{electricity_meter_id}' successfully created.")
 
@@ -64,21 +155,15 @@ def contract(contract_id: str):
     # Load contract
     contract = load_contract(db=db, contract_id=contract_id)
 
-    # Check if contract is still active
-    # if contract.get_attribute("active") == False:#TODO
-    #     logger.warning(f"Contract with ID: '{contract_id}' is not active.")
-    #     flash("Contract is not active")
+    #Check if contract is still active
+    if contract.get_attribute("enddate") < datetime.now().strftime("%Y-%m-%d"):
+        logger.warning(f"Contract with ID: '{contract_id}' is not active.")
+        flash("Contract is not active")
+        return redirect(url_for('dashboard'))
 
     # Build contract_show dict
-    contract_show = {"_id": contract.get_id(), "electricity_meter_id": contract.get_attribute("electricity_meter_id")}#TODO
-
-    # Build attributes dict for update-contract -> remove _id and electricity_meter_id from
-    contract_show["attributes"] = list(contract.contract_data.keys())
-    contract_show["attributes"].remove("_id")
-    contract_show["attributes"].remove("electricity_meter_id")
-
-    # Add text in first item of attributes to be shown in the frontend
-    contract_show["attributes"] = ["Select attribute"] + contract_show["attributes"]
+    contract_show = contract.get_contract_data()
+    contract_show["active"] = True # As the contract is still active, see if statement before
 
     try:
         # Get contract_information_json from contract
@@ -99,7 +184,11 @@ def contract(contract_id: str):
 @jwt_required(fresh=True)
 def update_contract(contract_id: str):
     '''
-    This function handles the update-contract page of the web application. The JWT Token is required and the 2fa is checked. 
+    This function handles the update-contract page of the web application. The JWT Token is required and the 2fa is checked.
+
+    It is only possible to change the notes and the auto_renew attribute of the contract.
+
+    Raise Invalid2FA if the user is not 2fa authenticated.
     '''
 
     if not g.twofa_authenticated:
@@ -116,25 +205,42 @@ def update_contract(contract_id: str):
     # Load contract
     contract = load_contract(db=db, contract_id=contract_id)
 
-    # Check if contract is still active
-    # if contract.get_attribute("active") == False:#TODO
-    #     logger.warning(f"Contract with ID: '{contract_id}' is not active.")
-    #     flash("Contract is not active")
-    
-    # Check attribute for correct format
-    if not validate_text(request.form['attribute']) or request.form['attribute'] not in contract.contract_data.keys():
-        flash("Invalid attribute")
+    #Check if contract is still active
+    if contract.get_attribute("enddate") < datetime.now().strftime("%Y-%m-%d"):
+        logger.warning(f"Contract with ID: '{contract_id}' is not active.")
+        flash("Contract is not active")
+        return redirect(url_for('dashboard'))
+        
+    # Check if "notes" or "auto_renew" in request.form
+    if "notes" not in request.form and "auto_renew" not in request.form:
+        logger.warning(f"Attribute is not allowed to be updated.")
+        flash("Attribute is not allowed to be updated")
         return redirect(url_for('contract', contract_id=contract_id))
     
-    # Check value for correct format #TODO also check if value is sutiable for attribute
-    if not validate_text(request.form['value']) or request.form['value'] == "electricity_meter_id" or request.form['value'] == "_id":
-        flash("Invalid value")
+    # Check regex for "notes" and format of "auto_renew"
+    if "auto_renew" in request.form and request.form["auto_renew"] not in ["true", "false"]:
+        logger.warning(f"Auto renew in wrong format.")
+        flash("Auto renew in wrong format")
         return redirect(url_for('contract', contract_id=contract_id))
 
-    # Update contract
-    contract.update_attribute(db=db, attribute=request.form['attribute'], value=request.form['value'])
+    if "notes" in request.form and not validate_text(request.form['notes']):
+        logger.warning(f"Notes in wrong format.")
+        flash("Notes in wrong format")
+        return redirect(url_for('contract', contract_id=contract_id))
+        
+    if "notes" in request.form:
+        # Update contract
+        contract.update_attribute(db=db, attribute="notes", value=request.form['notes'])
 
-    logger.debug(f"Contract with ID '{contract_id}' successfully updated attribute '{request.form['attribute']}'.")
+    if "auto_renew" in request.form:
+        # Update contract
+        if request.form["auto_renew"] == "true":
+            contract.update_attribute(db=db, attribute="auto_renew", value=True)
+        elif request.form["auto_renew"] == "false":
+            contract.update_attribute(db=db, attribute="auto_renew", value=False)
+
+
+    logger.debug(f"Contract with ID '{contract_id}' successfully updated.")
     flash("Contract successfully updated", "success")
     return redirect(url_for('contract', contract_id=contract_id))
 
@@ -160,10 +266,11 @@ def remove_contract(contract_id: str):
     # Load contract
     contract = load_contract(db=db, contract_id=contract_id)
 
-    # Check if contract is still active
-    # if contract.get_attribute("active") == False:#TODO
-    #     logger.warning(f"Contract with ID: '{contract_id}' is not active.")
-    #     flash("Contract is not active")
+    #Check if contract is still active
+    if contract.get_attribute("enddate") < datetime.now().strftime("%Y-%m-%d"):
+        logger.warning(f"Contract with ID: '{contract_id}' is not active.")
+        flash("Contract is not active")
+        return redirect(url_for('dashboard'))
 
     #TODO Send API request to metering point operator to say the em is free again
     
@@ -201,10 +308,11 @@ def export_contract(contract_id: str):
     # Load contract
     contract = load_contract(db=db, contract_id=contract_id)
 
-    # Check if contract is still active
-    # if contract.get_attribute("active") == False:#TODO
-    #     logger.warning(f"Contract with ID: '{contract_id}' is not active.")
-    #     flash("Contract is not active")
+    #Check if contract is still active
+    if contract.get_attribute("enddate") < datetime.now().strftime("%Y-%m-%d"):
+        logger.warning(f"Contract with ID: '{contract_id}' is not active.")
+        flash("Contract is not active")
+        return redirect(url_for('dashboard'))
 
     # Get contract data
     contract_information_json = contract.get_contract_data()

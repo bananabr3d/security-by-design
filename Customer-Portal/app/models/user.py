@@ -19,14 +19,16 @@ def load_user(db, user_id:str):
                 contract_list=user_data["contract_list"], 
                 backup_codes=user_data["backup_codes"], 
                 security_questions=user_data["security_questions"], 
-                admin=user_data["admin"], 
+                admin=user_data["admin"],
                 date_of_birth=user_data["date_of_birth"], 
-                address_plz=user_data["address_plz"], 
-                address_street=user_data["address_street"], 
-                address_street_house_number=user_data["address_street_house_number"],
-                address_city=user_data["address_city"], 
-                address_country=user_data["address_country"], 
-                phone_number=user_data["phone_number"]) if user_data else None # Add here user attributes
+                address_plz=user_data["address"]["plz"],
+                address_street=user_data["address"]["street"], 
+                address_street_house_number=user_data["address"]["street_house_number"],
+                address_city=user_data["address"]["city"], 
+                address_country=user_data["address"]["country"], 
+                phone_number=user_data["phone_number"],
+                name=user_data["name"],
+                surname=user_data["surname"]) if user_data else None # Add here user attributes
 
 def get_user_count(db: pymongo.database.Database) -> int:
     try:
@@ -52,14 +54,19 @@ class User():
                  backup_codes:list = [], security_questions:dict = {}, 
                  admin:bool = False, date_of_birth:date = None, address_plz:int = None, 
                  address_street:str = None, address_street_house_number:int = None, 
-                 address_city:str = None, address_country:str = None, phone_number:str = None) -> None:
+                 address_city:str = None, address_country:str = None, 
+                 phone_number:str = None, name:str = None, surname:str = None) -> None:
+        
+        address = {'plz': address_plz, 'street': address_street, 
+                   'street_house_number': address_street_house_number, 
+                   'city': address_city, 'country': address_country}
+        
         self.user_data = {'email': email, 'username': username, 'password': password, 
                           'twofa_secret': twofa_secret, 'twofa_activated': twofa_activated, 
                           'contract_list': contract_list, 'backup_codes': backup_codes, 
                           'security_questions': security_questions, 'admin': admin, 
-                          'date_of_birth': date_of_birth, 'address_plz': address_plz, 
-                          'address_street': address_street, 'address_street_house_number': address_street_house_number, 
-                          'address_city': address_city, 'address_country': address_country, 'phone_number': phone_number}
+                          'date_of_birth': date_of_birth, 'address': address, 'phone_number': phone_number,
+                          'name': name, 'surname': surname}
 
         try:
             user_data = db.users.find_one({'email': email}, allow_partial_results=False)
@@ -83,6 +90,9 @@ class User():
     def get_security_questions(self) -> dict:
         return self.user_data['security_questions']
     
+    def get_address(self) -> dict:
+        return self.user_data['address']
+
     def get_all_key_values(self) -> dict:
         '''
         Returns a dict with all key value pairs of the user_data dict except _id, password, twofa_secret, backup_codes, security_questions
@@ -106,6 +116,12 @@ class User():
                 raise DBConnectionError
         else:
             raise AttributeError
+        
+    def update_address(self, db: pymongo.database.Database, attribute: str, value: str) -> None:
+        try:
+            db.users.update_one({'_id': self.user_data['_id']}, {'$set': {'address.' + attribute: value}})
+        except:
+            raise DBConnectionError
 
     def find_by_username(db: pymongo.database.Database, username: str):
         try:
@@ -117,10 +133,10 @@ class User():
                     twofa_secret=user_data["twofa_secret"], twofa_activated=user_data["twofa_activated"], 
                     contract_list=user_data["contract_list"], backup_codes=user_data["backup_codes"], 
                     security_questions=user_data["security_questions"], admin=user_data["admin"], 
-                    date_of_birth=user_data["date_of_birth"], address_plz=user_data["address_plz"],
-                    address_street=user_data["address_street"], address_street_house_number=user_data["address_street_house_number"],
-                    address_city=user_data["address_city"], address_country=user_data["address_country"], 
-                    phone_number=user_data["phone_number"]) if user_data else None # Add here user attributes
+                    date_of_birth=user_data["date_of_birth"], address_plz=user_data["address"]["plz"],
+                    address_street=user_data["address"]["street"], address_street_house_number=user_data["address"]["street_house_number"],
+                    address_city=user_data["address"]["city"], address_country=user_data["address"]["country"],
+                    phone_number=user_data["phone_number"], name=user_data["name"], surname=user_data["surname"]) if user_data else None # Add here user attributes
     
     def find_by_email(db: pymongo.database.Database, email: str):
         try:
@@ -132,10 +148,10 @@ class User():
                     twofa_secret=user_data["twofa_secret"], twofa_activated=user_data["twofa_activated"], 
                     contract_list=user_data["contract_list"], backup_codes=user_data["backup_codes"], 
                     security_questions=user_data["security_questions"], admin=user_data["admin"],
-                    date_of_birth=user_data["date_of_birth"], address_plz=user_data["address_plz"],
-                    address_street=user_data["address_street"], address_street_house_number=user_data["address_street_house_number"],
-                    address_city=user_data["address_city"], address_country=user_data["address_country"],
-                    phone_number=user_data["phone_number"]) if user_data else None # Add here user attributes
+                    date_of_birth=user_data["date_of_birth"], address_plz=user_data["address"]["plz"],
+                    address_street=user_data["address"]["street"], address_street_house_number=user_data["address"]["street_house_number"],
+                    address_city=user_data["address"]["city"], address_country=user_data["address"]["country"],
+                    phone_number=user_data["phone_number"], name=user_data["name"], surname=user_data["surname"]) if user_data else None # Add here user attributes
     
 
     def add_contract(self, db: pymongo.database.Database, contract_id: int) -> None: #Get the list of contracts and append the new one

@@ -9,13 +9,14 @@ from flask import render_template, g, request, redirect, url_for, flash
 from flask_jwt_extended import jwt_required
 
 # Import app and db object from app package
-from app import app, db, Invalid2FA, security_questions
+from app import app, db, Invalid2FA, logger
 
 # Import models
 from app.models.contract import load_contract_data
 
 # Import regex
 from re import compile, fullmatch
+from app.routes.auth_routes import regex_text
 
 # Import datetime
 from datetime import datetime
@@ -47,7 +48,7 @@ def home():
     '''
     This function handles the home page of the web application.
     '''
-    return render_template('index.html', jwt_authenticated=g.jwt_authenticated, twofa_activated=g.twofa_activated, twofa_authenticated=g.twofa_authenticated)
+    return render_template('index.html', jwt_authenticated=g.jwt_authenticated, twofa_activated=g.twofa_activated, twofa_authenticated=g.twofa_authenticated, admin=g.admin)
 
 # === Dashboard ===
 @app.route('/dashboard', methods=['GET'])
@@ -83,7 +84,7 @@ def about():
     '''
     This function handles the about page of the web application.
     '''
-    return render_template('about.html', jwt_authenticated=g.jwt_authenticated, twofa_activated=g.twofa_activated, twofa_authenticated=g.twofa_authenticated)
+    return render_template('about.html', jwt_authenticated=g.jwt_authenticated, twofa_activated=g.twofa_activated, twofa_authenticated=g.twofa_authenticated, admin=g.admin)
 
 # === Impressum ===
 @app.route('/impressum', methods=['GET'])
@@ -91,7 +92,7 @@ def impressum():
     '''
     This function handles the impressum page of the web application.
     '''
-    return render_template('impressum.html', jwt_authenticated=g.jwt_authenticated, twofa_activated=g.twofa_activated, twofa_authenticated=g.twofa_authenticated)
+    return render_template('impressum.html', jwt_authenticated=g.jwt_authenticated, twofa_activated=g.twofa_activated, twofa_authenticated=g.twofa_authenticated, admin=g.admin)
 
 # === Add user info ===
 @app.route('/user-info/update', methods=['GET'])
@@ -112,16 +113,25 @@ def update_user_info():
     # Check which of these keys are None and add them to a list and remove them from user_information
     not_provided_information = list()
     remove_keys = list()
+    remove_keys_address = list()
 
     for key in user_information:
         if user_information[key] == None:
             not_provided_information.append(key)
             remove_keys.append(key)
     
+    for attribute in user_information["address"]:
+        if user_information["address"][attribute] == None:
+            not_provided_information.append(attribute)
+            remove_keys_address.append(attribute)
+    
     for key in remove_keys:
         user_information.pop(key)
 
-    return render_template('update_user_info.html', jwt_authenticated=g.jwt_authenticated, twofa_activated=g.twofa_activated, twofa_authenticated=g.twofa_authenticated, not_provided_information=not_provided_information, user_information=user_information)
+    for key in remove_keys_address:
+        user_information["address"].pop(key)
+
+    return render_template('update_user_info.html', jwt_authenticated=g.jwt_authenticated, twofa_activated=g.twofa_activated, twofa_authenticated=g.twofa_authenticated, admin=g.admin, not_provided_information=not_provided_information, user_information=user_information)
 
 @app.route('/user-info/update', methods=['POST'])
 @jwt_required()
@@ -131,8 +141,6 @@ def update_user_info_post():
     '''
     # Check which key value pairs came in the request, update user object accordingly and save
     request_data = request.form
-
-    print(request_data)
 
     keys = list()
 
@@ -162,40 +170,40 @@ def update_user_info_post():
                 
                 keys.append(key)
 
-            elif key == 'address_plz':
-                # Check if address_plz is valid
+            elif key == 'plz':
+                # Check if plz is valid
                 if not fullmatch(address_plz_regex, request_data[key]):
                     flash('Please enter a valid postal code.', 'error')
                     return redirect(url_for('update_user_info'))
                 
                 keys.append(key)
 
-            elif key == 'address_street':
-                # Check if address_street is valid
+            elif key == 'street':
+                # Check if street is valid
                 if not fullmatch(address_street_city_country_regex, request_data[key]):
                     flash('Please enter a valid street name.', 'error')
                     return redirect(url_for('update_user_info'))
                 
                 keys.append(key)
                 
-            elif key == 'address_street_house_number':
-                # Check if address_street_house_number is valid
+            elif key == 'street_house_number':
+                # Check if street_house_number is valid
                 if not fullmatch(address_street_house_number_regex, request_data[key]):
                     flash('Please enter a valid house number.', 'error')
                     return redirect(url_for('update_user_info'))
                 
                 keys.append(key)
 
-            elif key == 'address_city':
-                # Check if address_city is valid
+            elif key == 'city':
+                # Check if city is valid
                 if not fullmatch(address_street_city_country_regex, request_data[key]):
                     flash('Please enter a valid city name.', 'error')
                     return redirect(url_for('update_user_info'))
                 
                 keys.append(key)
 
-            elif key == 'address_country':
-                # Check if address_country is valid
+            elif key == 'country':
+                # Check if country is valid
                 if not fullmatch(address_street_city_country_regex, request_data[key]):
                     flash('Please enter a valid country name.', 'error')
                     return redirect(url_for('update_user_info'))
@@ -210,13 +218,33 @@ def update_user_info_post():
                 
                 keys.append(key)
 
+            elif key == 'name':
+                # Check if name is valid
+                if not fullmatch(regex_text, request_data[key]):
+                    flash('Please enter a valid name.', 'error')
+                    return redirect(url_for('update_user_info'))
+                
+                keys.append(key)
+
+            elif key == 'surname':
+                # Check if surname is valid
+                if not fullmatch(regex_text, request_data[key]):
+                    flash('Please enter a valid surname.', 'error')
+                    return redirect(url_for('update_user_info'))
+                
+                keys.append(key)
+
             else:
                 flash('An error occurred.', 'error')
                 return redirect(url_for('update_user_info'))
 
     # Update user object
     for key in keys:
-        g.user.update_attribute(db=db, attribute=key, value=request_data[key])
+        if key in ['plz', 'street', 'street_house_number', 'city', 'country']:
+            g.user.update_address(db=db, attribute=key, value=request_data[key])
+        else:
+            g.user.update_attribute(db=db, attribute=key, value=request_data[key])
 
+    logger.debug('User information updated successfully.')
     flash('Your information has been updated successfully.', 'success')
     return redirect(url_for('update_user_info'))

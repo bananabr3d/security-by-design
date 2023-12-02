@@ -9,25 +9,31 @@ Contract {{ contract._id }}
 
 {% block content %}
 <section>
-  <!-- <h3>Contract Adress: {{ contract.contract_address_street}}, {{ contract.contract_address_postal_code}}, {{ contract.contract_address_city}}, {{ contract.contract_address_country }}</h3> -->
+  <h3>Active: {{ contract.active }}</h3>
+  <h3>Start- & Enddate: {{ contract.startdate }} - {{ contract.enddate }}</h3>
+  <h3>Contract Address: {{ contract.address.Street}} {{ contract.address.Street_Number }}, {{ contract.address.PLZ }} {{ contract.address.City }}, {{ contract.address.Country }}</h3>
+  <h3>Auto-Renew:
+    <form method="post" action="/update-contract/{{ contract._id }}" onsubmit="return confirm('Are you sure you want to submit this form?');">
+      <input type="radio" name="auto_renew" value="true" {% if contract.auto_renew %}checked{% endif %}>
+      <label for="true">Yes</label>
+      <input type="radio" name="auto_renew" value="false" {% if not contract.auto_renew %}checked{% endif %}>
+      <label for="false">No</label>
+      <button type="submit">Update</button>
+    </form>
+  </h3>
+  <h3>Renew-Period: {{ contract.renew_period }}</h3>
+  
   <h3>Electricity Meter ID: {{ contract.electricity_meter_id }}</h3>
+  <h3>Electricity Meter Last Updated Value: {{ electricity_meter_last_updated_value }} kWh</h3>
 
-  <h3>Electricity Meter Last Updated Value: {{ electricity_meter_last_updated_value }}</h3>
-  <h3>Electricity Meter Last Updated Value Unit: {{ electricity_meter_last_updated_value_unit }}</h3> Change to static unit in html -->
-
-  <!-- Update contract with attribute and value -->
-  <h2>Update Attribute</h2>
-  <form method="post" action="/update-contract/{{ contract._id }}" onsubmit="return confirm('Are you sure you want to submit this form?');">
-    <label for="attribute">Attribute:</label>
-    <select name="attribute" id="attribute" required>
-      {% for attribute in contract.attributes %}
-        <option value="{{ attribute }}">{{ attribute }}</option>
-      {% endfor %}
-    </select>
-    <label for="value">Value:</label>
-    <input type="text" id="value" name="value" value="" required>
-    <button type="submit">Update Contract</button>
-  </form>
+  <h3>Notes: 
+    <form method="post" action="/update-contract/{{ contract._id }}" onsubmit="return confirm('Are you sure you want to submit this form?');">
+      <input type="text" id="notes" name="notes" placeholder="{{ contract.notes }}">
+      <button type="submit">Update</button>
+    </form>
+  </h3>
+  <br>
+  <br>
   <!-- Remove contract -->
   <form method="post" action="/remove-contract/{{ contract._id }}" onsubmit="return confirm('Are you sure you want to submit this form?');">
     <button type="submit">Remove Contract</button>
