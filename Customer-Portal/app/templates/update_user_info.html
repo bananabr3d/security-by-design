@@ -33,6 +33,13 @@ Update User Information
                 <label for="{{ key }}">{{ key }}:</label>
                 <input type="date" id="update_user_info_{{ key }}" name="{{ key }}" value="{{ value }}">
             </div>
+            {% elif key == "address" %} <!-- Check key value of "address" dict -->
+               {% for address_key, address_value in value.items() %}
+                <div>
+                    <label for="{{ address_key }}">{{ address_key }}:</label>
+                    <input type="text" id="update_user_info_{{ address_key }}" name="{{ address_key }}" placeholder="{{ address_value }}">
+                </div>
+                {% endfor %}
             {% else %}
             <div>
                 <label for="{{ key }}">{{ key }}:</label>
