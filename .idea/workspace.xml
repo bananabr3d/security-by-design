@@ -5,28 +5,19 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="1599ed59-e342-46af-9471-5de5aec9f005" name="Changes" comment="First folders">
-      <change afterPath="$PROJECT_DIR$/Metering-Point-Operator/app/frontend/Bilder.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Metering-Point-Operator/app/frontend/Impressum.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Metering-Point-Operator/app/frontend/Index.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Metering-Point-Operator/app/frontend/Login_MB.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Metering-Point-Operator/app/frontend/Style.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Metering-Point-Operator/app/frontend/Unterseite1.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Metering-Point-Operator/app/frontend/Unterseite2.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Metering-Point-Operator/app/frontend/images/Logo_mpo_grey.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Metering-Point-Operator/app/frontend/images/Logo_mpo_icon_grey.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Metering-Point-Operator/app/frontend/images/Logo_mpo_icon_white.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Metering-Point-Operator/app/frontend/images/Logo_mpo_white.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Metering-Point-Operator/app/frontend/images/picture_login_page.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Metering-Point-Operator/app/static/style.css" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Metering-Point-Operator/app/templates/PageNotFound.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Metering-Point-Operator/app/templates/base.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Metering-Point-Operator/app/templates/login.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Metering-Point-Operator/app/templates/login_2fa.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Metering-Point-Operator/app/templates/register.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Metering-Point-Operator/app/templates/register_2fa.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Metering-Point-Operator/app/templates/reset_password.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/messtellenbetreiber/app/API/api.py" beforeDir="false" afterPath="$PROJECT_DIR$/messtellenbetreiber/app/API/api.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Metering-Point-Operator/app/templates/Bilder.css" beforeDir="false" afterPath="$PROJECT_DIR$/Metering-Point-Operator/app/static/Bilder.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Metering-Point-Operator/app/templates/Impressum.html" beforeDir="false" afterPath="$PROJECT_DIR$/Metering-Point-Operator/app/templates/impressum.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Metering-Point-Operator/app/templates/Index.html" beforeDir="false" afterPath="$PROJECT_DIR$/Metering-Point-Operator/app/templates/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Metering-Point-Operator/app/templates/Login_MB.html" beforeDir="false" afterPath="$PROJECT_DIR$/Metering-Point-Operator/app/templates/login.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Metering-Point-Operator/app/templates/Style.css" beforeDir="false" afterPath="$PROJECT_DIR$/Metering-Point-Operator/app/static/Style.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Metering-Point-Operator/app/templates/Unterseite1.html" beforeDir="false" afterPath="$PROJECT_DIR$/Metering-Point-Operator/app/templates/user_info.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Metering-Point-Operator/app/templates/Unterseite2.html" beforeDir="false" afterPath="$PROJECT_DIR$/Metering-Point-Operator/app/templates/Unterseite2.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Metering-Point-Operator/app/templates/images/Logo_mpo_grey.png" beforeDir="false" afterPath="$PROJECT_DIR$/Metering-Point-Operator/app/static/images/Logo_mpo_grey.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Metering-Point-Operator/app/templates/images/Logo_mpo_icon_grey.png" beforeDir="false" afterPath="$PROJECT_DIR$/Metering-Point-Operator/app/static/images/Logo_mpo_icon_grey.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Metering-Point-Operator/app/templates/images/Logo_mpo_icon_white.png" beforeDir="false" afterPath="$PROJECT_DIR$/Metering-Point-Operator/app/static/images/Logo_mpo_icon_white.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Metering-Point-Operator/app/templates/images/Logo_mpo_white.png" beforeDir="false" afterPath="$PROJECT_DIR$/Metering-Point-Operator/app/static/images/Logo_mpo_white.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Metering-Point-Operator/app/templates/images/picture_login_page.png" beforeDir="false" afterPath="$PROJECT_DIR$/Metering-Point-Operator/app/static/images/picture_login_page.png" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -59,18 +50,24 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "WebServerToolWindowFactoryState": "false",
     "git-widget-placeholder": "zaehler",
-    "last_opened_file_path": "C:/Users/Andrey/PycharmProjects/security-by-design/Metering-Point-Operator/app",
+    "last_opened_file_path": "/Users/kistnere/Security by Design /Metering-Point-Operator/app/templates",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
     "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "dev.gabrielchl.intellijpets.settings.AppSettingsConfigurable",
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/Metering-Point-Operator/app/templates" />
+      <recent name="$PROJECT_DIR$/Metering-Point-Operator/app/static" />
       <recent name="C:\Users\Andrey\PycharmProjects\security-by-design\Metering-Point-Operator\app" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/Metering-Point-Operator/app/static" />
     </key>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
@@ -88,6 +85,8 @@
       <workItem from="1699815424489" duration="1557000" />
       <workItem from="1699878894225" duration="2833000" />
       <workItem from="1700852936718" duration="2366000" />
+      <workItem from="1701429319644" duration="358000" />
+      <workItem from="1701472890460" duration="2115000" />
     </task>
     <task id="LOCAL-00001" summary="First folders">
       <created>1696510616222</created>
@@ -107,15 +106,27 @@
       <map>
         <entry key="MAIN">
           <value>
-            <State />
+            <State>
+              <option name="FILTERS">
+                <map>
+                  <entry key="branch">
+                    <value>
+                      <list>
+                        <option value="main" />
+                      </list>
+                    </value>
+                  </entry>
+                </map>
+              </option>
+            </State>
           </value>
         </entry>
       </map>
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="First folders" />
     <MESSAGE value="Basic structure created" />
-    <option name="LAST_COMMIT_MESSAGE" value="Basic structure created" />
+    <MESSAGE value="First folders" />
+    <option name="LAST_COMMIT_MESSAGE" value="First folders" />
   </component>
 </project>
