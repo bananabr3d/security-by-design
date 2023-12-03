@@ -96,7 +96,6 @@ img {
 
 /* Padding um alles drum herum  */
 body {
-    padding: 10px;
     display: flex;
     flex-direction: column;
     min-height: 100vh;
@@ -123,6 +122,11 @@ html {
     font-family: "Lucida Sans", sans-serif;
 }
 
+ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+}
 
 .menu ul {
     list-style-type: none;
@@ -140,7 +144,8 @@ html {
 }
 
 .menu li:hover {
-    background-color: #7EC0EE;
+    background-color: #e5eaef;
+    color: black;
 }
 
 
@@ -157,8 +162,8 @@ html {
 
 /* footer alle Seiten  */
 .footer {
-    background-color: #FFAB11;
-    color: #ffffff;
+    background-color: #e5eaef;
+    color: black;
     text-align: center;
     font-size: 12px;
     padding: 15px;
@@ -208,3 +213,19 @@ html {
     }
 
 }
+
+/* Standard-Linkfarbe */
+a {
+    color: black;
+}
+
+
+
+/* Ändern Sie die Linkfarbe, wenn der Mauszeiger darüber schwebt */
+a:hover {
+    color: #FFAB11;
+}
+
+/* Ändern Sie die Linkfarbe, wenn der Link aktiv ist (wird gedrückt) */
+
+
