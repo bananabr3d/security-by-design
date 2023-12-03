@@ -6,8 +6,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet" href="../static/Bilder.css">
     <style>
-
-        form {
+         form {
             background-color: #fff;
             padding: 20px;
             border-radius: 8px;
@@ -27,27 +26,6 @@
             box-sizing: border-box;
         }
 
-        .password-container {
-            margin-bottom: 16px;
-        }
-
-        .password-strength-meter {
-            margin-top: 8px;
-            position: relative;
-        }
-
-        .strength-bar {
-            height: 8px;
-            background-color: #ddd;
-            border-radius: 4px;
-            width: 0;
-            transition: width 0.3s ease;
-        }
-
-        .strength-text {
-            margin-top: 4px;
-        }
-
         p {
             font-size: 12px;
             color: #888;
@@ -65,8 +43,8 @@
         button:hover {
             background-color: #FFAB11;
         }
-
     </style>
+
 
 </head>
 
@@ -112,29 +90,23 @@
     <div class="col-50 col-s-75 mid">
 
         <div class="display-container" style="max-width:800px">
+
             <section>
-                <h2>Register</h2>
+                <h2>Register your 2fa</h2>
+                <p>Scan the QR code with your 2fa app and enter the code below.</p>
                 <form method="post">
-                    <label for="email">E-Mail:</label>
-                    <input type="email" id="email" name="email" required>
-                    <label for="username">Username:</label>
-                    <input type="text" id="username" name="username" required>
-                    <div class="password-container">
-                        <label for="password">Password:</label>
-                        <input type="password" id="password" name="password" onkeyup="checkPasswordStrength()">
-                        <div class="password-strength-meter">
-                            <div class="strength-bar" id="strength-bar"></div>
-                            <div class="strength-text" id="strength-text"></div>
-                        </div>
-                    </div>
-                    <label for="password2">Password again:</label>
-                    <input type="password" id="password2" name="password2" required>
-                    <p>Your password must contain at least one digit (0-9), one lowercase and one uppercase character
-                        (a-z, A-Z), one special character (!#$%&?") and a length of 12 - 128</p>
-                    <div>
-                        <button type="submit">Register</button>
-                    </form>
-                <p class="tiny-gray-text">Already have an account? <a href="/login">Login</a></p>
+                    <label for="secret">Secret Token</label>
+                    <input type="text" class="form-control" id="secret" value="{{ secret }}" readonly
+                           onblur='generateBarCode();'>
+
+                    <label for="otp">OTP / 2FA Code:</label>
+                    <input type="text" id="otp" name="otp" required>
+                    <button type="submit">Register your 2 FA</button>
+                </form>
+                <img id='barcode'
+                     src="data:image/png;base64,{{ img_qrcode_data }}"
+                     alt=""
+                     title="QR Code 2fa"/>
             </section>
 
         </div>
@@ -152,6 +124,8 @@
 </div>
 </body>
 </html>
+
+
 
 
 
