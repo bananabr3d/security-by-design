@@ -6,29 +6,38 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet" href="../static/Bilder.css">
     <style>
+        section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh; /* Set to 100% of viewport height */
+        }
+
+        h2, p {
+            text-align: center;
+        }
+
         form {
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            width: 300px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 8px;
-        }
-
-        input {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
             width: 100%;
-            padding: 8px;
-            margin-bottom: 16px;
-            box-sizing: border-box;
+            max-width: 400px; /* Set a maximum width for better readability */
+            margin: 0 auto; /* Center the form horizontally within the section */
         }
 
-        p {
-            font-size: 12px;
-            color: #888;
+        label, input {
+            margin-bottom: 10px;
+            width: 100%;
+            box-sizing: border-box;
+
+        }
+
+        img {
+            max-width: 100%;
+            height: auto;
+            margin-top: 20px;
         }
 
         button {
@@ -39,28 +48,11 @@
             border-radius: 4px;
             cursor: pointer;
         }
-
         button:hover {
             background-color: #FFAB11;
         }
-        /* for dropdown menu */
-
-        select {
-            appearance: none;
-            -webkit-appearance: none;
-            -moz-appearance: none;
-            padding: 8px;
-            border: 1px solid #ddd;
-            background-color: #fff;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-
-        select:focus {
-            outline: none;
-            border-color: #FFAB11;
-        }
     </style>
+
 
 </head>
 
@@ -106,28 +98,25 @@
     <div class="col-50 col-s-75 mid">
 
         <div class="display-container" style="max-width:800px">
-            <h2>Password Reset</h2>
-            <p>Choose a Security Question</p>
-            <br>
-            <form method="POST" action="/reset-password">
-                <label for="email">E-Mail</label>
-                <input type="email" id="email" name="email" required>
-                <br>
-                <label for="security_question">Security Question</label>
-                <select id="security_question" name="security_question" required>
-                    {% for question in security_questions %}
-                    <option value="{{ question }}">{{ question }}</option>
-                    {% endfor %}
-                </select>
-                <br>
-                <label for="security_answer">Answer</label>
-                <input type="text" id="security_answer" name="answer" required>
-                <br>
-                <label for="new_password">New Password</label>
-                <input type="password" id="new_password" name="new_password" required>
-                <br>
-                <button type="submit">Reset Password</button>
-            </form>
+
+            <section>
+                <h2>Register your 2fa</h2>
+                <p>Scan the QR code with your 2fa app and enter the code below.</p>
+                <form method="post">
+                    <label for="secret">Secret Token</label>
+                    <input type="text" class="form-control" id="secret" value="{{ secret }}" readonly
+                           onblur='generateBarCode();'>
+
+                    <label for="otp">OTP / 2FA Code:</label>
+                    <input type="text" id="otp" name="otp" required>
+                    <button type="submit">Register your 2 FA</button>
+                </form>
+                <img id='barcode'
+                     src="data:image/png;base64,{{ img_qrcode_data }}"
+                     alt=""
+                     title="QR Code 2fa"/>
+            </section>
+
         </div>
     </div>
 
@@ -143,6 +132,10 @@
 </div>
 </body>
 </html>
+
+
+
+
 
 
 
