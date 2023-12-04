@@ -30,6 +30,19 @@ def load_contracts_by_user(user, db: pymongo.database.Database) -> list:
 
     return contract_data_list
 
+def get_contracts_termination_requested(db: pymongo.database.Database) -> list:
+    try:
+        contracts_termination_requested = db.contracts.find({'termination_requested': True}, allow_partial_results=False)
+    except:
+        raise DBConnectionError
+    
+    contract_list = list()
+
+    for contract in contracts_termination_requested:
+        contract_list.append(Contract.find_by_id(db=db, contract_id=contract["_id"]))
+
+    return contract_list
+
 class Contract():
     def __init__(self, db: pymongo.database.Database, electricity_meter_id: int, 
                  startdate: str, enddate: str, 

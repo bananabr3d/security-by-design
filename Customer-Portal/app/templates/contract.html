@@ -32,12 +32,15 @@ Contract {{ contract._id }}
       <button type="submit">Update</button>
     </form>
   </h3>
-  <br>
-  <br>
   <!-- Remove contract -->
-  <form method="post" action="/remove-contract/{{ contract._id }}" onsubmit="return confirm('Are you sure you want to submit this form?');">
-    <button type="submit">Remove Contract</button>
-  </form>
+  {% if not contract.termination_requested %}
+    <br>
+    <br>
+    <form method="post" action="/request-termination-contract/{{ contract._id }}" onsubmit="return confirm('Are you sure you want to submit this form?');">
+      <button type="submit">Request Contract Termination</button>
+    </form>
+  {% endif %}
+  <h3>Termination Requested: {{ contract.termination_requested }}</h3>
   <!-- Export contract information button + div to show json output with correct indentation -->
   {% if twofa_authenticated %}
   <div>

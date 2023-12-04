@@ -245,13 +245,13 @@ def update_contract(contract_id: str):
     return redirect(url_for('contract', contract_id=contract_id))
 
 
-@app.route('/remove-contract/<contract_id>', methods=['POST'])
+@app.route('/request-termination-contract/<contract_id>', methods=['POST'])
 @jwt_required(fresh=True)
-def remove_contract(contract_id: str):
+def request_termination_contract(contract_id: str):
     '''
     This function handles the remove-contract page of the web application. The JWT Token is required and the 2fa is checked. 
     '''
-
+    
     if not g.twofa_authenticated:
         raise Invalid2FA
 
@@ -272,17 +272,20 @@ def remove_contract(contract_id: str):
         flash("Contract is not active")
         return redirect(url_for('dashboard'))
 
-    #TODO Send API request to metering point operator to say the em is free again
     
-    # Delete contract
-    contract.delete(db=db)
+    # Check if termination is already requested
+    if contract.get_attribute("termination_requested") == "True" or contract.get_attribute("termination_requested") == True or contract.get_attribute("termination_requested") == "true":
+        logger.warning(f"Contract with ID: '{contract_id}' already requested termination.")
+        flash("Contract already requested termination")
+        return redirect(url_for('dashboard'))
+    
+    # Update contract
+    contract.update_attribute(attribute="termination_requested", value=True)
 
-    # Remove contract from user
-    g.user.remove_contract(db=db, contract_id=contract_id)
+    logger.debug(f"Contract with ID '{contract_id}' successfully requested termination.")
+    flash("Successfully requested contract termination", "success")
 
-    logger.debug(f"Contract with ID '{contract_id}' successfully deleted.")
-    flash("Contract successfully deleted", "success")
-    return redirect(url_for('dashboard'))
+    return redirect(url_for('contract', contract_id=contract_id))
 
 @app.route('/export-contract/<contract_id>', methods=['GET'])
 @jwt_required(fresh=True)

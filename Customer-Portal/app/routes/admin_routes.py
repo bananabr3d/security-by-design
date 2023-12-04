@@ -10,7 +10,8 @@ from flask_jwt_extended import jwt_required
 from app import app, logger, db, Invalid2FA
 
 # Import from models
-from app.models.user import get_user_count, get_usernames
+from app.models.user import get_user_count, get_usernames, User
+from app.models.contract import get_contracts_termination_requested, Contract
 
 
 # ===== Routes =====
@@ -30,7 +31,7 @@ def admin_dashboard():
         raise Invalid2FA
     
     # Check if the user is an admin
-    if not g.user.get_attribute("admin"):
+    if not g.admin:
         # If not, redirect to dashboard
         return redirect(url_for('dashboard'))
     
@@ -40,10 +41,74 @@ def admin_dashboard():
     # Get usernames
     usernames = get_usernames(db=db)
 
+    # Get contracts with termination requested == True
+    contracts_termination_requested = get_contracts_termination_requested(db=db)
+
+    # Turn contracts into dicts
+    contracts_termination_requested_data_list = list()
+
+    for contract in contracts_termination_requested:
+        # Turn contracts into dicts
+        temp_contract = contract.get_contract_data()
+
+        logger.debug(temp_contract)
+        
+        # for every contract search for the user and add its username as "customer" key
+        user = User.find_by_contract_id(db=db, contract_id=temp_contract["_id"])
+        temp_contract["customer"] = user.get_attribute("username")
+        logger.debug(temp_contract)
+
+        contracts_termination_requested_data_list.append(temp_contract)
+
+    logger.debug(contracts_termination_requested_data_list)
+
     logger.info(f"Admin {g.user.get_attribute('username')} accessed the admin dashboard.")
 
     # Render the admin dashboard
-    return render_template('admin_dashboard.html', user_count=user_count, jwt_authenticated=g.jwt_authenticated, twofa_activated=g.twofa_activated, twofa_authenticated=g.twofa_authenticated, username=g.user.get_attribute('username'), admin=g.admin, usernames=usernames)
+    return render_template('admin_dashboard.html', user_count=user_count, 
+                           jwt_authenticated=g.jwt_authenticated, 
+                           twofa_activated=g.twofa_activated, 
+                           twofa_authenticated=g.twofa_authenticated, 
+                           username=g.user.get_attribute('username'), 
+                           admin=g.admin, usernames=usernames,
+                           contracts_termination_requested=contracts_termination_requested_data_list)
+
+# === Confirm Contract Termination ===
+@app.route('/admin/confirm-contract-termination/<contract_id>', methods=['POST'])
+@jwt_required(fresh=True)
+def confirm_contract_termination(contract_id):
+    '''
+    This function handles the POST admin/confirm-contract-termination/<contract_id> route.
+
+    Raise Invalid2FA if the user is not 2fa authenticated.
+
+    Returns the confirm contract termination template.
+    '''
+    # Check if the user is 2fa authenticated
+    if not g.twofa_authenticated:
+        raise Invalid2FA
+    
+    # Check if the user is an admin
+    if not g.admin:
+        # If not, redirect to dashboard
+        return redirect(url_for('dashboard'))
+
+    # Get the contract
+    contract = Contract.find_by_id(db=db, contract_id=contract_id)
+
+    #TODO Send API request to metering point operator to say the em is free again
+    
+    # Delete contract
+    contract.delete()
+
+    # Remove contract from user
+    g.user.remove_contract(contract_id=contract_id)
+
+    logger.info(f"Admin {g.user.get_attribute('username')} confirmed the termination of contract {contract_id}.")
+
+    logger.debug(f"Contract with ID '{contract_id}' successfully deleted.")
+    flash("Contract successfully deleted", "success")
+    return redirect(url_for('dashboard'))
 
 @app.before_request
 @jwt_required(optional=True)

@@ -90,28 +90,29 @@ Admin Panel
     <div class="contract-management">
         <h2>Contract Management</h2>
         <p>Manage customer contracts.</p>
-        <div class="confirm-contract-earlier-termination">
-            <h3>Confirm earlier contract termination</h3>
+        {% if contracts_termination_requested|length > 0 %}
+        <div class="confirm-contract-termination">
+            <h3>Confirm contract termination</h3>
             <p>List of customer contracts that are pending earlier termination.</p>
             <table>
                 <thead>
                     <tr>
                         <th>Customer</th>
                         <th>Contract-ID</th>
+                        <th>Start Date</th>
                         <th>Planned End Date</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody> <!-- TODO -->
-                    {% for contract in contracts %}
+                    {% for contract in contracts_termination_requested %}
                     <tr>
                         <td>{{ contract.customer }}</td>
                         <td>{{ contract._id }}</td>
-                        <td>{{ contract.planned_end_date }}</td>
+                        <td>{{ contract.startdate }}</td>
+                        <td>{{ contract.enddate }}</td>
                         <td>
-                            <form action="/admin/confirm-contract-earlier-termination" method="POST" onsubmit="return confirm('Are you sure you want to confirm this earlier contract termination?');">
-                                <input type="hidden" name="customer" value="{{ contract.customer }}">
-                                <input type="hidden" name="contract" value="{{ contract.contract }}">
+                            <form action="/admin/confirm-contract-termination/{{ contract._id }}" method="POST" onsubmit="return confirm('Are you sure you want to confirm this earlier contract termination?');">
                                 <button type="submit" name="action" value="confirm">Confirm</button>
                             </form>
                         </td>
@@ -120,6 +121,7 @@ Admin Panel
                 </tbody>
             </table>
         </div>
+        {% endif %}
     </div>
 </section>
 {% endblock %}
