@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block header_title %}
+{% block title %}
+Unauthorized
+{% endblock %}
+{% endblock %}
+
+{% block content %}
+<h2>Error</h2>
+<p>You have no right to be here</p>
+<p>If the site should be available reload or contact your Administrator</p>
+<a href="https://imgflip.com/i/885sph">
+<img src="https://imgflip.com/i/885sph" title="made at imgflip.com"/>
+</a>
+<p>Return to Login</p>
+<form method="post">
+    <button type="submit">Login</button>
+</form>
+{% endblock %}
