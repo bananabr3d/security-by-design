@@ -128,12 +128,12 @@
         <div class="col-50 col-s-75 mid">
 
             <div> <!-- Maintained EM id and time in minutes? -->
-                <form method="post" action="/maintain-electricity_meter">
+                <form method="post" action="/maintain">
                     <label for="em_id">Electricity Meter</label>
-                    <input type="id" id="em_id" name="electricity_meter" required>
+                    <input type="text" id="em_id" name="electricity_meter_id" required>
                     <div class="password-container">
                         <label for="duration">Duration</label>
-                        <input type="minutes" id="duration" name="duration" required>
+                        <input type="text" id="duration" name="duration_min" required>
                     </div>
                     <div style="text-align: center;">
                         <button type="submit" id="form-button">Maintain Electricity Meter</button>
