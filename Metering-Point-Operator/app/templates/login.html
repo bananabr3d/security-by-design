@@ -37,6 +37,18 @@
             max-width: 100%;
             height: auto;
         }
+
+
+        /* Standard-Linkfarbe */
+        a {
+            color: #FFAB11;
+        }
+
+
+        /* Ändern Sie die Linkfarbe, wenn der Mauszeiger darüber schwebt */
+        a:hover {
+            color: #FFAB11;
+        }
     </style>
 </head>
 <body>
@@ -61,12 +73,15 @@
 
 
             </form>
+            <br>
+            <p>Forgot your password? <a href="/reset-password">Reset Password</a></p>
+            <p>Don't have an account? <a href="/register">Register</a></p>
 
             {% with messages = get_flashed_messages(with_categories=true) %}
-<!--            wenn es nachrichten gibt, soll die div aufgebaut werden-->
+            <!--            wenn es nachrichten gibt, soll die div aufgebaut werden-->
             {% if messages %}
             <ul class=flashes>
-<!--                für jede nachricht wird sie im frontend mit "liste" angezeigt -->
+                <!--                für jede nachricht wird sie im frontend mit "liste" angezeigt -->
                 {% for category, message in messages %}
                 <li class="{{ category }}">{{ message }}</li>
                 {% endfor %}
