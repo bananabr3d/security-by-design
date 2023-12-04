@@ -7,8 +7,8 @@ from flask import request, render_template, redirect, url_for, flash, make_respo
 from flask_jwt_extended import (
     create_access_token, jwt_required, set_access_cookies, unset_jwt_cookies)
 
-# Import app, logger, db, bcrypt object, jwt object, exceptions and models from app package
-from app import app, logger, db, bcrypt, jwt, Inactive2FA, Active2FA, Valid2FA
+# Import app, logger, bcrypt object, exceptions and models from app package
+from app import app, logger, bcrypt, Inactive2FA, Active2FA, Valid2FA
 
 # Import models
 from app.models.user import User
