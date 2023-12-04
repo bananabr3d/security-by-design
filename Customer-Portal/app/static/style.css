@@ -1,4 +1,3 @@
-/*TODO Reset CSS */
 body, h1, h2, ul, li, p, form {
     margin: 0;
     padding: 0;
@@ -6,12 +5,12 @@ body, h1, h2, ul, li, p, form {
 
 body {
     font-family: Arial, sans-serif;
-    background-color: #f5f5f5;
+    background-color: #8E8DA8;
 }
 
 header {
-    background-color: #001f3f; /* Navy Blue */
-    color: #fff;
+    background-color: black; /* Navy Blue */
+    color: #e9c54c;
     padding: 10px 0;
     text-align: center;
 }
@@ -47,7 +46,7 @@ main {
     max-width: 800px;
     margin: 20px auto;
     padding: 20px;
-    background-color: #fff;
+    background-color: #f4f4f6;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
@@ -74,16 +73,21 @@ button {
     padding: 10px;
     margin-bottom: 10px;
     margin-top: 10px;
-    border: 1px solid #05f209;
+    border: 1px solid #e9c54c;
     border-radius: 5px;
     font-size: 16px;
 }
 
+button:hover {
+    background-color: #8E8DA8; /* change to your desired color */
+    color: #e9c54c; /* change to your desired color */
+  }
+
 footer {
     text-align: center;
     padding: 10px;
-    background-color: #ff851b; /* Komplementärfarbe (Orange) */
-    color: #fff;
+    background-color: black; /* Komplementärfarbe (Orange) */
+    color: #e9c54c;
     font-size: 14px;
 }
 
@@ -112,7 +116,7 @@ img {
 
 /* Logo */
 canvas {
-    position: fixed;
+    position: absolute;
     top: 0;
     left: 0;
     margin: 10px;
@@ -175,4 +179,31 @@ canvas {
 .strength-text {
     font-size: 14px;
     margin-top: 5px;
+}
+
+.navbar.navbar-expand-lg.navbar-light.bg-light.static.justify-content-center {
+    max-width: 800px;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: #7c2323 !important; /* examples: #1f2348 || #7c2323 || #78866B*/
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); 
+}
+/* Style for non-active navigation items */
+.navbar-nav .nav-item .nav-link {
+    color: #BCA87F; /* Set the default color for non-active items */
+}
+
+/* Style for active (highlighted) navigation items */
+.navbar-nav .nav-item.active .nav-link,
+.navbar-nav .nav-item:hover .nav-link {
+    color: #e9c54c; /* Set the color for highlighted items */
+}
+
+body.hide-on-index main {
+    max-width:none;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    background-color: #8E8DA8;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
