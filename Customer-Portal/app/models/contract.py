@@ -2,6 +2,18 @@ from app import DBConnectionError, logger
 from bson.objectid import ObjectId
 from flask_pymongo import pymongo
 
+def get_all_contracts(db: pymongo.database.Database) -> list:
+    try:
+        contracts = db.contracts.find({}, allow_partial_results=False)
+    except:
+        raise DBConnectionError
+    
+    contract_list = list()
+
+    for contract in contracts:
+        contract_list.append(Contract.find_by_id(db=db, contract_id=contract["_id"]))
+
+    return contract_list
 
 def load_contracts_by_id(db: pymongo.database.Database, contract_id_list: list) -> list:
     contract_data_list = list()

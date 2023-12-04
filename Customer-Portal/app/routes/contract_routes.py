@@ -4,7 +4,7 @@
 from flask import request, flash, redirect, url_for, g, render_template
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from app import app, logger, db, Invalid2FA
-from app.models.contract import Contract
+from app.models.contract import Contract, get_all_contracts
 from app.models.user import User
 from app.routes.auth_routes import validate_text
 from app.routes.routes import address_plz_regex, address_street_city_country_regex, address_street_house_number_regex
@@ -14,6 +14,8 @@ from re import fullmatch
 from dotenv import load_dotenv
 load_dotenv()
 import os
+# For checking expired contracts
+from threading import Timer
 
 @app.route('/add-contract', methods=['POST'])
 @jwt_required(fresh=True)
@@ -327,3 +329,30 @@ def export_contract(contract_id: str):
     return redirect(url_for('contract',
                             contract_id=contract_id,
                             contract_information_json=contract_information_json))
+
+def check_expired_contracts():
+    '''
+    This function checks every 24 hours if a contract is expired and sets the attribute "expired" to True.
+    '''
+
+    # Get all contracts
+    contracts = get_all_contracts(db=db)
+
+    # Check if contract is more then 90 days over enddate
+    for contract in contracts:
+        if contract.get_attribute("enddate") < (datetime.now() - timedelta(days=90)).strftime("%Y-%m-%d"):
+            logger.debug(f"Contract with ID '{contract.get_id()}' is expired. Deleting it and removing from user.")
+            contract.delete()
+
+            # Remove contract from user
+            user = User.find_by_contract_id(db=db, contract_id=contract.get_id())
+
+            if user != None:
+                user.remove_contract(contract_id=contract.get_id())
+                logger.debug(f"Contract with ID '{contract.get_id()}' successfully removed from user with ID '{user.get_id()}'.")
+
+    # Check again in 24 hours
+    Timer(86400, check_expired_contracts).start()
+
+# Start the scheduler once
+check_expired_contracts()
