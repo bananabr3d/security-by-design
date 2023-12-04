@@ -8,7 +8,7 @@ from flask import render_template, url_for, redirect, flash, g
 # Packages for JWT
 from flask_jwt_extended import jwt_required
 
-# Import app, logger and db object from app package
+# Import app, logger and Exceptions from app package
 from app import app, logger, Inactive2FA, Invalid2FA, Active2FA, Valid2FA, ValidJWT
 
 # ===== Routes =====
