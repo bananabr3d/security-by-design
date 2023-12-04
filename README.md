@@ -63,7 +63,10 @@ In the Beginning, we decided on the chosen stack. But there were also other idea
       - [Register your 2FA](#register-your-2fa)
       - [Login with your 2FA](#login-with-your-2fa)
       - [Dashboard](#dashboard)
-      - [Add a Contract to your Dashboard / Bind it to your user](#add-a-contract-to-your-dashboard--bind-it-to-your-user)
+        - [Add a Contract to your Dashboard / Bind it to your user](#add-a-contract-to-your-dashboard--bind-it-to-your-user-1)
+        - [Contract Details](#contract-details)
+      - [User-info Page](#user-info-page)
+      - [Admin Dashboard](#admin-dashboard)
     - [Technician Manual](#technician-manual)
       - [Maintain a Electricity Meter](#maintain-a-electricity-meter)
   - [Coding Instructions](#coding-instructions)
@@ -152,7 +155,8 @@ https://voltwave.systems/
     |    ├── 2fa/
     ├── user-info
     ├── dashboard/
-    |    ├── ...
+    |    ├── <contract-id>
+    ├── admin/
 https://systems.voltwave.systems/
     ├── home/
     ├── index/
@@ -257,10 +261,6 @@ In order to register a user you need the following information:
 - email-address
 - username
 - password
-- (birthday date)
-- (gender)
-- (...)
-#TODO
 
 With these information you can go to the website: "https://voltwave.systems/register" and register your user. Afterwards, you will be forwarded to the Login Page.
 
@@ -278,17 +278,30 @@ On the 2FA Registration Page ("https://voltwave.systems/register/2fa") you will 
 On the 2FA Login Page ("https://voltwave.systems/login/2fa") you have to enter the 6 digit code, which is displayed in your 2FA app. If the code is correct, you will be forwarded to the Dashboard.
 
 #### Dashboard
-The Dasboard is a fully representation of your current Electricity Meters status and your energy consumption. If you want to get into a more detailed overview of a electricity meter you can click on it's ID. Also you can see your contracts or add new ones to your dashboard.
+The Dasboard is a fully representation of your current Electricity Meters status and your energy consumption. If you want to get into a more detailed overview of a contract you can click on it's ID. Also you can add new ones to your dashboard.
 
-Screenshots coming soon...
-#TODO
+##### Add a Contract to your Dashboard / Bind it to your user
+You can add a contract by providing following information:
+- Electricity Meter ID
+- PLZ
+- Street
+- Street Number
+- City
+- Country
+- (Notes)
+
+Note: You have to provide the Electricity Meter ID, which is displayed on the Electricity Meter itself.
+
+Note: You have to provide your personal information first in order to add a contract.
+
+##### Contract Details
+On the Contract Page ("https://voltwave.systems/dashboard/<contract_id>") you can see the details of the contract, like the electricity meter ID, the address and the current status. You can also update your preferences (Auto renewal and Notes) and request the earlier termination of your contract. Additionally you can export your overall contract information.
 
 #### User-info Page
 On the User-info Page ("https://voltwave.systems/user-info") you can see your user information, like email, username and authentication status. You can also change your password, add security quesitons, reset your 2FA and delete your account.
 
-#### Add a Contract to your Dashboard / Bind it to your user
-Coming soon...
-#TODO
+#### Admin Dashboard
+On the Admin Dashboard ("https://voltwave.systems/admin") you can see the current status of the system, like the amount of users, user activity and the requests for contracts to be terminated earlier. You can also see the current blocked IPs and whitelist them. Additionally you can see the current active and inactive users and activate or deactivate them.
 
 ### Technician Manual
 Coming soon...
