@@ -160,7 +160,7 @@ def register_post():
     # = Input Validation =
     # Email address and password
 
-    if not validate_email(request.form['email']) or not validate_username(request.form['username']) or check_password_breach(request.form['password']):
+    if not validate_email(request.form['email']) or not validate_username(request.form['username']) or not validate_password(request.form['password']) or check_password_breach(request.form['password']):
         return redirect(url_for("register"))
     
     # set email in lowercase and username in original case           
