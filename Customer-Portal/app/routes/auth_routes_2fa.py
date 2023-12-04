@@ -99,7 +99,7 @@ def register_2fa():
 
     # Generate a random secret and update the user attribute
     secret = pyotp.random_base32()
-    g.user.update_attribute(db, attribute="twofa_secret", value=secret)
+    g.user.update_attribute(attribute="twofa_secret", value=secret)
 
     # Generate the OTP URI for the QR code
     otp_uri = pyotp.TOTP(secret).provisioning_uri(g.user.get_attribute("username"), issuer_name="VoltWave")
@@ -155,7 +155,7 @@ def register_2fa_post():
     # Verify otp
     if verify2fa(user=g.user, otp=request.form['otp']):
         # Set user attribute 2fa activated to True, flash success message and redirect to login_2fa
-        g.user.update_attribute(db, "twofa_activated", True)
+        g.user.update_attribute(attribute="twofa_activated", value=True)
         flash('2FA Verification Successful', 'success')
         logger.debug(f"User: '{g.user.get_attribute('username')}' has successfully verified its 2fa")
 
@@ -168,7 +168,7 @@ def register_2fa_post():
         
         # Update user backup codes -> save the hashes of the backup_codes
         backup_codes = [bcrypt.generate_password_hash(str(code)).decode('utf-8') for code in backup_codes]
-        g.user.update_attribute(db, "backup_codes", backup_codes)
+        g.user.update_attribute("backup_codes", backup_codes)
         
         return redirect(url_for('login_2fa'))
     
@@ -298,11 +298,11 @@ def reset_2fa():
 
 def resp_reset_2fa() -> Response:
     # Update user 2fa secret
-    g.user.update_attribute(db, attribute="twofa_secret", value=None)
+    g.user.update_attribute(attribute="twofa_secret", value=None)
     # Update user 2fa activated
-    g.user.update_attribute(db, attribute="twofa_activated", value=False)
+    g.user.update_attribute(attribute="twofa_activated", value=False)
 
-    g.user.update_attribute(db, attribute="backup_codes", value=None)
+    g.user.update_attribute(attribute="backup_codes", value=None)
 
     # Unset JWT and redirect to login
     resp = make_response(redirect(url_for('login')))

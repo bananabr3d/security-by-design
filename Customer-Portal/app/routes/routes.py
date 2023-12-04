@@ -12,7 +12,7 @@ from flask_jwt_extended import jwt_required
 from app import app, db, Invalid2FA, logger
 
 # Import models
-from app.models.contract import load_contract_data
+from app.models.contract import load_contracts_by_user
 
 # Import regex
 from re import compile, fullmatch
@@ -64,7 +64,7 @@ def dashboard():
         raise Invalid2FA
     
     # 1. load all contract objects of user
-    contract_list = load_contract_data(g.user, db)
+    contract_list = load_contracts_by_user(g.user, db)
 
     transformed_contract_list = list()
 
@@ -241,9 +241,9 @@ def update_user_info_post():
     # Update user object
     for key in keys:
         if key in ['plz', 'street', 'street_house_number', 'city', 'country']:
-            g.user.update_address(db=db, attribute=key, value=request_data[key])
+            g.user.update_address(attribute=key, value=request_data[key])
         else:
-            g.user.update_attribute(db=db, attribute=key, value=request_data[key])
+            g.user.update_attribute(attribute=key, value=request_data[key])
 
     logger.debug('User information updated successfully.')
     flash('Your information has been updated successfully.', 'success')

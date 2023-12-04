@@ -1,8 +1,8 @@
 from pytest import fixture
 from app import app, db, logger
 from app.tests.functional.auth_functions import register, login_jwt, activate_2fa, validate_2fa, get_secret
-from app.models.user import load_user
-from app.models.contract import load_contract
+from app.models.user import User
+from app.models.contract import Contract as Contract_class
 from pyotp import TOTP
 
 class TestContractRoutes:
@@ -15,7 +15,7 @@ class TestContractRoutes:
             logger.info("User not existing. Registering...")
             register(self.client)
    
-        self.user = load_user(db=db, user_id=db.users.find_one({"username": "pytest"})["_id"])
+        self.user = User.find_by_id(db=db, user_id=db.users.find_one({"username": "pytest"})["_id"])
 
         # Login with jwt
         self.client = login_jwt(self.client)
@@ -56,7 +56,7 @@ class TestContractRoutes:
         assert response.headers['Location'] == '/dashboard'
 
         # load all contracts of user
-        self.user = load_user(db=db, user_id=db.users.find_one({"username": "pytest"})["_id"]) # Get newest user object for updated contract list
+        self.user = User.find_by_id(db=db, user_id=db.users.find_one({"username": "pytest"})["_id"]) # Get newest user object for updated contract list
         contract_list = self.user.get_contract_list()
         
         logger.debug(f"Contract list: {contract_list}") #TODO Remove
@@ -65,7 +65,7 @@ class TestContractRoutes:
 
         # Check if contract is in contract list, else assert False
         for contract_id in contract_list:
-            Contract = load_contract(db, contract_id=contract_id)
+            Contract = Contract_class.find_by_id(db, contract_id=contract_id)
             if Contract != None and Contract.get_attribute("electricity_meter_id") == request_data["electricity_meter_id"]:
                 assert True
                 return
@@ -93,7 +93,7 @@ class TestContractRoutes:
         assert response.headers['Location'] == '/dashboard'
 
         # load all contract objects of user
-        self.user = load_user(db=db, user_id=db.users.find_one({"username": "pytest"})["_id"]) # Get newest user object for updated contract list
+        self.user = User.find_by_id(db=db, user_id=db.users.find_one({"username": "pytest"})["_id"]) # Get newest user object for updated contract list
         contract_list = self.user.get_contract_list()
         
         logger.debug(f"Contract list: {contract_list}") #TODO Remove

@@ -14,7 +14,7 @@ from flask_jwt_extended import (
 from app import app, logger, db, bcrypt, jwt, Invalid2FA, ValidJWT, security_questions
 
 # Import models
-from app.models.user import User, load_user
+from app.models.user import User
 
 # Import datetime for cookie expiration handling
 from datetime import datetime, timedelta, timezone
@@ -185,7 +185,7 @@ def register_post():
     # hash pw, set user as object and save user
     hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
     user = User(db=db, email=email, username=username, password=hashed_password)
-    user.save(db=db)
+    user.save()
 
     flash('Your account has been created!', 'success')
     logger.debug("User Account has been created successfully")
@@ -391,7 +391,7 @@ def reset_password_post():
 
     # Set new password
     hashed_password = bcrypt.generate_password_hash(request.form['new_password']).decode('utf-8')
-    g.user.update_attribute(db, attribute="password", value=hashed_password)
+    g.user.update_attribute(attribute="password", value=hashed_password)
 
     flash('Your password has been changed!', 'success')
     logger.debug(f"User: '{g.user.get_attribute('username')}' has successfully changed its password")
@@ -429,7 +429,7 @@ def add_security_question():
     
     # Add hash of answer to user security questions
     hashed_answer = bcrypt.generate_password_hash(request.form['answer']).decode('utf-8')
-    g.user.add_security_question(db=db, question=request.form['security_question'], answer=hashed_answer)
+    g.user.add_security_question(question=request.form['security_question'], answer=hashed_answer)
 
     flash('Your security question has been added!', 'success')
     logger.debug(f"User: '{g.user.get_attribute('username')}' has successfully added a security question")
@@ -475,7 +475,7 @@ def remove_security_question():
         return redirect(url_for('user_info'))
     
     # Remove security question from user security questions
-    g.user.remove_security_question(db=db, question=request.form['security_question'])
+    g.user.remove_security_question(question=request.form['security_question'])
 
     flash('Your security question has been removed!', 'success')
     logger.debug(f"User: '{g.user.get_attribute('username')}' has successfully removed a security question")
@@ -510,7 +510,7 @@ def set_new_password():
 
     # Set new password
     hashed_password = bcrypt.generate_password_hash(request.form['new_password']).decode('utf-8')
-    g.user.update_attribute(db, attribute="password", value=hashed_password)
+    g.user.update_attribute(attribute="password", value=hashed_password)
 
     flash('Your password has been changed!', 'success')
     logger.debug(f"User: '{g.user.get_attribute('username')}' has successfully changed its password")
@@ -542,10 +542,10 @@ def delete_user():
         raise Invalid2FA
     
     # Delete user
-    g.user.delete(db=db)
+    g.user.delete()
 
     # Check if user is deleted
-    if load_user(db=db, user_id=g.user.get_id()) != None:
+    if User.find_by_id(db=db, user_id=g.user.get_id()) != None:
         logger.warning(f"User: '{g.user.get_attribute('username')}' could not be deleted")
         flash('User could not be deleted', 'failed')
         return redirect(url_for('dashboard'))
@@ -609,7 +609,7 @@ def before_request_auth():
             if get_jwt_identity():
                 logger.debug("User has a valid JWT")
                 g.jwt_authenticated = True
-                g.user = load_user(db=db, user_id=get_jwt_identity())
+                g.user = User.find_by_id(db=db, user_id=get_jwt_identity())
 
                 twofa_activated = g.user.get_attribute('twofa_activated')
 

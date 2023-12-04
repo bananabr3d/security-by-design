@@ -4,8 +4,8 @@
 from flask import request, flash, redirect, url_for, g, render_template
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from app import app, logger, db, Invalid2FA
-from app.models.contract import Contract, load_contract
-from app.models.user import load_user
+from app.models.contract import Contract
+from app.models.user import User
 from app.routes.auth_routes import validate_text
 from requests import get, post
 from datetime import datetime, timedelta
@@ -107,7 +107,7 @@ def add_contract():
         # diese dann in dem contract speichern
 
     # Check if contract with electricity_meter_id already exists
-    if Contract.find_contract_by_electricity_meter_id(db=db, electricity_meter_id=electricity_meter_id) != None:
+    if Contract.find_by_electricity_meter_id(db=db, electricity_meter_id=electricity_meter_id) != None:
         logger.warning(f"Contract with electricity_meter_id: '{electricity_meter_id}' already exists.")
         flash("A contract with the provided Electricity Meter ID already exists")
         return redirect(url_for('dashboard'))
@@ -128,8 +128,8 @@ def add_contract():
         logger.debug(f"Contract with Electricity Meter ID '{electricity_meter_id}' successfully created.")
 
         # Add contract to user
-        user = load_user(db=db, user_id=get_jwt_identity())
-        user.add_contract(db=db, contract_id=contract.get_id())
+        user = User.find_by_id(db=db, user_id=get_jwt_identity())
+        user.add_contract(contract_id=contract.get_id())
         logger.debug("Contract successfully added to user")
         flash("Contract successfully added", "success")
 
@@ -153,7 +153,7 @@ def contract(contract_id: str):
         return redirect(url_for('dashboard'))
     
     # Load contract
-    contract = load_contract(db=db, contract_id=contract_id)
+    contract = Contract.find_by_id(db=db, contract_id=contract_id)
 
     #Check if contract is still active
     if contract.get_attribute("enddate") < datetime.now().strftime("%Y-%m-%d"):
@@ -203,7 +203,7 @@ def update_contract(contract_id: str):
         return redirect(url_for('dashboard'))
     
     # Load contract
-    contract = load_contract(db=db, contract_id=contract_id)
+    contract = Contract.find_by_id(db=db, contract_id=contract_id)
 
     #Check if contract is still active
     if contract.get_attribute("enddate") < datetime.now().strftime("%Y-%m-%d"):
@@ -230,14 +230,14 @@ def update_contract(contract_id: str):
         
     if "notes" in request.form:
         # Update contract
-        contract.update_attribute(db=db, attribute="notes", value=request.form['notes'])
+        contract.update_attribute(attribute="notes", value=request.form['notes'])
 
     if "auto_renew" in request.form:
         # Update contract
         if request.form["auto_renew"] == "true":
-            contract.update_attribute(db=db, attribute="auto_renew", value=True)
+            contract.update_attribute(attribute="auto_renew", value=True)
         elif request.form["auto_renew"] == "false":
-            contract.update_attribute(db=db, attribute="auto_renew", value=False)
+            contract.update_attribute(attribute="auto_renew", value=False)
 
 
     logger.debug(f"Contract with ID '{contract_id}' successfully updated.")
@@ -264,7 +264,7 @@ def remove_contract(contract_id: str):
         return redirect(url_for('dashboard'))
     
     # Load contract
-    contract = load_contract(db=db, contract_id=contract_id)
+    contract = Contract.find_by_id(db=db, contract_id=contract_id)
 
     #Check if contract is still active
     if contract.get_attribute("enddate") < datetime.now().strftime("%Y-%m-%d"):
@@ -306,7 +306,7 @@ def export_contract(contract_id: str):
         return redirect(url_for('dashboard'))
     
     # Load contract
-    contract = load_contract(db=db, contract_id=contract_id)
+    contract = Contract.find_by_id(db=db, contract_id=contract_id)
 
     #Check if contract is still active
     if contract.get_attribute("enddate") < datetime.now().strftime("%Y-%m-%d"):
