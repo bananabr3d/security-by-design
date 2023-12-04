@@ -1,0 +1,263 @@
+﻿<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="utf-8" name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../static/Style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="../static/Bilder.css">
+
+    <style>
+
+
+        .display-container {
+            max-width: 800px;
+            margin: 20px auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1, h2 {
+            color: #333;
+        }
+
+        section {
+            padding: 20px;
+        }
+
+        p {
+            margin-bottom: 10px;
+        }
+
+        label, select, input {
+            display: block;
+            margin: 20px auto;
+            width: calc(50% - 16px);
+            padding: 6px;
+            margin-bottom: 8px;
+            box-sizing: border-box;
+        }
+
+        select {
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            border: 1px solid #ddd;
+            background-color: #fff;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: #e5eaef;
+        }
+
+
+
+        a[href^="mailto"]:hover {
+            color: white;
+            text-decoration: underline;
+        }
+
+    </style>
+</head>
+
+
+<body>
+<div style="margin: 10px 10px 0px 10px">
+
+    <!-- Header -->
+    <div class="topnav" id="myTopnav">
+        <a id="logo" tabindex="-1" title="Zurück zur Startseite" href="index.html">
+            <img src="../static/images/Logo_mpo_icon_white.png" width="80px" height=auto" alt="Logo">
+
+        </a>
+
+          <a href="overview.html" >Overview</a>
+        <a href="maintenance.html">Maintenance</a>
+        <a href="user_info.html" class="active">User Info</a>
+
+        <a class="right-align" href="login.html">Logout</a>
+
+        <a href="javascript:void(0);" class="icon" onclick="myFunction()">
+            <i class="fa fa-bars"></i>
+        </a>
+    </div>
+
+
+    <script>
+        function myFunction() {
+            var x = document.getElementById("myTopnav");
+            if (x.className === "topnav") {
+                x.className += " responsive";
+            } else {
+                x.className = "topnav";
+            }
+        }
+    </script>
+
+
+    <!-- Tabelle -->
+
+    <div class="row">
+        <div class="col-25 col-s-25 menu">
+
+
+        </div>
+
+        <div class="col-50 col-s-75 mid">
+
+
+            <div class="display-container" style="max-width:800px">
+                <section>
+                    <body>
+                    <h1>User Information</h1>
+                    <p>Username: {{ username }}</p>
+                    <p>Email: {{ email }}</p>
+
+                    <!-- Update user information -->
+                    <p>Want to update your user information? <a href="mailto:info@voltwave-systems.com">Write a Mail to
+                        your
+                        Admin</a></p>
+
+                    <!-- Export user account information Button + div to show json output with correct indentation -->
+                    {% if twofa_authenticated %}
+                    <div>
+                        <form method="get" action="/export-user">
+                            <button type="submit">Export User Information</button>
+                        </form>
+                        {% if user_information_json %}
+                        <div>
+                            <pre id="user_json_output">{{ user_information_json }}</pre>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+
+                    <!-- Set new password by sending old, new and new2 -->
+                    <div> <!-- Set new password -->
+                        <form method="post" action="/set-new-password"
+                              onsubmit="return confirm('Are you sure you want to submit this form?');">
+                            <label for="old_password">Old Password</label>
+                            <input type="password" id="old_password" name="old_password" required>
+                            <div class="password-container">
+                                <label for="password">New Password:</label>
+                                <input type="password" id="password" name="new_password" required
+                                       onkeyup="checkPasswordStrength(); checkPasswordMatch()">
+                                <div class="password-strength-meter">
+                                    <div class="strength-bar" id="strength-bar"></div>
+                                    <div class="strength-text" id="strength-text"></div>
+                                </div>
+                            </div>
+                            <label for="password2">Repeat new Password:</label>
+                            <input type="password" id="password2" name="new_password2" required
+                                   onkeyup="checkPasswordMatch()">
+                            <span id="password-match"></span>
+                            <p>Your password must contain at least one digit (0-9), one lowercase and one uppercase
+                                character (a-z, A-Z), one special character (!#$%&?") and a length of 12 - 128</p>
+                            <button type="submit" id="form-button">Set New Password</button>
+                        </form>
+                    </div>
+
+                    {% if twofa_activated %}
+                    {% if twofa_authenticated %}
+                    <!-- Reset 2FA Button with 2FA auth -->
+                    <form method="post" action="/reset-2fa"
+                          onsubmit="return confirm('Are you sure you want to submit this form?');">
+                        <button type="submit">Reset 2FA</button>
+                    </form>
+                    {% else %}
+                    <!-- Reset 2FA without 2fa auth by sending backup code -->
+                    <div>
+                        <form method="post" action="/reset-2fa"
+                              onsubmit="return confirm('Are you sure you want to submit this form?');">
+                            <label for="">Backup Code</label>
+                            <input type="text" id="backup_code" name="backup_code" required>
+                            <button type="submit">Reset 2FA</button>
+                        </form>
+                    </div>
+                    {% endif %}
+                    {% endif %}
+
+                    <!-- Show answered security questions -->
+                    <div>
+                        <h2>Security Questions answered</h2>
+                        <ul>
+                            {% for question in security_questions_user %}
+                            <li>{{ question }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    <!-- Add new security question -->
+                    <div>
+                        <h2>Add new Security Question</h2>
+                        <form method="post" action="/add-security-question">
+                            <label for="security_question">Security Question</label>
+                            <select id="security_question" name="security_question" required>
+                                {% for question in security_questions %}
+                                <option value="{{ question }}">{{ question }}</option>
+                                {% endfor %}
+                            </select>
+                            <br>
+                            <label for="security_answer">Answer</label>
+                            <input type="text" id="security_answer" name="answer" required>
+                            <button type="submit">Add Security Question</button>
+                        </form>
+                    </div>
+                    <!-- Remove security question -->
+                    {% if security_questions_user %}
+                    <div>
+                        <h2>Remove Security Question</h2>
+                        <form method="post" action="/remove-security-question">
+                            <label for="security_question">Security Question</label>
+                            <select id="security_question" name="security_question" required>
+                                {% for question in security_questions_user %}
+                                <option value="{{ question }}">{{ question }}</option>
+                                {% endfor %}
+                            </select>
+                            <br>
+                            <label for="security_answer">Answer</label>
+                            <input type="text" id="security_answer" name="answer" required>
+                            <button type="submit">Remove Security Question</button>
+                        </form>
+                    </div>
+                    {% endif %}
+                    <!-- Delete user -->
+                    <div>
+                        <form method="post" action="/delete-user"
+                              onsubmit="return confirm('Are you sure you want to submit this form?');">
+                            <button type="submit">Delete Account</button>
+                        </form>
+                    </div>
+                    <h2>Two-Factor Authentication</h2>
+                    <p>2FA Activated: {% if twofa_activated %}Yes{% else %}No{% endif %}</p>
+                    <p>2FA Authenticated: {% if twofa_authenticated %}Yes{% else %}No{% endif %}</p>
+                    </body>
+                </section>
+            </div>
+
+
+        </div>
+
+        <div class="col-25 col-s-100">
+            <div class="aside">
+                <h2>Fragen?</h2>
+                <p> Bei Fragen und Anmerkungen wenden Sie sich gerne per Mail an uns. </p>
+
+
+                <a href="mailto:info@voltwave-systems.com">info@voltwave-systems.com</a>
+
+            </div>
+        </div>
+    </div>
+</div>
+<div class="footer">
+    <p>Copyright 2023 VoltWave Systems</p>
+    <a href="impressum.html"> Impressum</a>
+
+</div>
+
+</body>
+</html>

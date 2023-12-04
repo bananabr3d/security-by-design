@@ -1,0 +1,42 @@
+.badge{background-color:#000;color:#fff;display:inline-block;padding-left:8px;padding-right:8px;text-align:center}.badge{border-radius:50%}
+
+.display-container{position:relative}
+.display-bottommiddle{position:absolute;left:50%;bottom:0;transform:translate(-50%,0%);-ms-transform:translate(-50%,0%)}
+
+.container{padding:0.01em 16px}
+
+/* Punkte in der Mitte */
+.center{text-align:center!important}
+
+.border{border:1px solid #ccc!important}
+
+/* Alles abstand zum unteren Bild Rand */
+.section{margin-top:16px!important;margin-bottom:16px!important}
+
+/* linker Pfeil links, rechter Pfeil rechts */
+.left{float:left!important}
+.right{float:right!important}
+
+/* Kreise durchsichtig */
+.transparent{background-color:transparent!important}
+
+/* Hoover und weiße Farbe Kreise */
+.white,.hover-white:hover{color:#000!important;background-color:#fff!important}
+
+/* Hoover Pfeile */
+.hover-text-khaki:hover{color:#b4aa50!important}
+
+/* Pfeile weiß */
+.text-white,.hover-text-white:hover{color:#fff!important}
+
+
+
+/* Cursor ändert sich  */
+.left, .right, .badge {cursor:pointer}
+
+/* Kreise */
+.badge {height:13px;width:13px;padding:0}
+
+
+
+/* .mySlides {display:none} */

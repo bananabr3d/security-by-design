@@ -21,6 +21,7 @@ services:
     build: ./Customer-Portal
     restart: unless-stopped
     environment:
+      - SECRET_CP_MPO=65432109876543210
       - LOGGING_LEVEL=DEBUG
       - FLASK_DEBUG=True
       - LOCALDB=True
@@ -40,6 +41,8 @@ services:
       dockerfile: ./Metering-Point-Operator/Dockerfile
     restart: unless-stopped
     environment:
+      - SECRET_CP_MPO=65432109876543210
+      - SECRET_MPO_EM=01234567890123456
       - LOGGING_LEVEL=DEBUG
       - FLASK_DEBUG=True
       - LOCALDB=True
@@ -48,14 +51,19 @@ services:
     networks:
       - secbydesign
 
-  # electricity-meter:
-  #   build: ./Electricity-Meter
-  #   deploy:
-  #     replicas: 3
-  #   depends_on:
-  #     - metering-point-operator
-  #   networks:
-  #     - secbydesign
+  electricity-meter:
+    build: ./Electricity-Meter
+    deploy:
+      replicas: 1 # Change according to the number of meters
+    restart: unless-stopped
+    environment:
+      - SECRET_MPO_EM=01234567890123456
+      - LOGGING_LEVEL=DEBUG
+      - FLASK_DEBUG=True
+    depends_on:
+      - metering-point-operator
+    networks:
+      - secbydesign
 
 networks:
   secbydesign:

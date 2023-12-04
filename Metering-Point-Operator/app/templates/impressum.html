@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="utf-8" name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../static/Style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+    <style>
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+
+        address {
+            margin-top: 10px;
+            font-family: "Lucida Sans", sans-serif;
+            font-style: normal;
+        }
+
+
+    </style>
+</head>
+
+
+<body>
+
+<div style="margin: 10px 10px 0px 10px">
+    <!-- Header -->
+    <div class="topnav" id="myTopnav">
+        <a id="logo" tabindex="-1" title="Zurück zur Startseite" href="index.html"> <img
+                src="../static/images/Logo_mpo_icon_white.png" width="80px" height="auto" alt="Logo">
+
+        </a>
+        <a href="overview.html">Overview</a>
+        <a href="maintenance.html">Maintenance</a>
+        <a href="user_info.html">User Info</a>
+
+        <a class="right-align" href="login.html">Logout</a>
+
+        <a href="javascript:void(0);" class="icon" onclick="myFunction()">
+            <i class="fa fa-bars"></i>
+        </a>
+    </div>
+
+
+    <script>
+        function myFunction() {
+            var x = document.getElementById("myTopnav");
+            if (x.className === "topnav") {
+                x.className += " responsive";
+            } else {
+                x.className = "topnav";
+            }
+        }
+    </script>
+
+
+    <!-- Tabelle -->
+
+    <div class="row">
+        <div class="col-25 col-s-25 menu">
+
+        </div>
+
+        <div class="col-50 col-s-75 midI">
+
+            <h1>Impressum - VoltWave Systems</h1>
+
+            <address>
+                <p><strong>Verantwortlich für den Inhalt:</strong></p>
+                <p>VoltWave Systems GmbH<br>
+                    Musterstraße 123<br>
+                    68100 Mannheim<br>
+                    Deutschland</p>
+
+                <p><strong>Kontakt:</strong></p>
+                <ul>
+                    <li>Telefon: +49 123 456 789</li>
+                    <li>E-Mail: <a href="mailto:info@voltwave-systems.com">info@voltwave-systems.com</a></li>
+                </ul>
+
+                <p><strong>Vertreten durch:</strong></p>
+                <p>Ampere Volt (Geschäftsführer)</p>
+
+                <p><strong>Handelsregister:</strong></p>
+                <p>Registergericht: Amtsgericht Mannheim<br>
+                    Registernummer: HRB 12345</p>
+
+                <p><strong>Umsatzsteuer-ID:</strong></p>
+                <p>Umsatzsteuer-Identifikationsnummer gemäß § 27a UStG: DE123456789</p>
+
+                <p><strong>Inhaltlich Verantwortlicher gemäß § 55 Abs. 2 RStV:</strong></p>
+                <p>Ampere Volt<br>
+                    A1 2<br>
+                    68100 Mannheim<br>
+                    Deutschland</p>
+
+                <p><strong>Bildnachweise:</strong></p>
+                <p>Die auf dieser Website verwendeten Bilder stammen von <a href="https://de.freepik.com/">Freepik</a>
+                    und
+                    <a href="https://pixabay.com/de/">Pixabay</a>.</p>
+            </address>
+
+            <p>Stand: [03.12.2023]</p>
+        </div>
+
+        <div class="col-25 col-s-100">
+
+        </div>
+    </div>
+</div>
+<div class="footer">
+    <p>Copyright 2023 Volt Wave Systems</p>
+    <a href="impressum.html"> Impressum</a>
+
+</div>
+
+</body>
+</html>

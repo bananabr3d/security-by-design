@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="utf-8" name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../static/Style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="../static/Bilder.css">
+    <style>
+
+        form {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 300px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        input {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 16px;
+            box-sizing: border-box;
+        }
+
+        .password-container {
+            margin-bottom: 16px;
+        }
+
+        .password-strength-meter {
+            margin-top: 8px;
+            position: relative;
+        }
+
+        .strength-bar {
+            height: 8px;
+            background-color: #ddd;
+            border-radius: 4px;
+            width: 0;
+            transition: width 0.3s ease;
+        }
+
+        .strength-text {
+            margin-top: 4px;
+        }
+
+        p {
+            font-size: 12px;
+            color: #888;
+        }
+
+        button {
+            background-color: black;
+            color: #fff;
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #FFAB11;
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+<div style="margin: 10px 10px 0px 10px">
+<!-- Header -->
+<div class="topnav" id="myTopnav">
+    <a id="logo" tabindex="-1" title="Zurück zur Startseite" href="index.html"> <img
+            src="../static/images/Logo_mpo_icon_white.png" width="80px" height=auto" alt="Logo">
+
+    </a>
+
+      <a href="overview.html" >Overview</a>
+        <a href="maintenance.html">Maintenance</a>
+        <a href="user_info.html">User Info</a>
+    <a class="right-align" href="login.html">Logout</a>
+
+    <a href="javascript:void(0);" class="icon" onclick="myFunction()">
+        <i class="fa fa-bars"></i>
+    </a>
+</div>
+
+
+<script>
+    function myFunction() {
+        var x = document.getElementById("myTopnav");
+        if (x.className === "topnav") {
+            x.className += " responsive";
+        } else {
+            x.className = "topnav";
+        }
+    }
+</script>
+
+
+<!-- Tabelle -->
+
+<div class="row">
+    <div class="col-25 col-s-25 menu">
+
+    </div>
+    <div class="col-50 col-s-75 mid">
+
+        <div class="display-container" style="max-width:800px">
+            <section>
+                <h2>Register</h2>
+                <form method="post">
+                    <label for="email">E-Mail:</label>
+                    <input type="email" id="email" name="email" required>
+                    <label for="username">Username:</label>
+                    <input type="text" id="username" name="username" required>
+                    <div class="password-container">
+                        <label for="password">Password:</label>
+                        <input type="password" id="password" name="password" onkeyup="checkPasswordStrength()">
+                        <div class="password-strength-meter">
+                            <div class="strength-bar" id="strength-bar"></div>
+                            <div class="strength-text" id="strength-text"></div>
+                        </div>
+                    </div>
+                    <label for="password2">Password again:</label>
+                    <input type="password" id="password2" name="password2" required>
+                    <p>Your password must contain at least one digit (0-9), one lowercase and one uppercase character
+                        (a-z, A-Z), one special character (!#$%&?") and a length of 12 - 128</p>
+                    <div>
+                        <button type="submit">Register</button>
+                    </form>
+                <p class="tiny-gray-text">Already have an account? <a href="/login">Login</a></p>
+            </section>
+
+        </div>
+    </div>
+
+    <div class="col-25 col-s-100">
+
+    </div>
+</div>
+    </div>
+
+<div class="footer">
+    <p>Copyright 2023 VoltWave</p>
+    <a href="impressum.html"> Impressum</a>
+
+</div>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+

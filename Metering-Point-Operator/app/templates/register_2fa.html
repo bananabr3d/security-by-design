@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="utf-8" name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../static/Style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="../static/Bilder.css">
+    <style>
+        section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh; /* Set to 100% of viewport height */
+        }
+
+        h2, p {
+            text-align: center;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 400px; /* Set a maximum width for better readability */
+            margin: 0 auto; /* Center the form horizontally within the section */
+        }
+
+        label, input {
+            margin-bottom: 10px;
+            width: 100%;
+            box-sizing: border-box;
+
+        }
+
+        img {
+            max-width: 100%;
+            height: auto;
+            margin-top: 20px;
+        }
+
+        button {
+            background-color: black;
+            color: #fff;
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #FFAB11;
+        }
+    </style>
+
+
+</head>
+
+
+<body>
+
+<div style="margin: 10px 10px 0px 10px">
+<!-- Header -->
+<div class="topnav" id="myTopnav">
+    <a id="logo" tabindex="-1" title="Zurück zur Startseite" href="index.html"> <img
+            src="../static/images/Logo_mpo_icon_white.png" width="80px" height=auto" alt="Logo">
+
+    </a>
+
+      <a href="overview.html" >Overview</a>
+        <a href="maintenance.html">Maintenance</a>
+        <a href="user_info.html">User Info</a>
+    <a class="right-align" href="login.html">Logout</a>
+
+    <a href="javascript:void(0);" class="icon" onclick="myFunction()">
+        <i class="fa fa-bars"></i>
+    </a>
+</div>
+
+
+<script>
+    function myFunction() {
+        var x = document.getElementById("myTopnav");
+        if (x.className === "topnav") {
+            x.className += " responsive";
+        } else {
+            x.className = "topnav";
+        }
+    }
+</script>
+
+
+<!-- Tabelle -->
+
+<div class="row">
+    <div class="col-25 col-s-25 menu">
+
+    </div>
+    <div class="col-50 col-s-75 mid">
+
+        <div class="display-container" style="max-width:800px">
+
+            <section>
+                <h2>Register your 2fa</h2>
+                <p>Scan the QR code with your 2fa app and enter the code below.</p>
+                <form method="post">
+                    <label for="secret">Secret Token</label>
+                    <input type="text" class="form-control" id="secret" value="{{ secret }}" readonly
+                           onblur='generateBarCode();'>
+
+                    <label for="otp">OTP / 2FA Code:</label>
+                    <input type="text" id="otp" name="otp" required>
+                    <button type="submit">Register your 2 FA</button>
+                </form>
+                <img id='barcode'
+                     src="data:image/png;base64,{{ img_qrcode_data }}"
+                     alt=""
+                     title="QR Code 2fa"/>
+            </section>
+
+        </div>
+    </div>
+
+    <div class="col-25 col-s-100">
+
+    </div>
+</div>
+    </div>
+
+<div class="footer">
+    <p>Copyright 2023 VoltWave</p>
+    <a href="impressum.html"> Impressum</a>
+
+</div>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
