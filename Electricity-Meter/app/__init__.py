@@ -64,7 +64,7 @@ app.config['SECRET_KEY'] = os.urandom(24)
 
 # === EM Initialisation ===
 
-em_id = randint(0, 9999999)
+em_id = randint(0, 99999999)
 em_value = randint(0,50000)
 
 maintenance_mode = False
