@@ -8,6 +8,10 @@ from flask import g, render_template, flash
 # Packages for JWT
 from flask_jwt_extended import jwt_required
 
+from requests import post, form
+from app import em_exists, load_eletricity_meter
+
+
 # Import app, logger and db object from app package
 from app import app
 
@@ -46,6 +50,17 @@ def maintenance_post():
     '''
     This function handles the maintenance page of the web application.
     '''
+    if em_exists(form['electricity_meter_id']):
+        em = load_eletricity_meter(form['electricity_meter_id'])
+        if not em.get_em_maintain():
+            post('http://electricity-meter:5001/api/maintainance', json={'duration': form['duration']})
+            em.toggle_maintain()
+        else:
+            flash('Electricity meter is already in maintenance mode.')
+    else:
+        flash('Electricity meter does not exist.')
+
+
 
     return render_template('maintenance.html')
 
@@ -65,3 +80,11 @@ def overview():
     This function handles the maintenance page of the web application.
     '''
     return render_template('overview.html')
+
+
+@app.route('/impressum', methods=['GET'])
+def impressum():
+    '''
+    This function handles the maintenance page of the web application.
+    '''
+    return render_template('impressum.html')

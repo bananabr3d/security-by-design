@@ -123,12 +123,23 @@
                 <!--                </li>-->
 
             </ul>
+
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            <ul class=flashes>
+                {% for category, message in messages %}
+                <li class="{{ category }}">{{ message }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+            {% endwith %}
         </div>
         <div class="col-50 col-s-75 mid">
 
             <div> <!-- Maintained EM id and time in minutes? -->
-                <form method="post" action="/maintain">
-                    <label for="em_id">Electricity Meter</label>
+                <form method="post" action="/maintenance">
+                    <label for="em_id">Electricity Meter ID</label>
                     <input type="text" id="em_id" name="electricity_meter_id" required>
                     <div class="password-container">
                         <label for="duration">Duration</label>
@@ -160,7 +171,7 @@
 </div>
 <div class="footer">
     <p>Copyright 2023 VoltWave</p>
-    <a href="impressum.html"> Impressum</a>
+    <a href="/impressum"> Impressum</a>
 
 </div>
 </body>

@@ -102,7 +102,15 @@
     <div class="row">
         <div class="col-25 col-s-25 menu">
 
-
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            <ul class=flashes>
+                {% for category, message in messages %}
+                <li class="{{ category }}">{{ message }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+            {% endwith %}
         </div>
 
         <div class="col-50 col-s-75 mid">
@@ -116,9 +124,9 @@
                     <p>Email: {{ email }}</p>
 
                     <!-- Update user information -->
-                    <p>Want to update your user information? <a href="mailto:info@voltwave-systems.com">Write a Mail to
-                        your
-                        Admin</a></p>
+                    <p>Want to update your user information? <a href="mailto:info@voltwave-systems.com"
+                                                                style="a:hover {color: #FFAB11;text-decoration: underline;}">Write
+                        a Mail to your Admin</a></p>
 
                     <!-- Export user account information Button + div to show json output with correct indentation -->
                     {% if twofa_authenticated %}
@@ -253,7 +261,7 @@
 </div>
 <div class="footer">
     <p>Copyright 2023 VoltWave Systems</p>
-    <a href="impressum.html"> Impressum</a>
+    <a href="/impressum"> Impressum</a>
 
 </div>
 
