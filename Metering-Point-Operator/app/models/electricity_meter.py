@@ -12,7 +12,13 @@ def load_electricity_meter(db, em_id: str):
                             em_last_update=em_data['em_last_update'], em_manufacturer=em_data['em_manufacturer'],
                             em_model=em_data['em_model'], em_firmware_version=em_data['em_firmware_version'], em_serial_number=em_data['em_serial_number']) if em_data else None  # Add here user attributes
 
+def em_exists(db, em_id):
+    try:
+        em_data = db.electricity_meter.find_one({'_id': ObjectId(em_id)}, allow_partial_results=False)
+    except:
+        raise DBConnectionError
 
+    return True if em_data else False
 class ElectricityMeter:
     # constructor with me_id, me_value, me_status, me_error, me_last_update
     def __init__(self, db, em_id, em_value, em_status, em_error, em_last_update, em_manufacturer, em_model, em_serial_number, em_firmware_version):
