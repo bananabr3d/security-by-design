@@ -4,7 +4,7 @@
 from flask import request, flash, redirect, url_for, g, render_template
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from app import app, logger, db, Invalid2FA
-from app.models.contract import Contract
+from app.models.contract import Contract, get_all_contracts
 from app.models.user import User
 from app.routes.auth_routes import validate_text
 from app.routes.routes import address_plz_regex, address_street_city_country_regex, address_street_house_number_regex
@@ -14,6 +14,8 @@ from re import fullmatch
 from dotenv import load_dotenv
 load_dotenv()
 import os
+# For checking expired contracts
+from threading import Timer
 
 @app.route('/add-contract', methods=['POST'])
 @jwt_required(fresh=True)
@@ -29,13 +31,13 @@ def add_contract():
     
     # Check if user has his user_info provided
     for attribute in ["name", "surname", "phone_number", "email", "date_of_birth"]:
-        if g.user.get_attribute(attribute) == None or g.user.get_attribute(attribute) == "None":
+        if g.user[attribute] == None or g.user[attribute] == "None":
             logger.warning(f"Contract Denied. User with ID: '{g.user.get_id()}' has no '{attribute}' provided.")
             flash("Please provide your personal information first")
             return redirect(url_for('update_user_info'))
         
     # Check if user has his address provided
-    address_dict = g.user.get_address()
+    address_dict = g.user['address']
 
     for attribute in ["plz", "street", "street_house_number", "city", "country"]:
         if address_dict[attribute] == None:
@@ -147,7 +149,7 @@ def contract(contract_id: str):
     '''
 
     # Check if user has the contract, get contract_list from user
-    contract_list = g.user.get_contract_list()
+    contract_list = g.user['contract_list']
 
     if contract_id not in contract_list:
         logger.warning(f"Contract with ID: '{contract_id}' does not exist for user with ID: '{g.user.get_id()}'.")
@@ -158,7 +160,7 @@ def contract(contract_id: str):
     contract = Contract.find_by_id(db=db, contract_id=contract_id)
 
     #Check if contract is still active
-    if contract.get_attribute("enddate") < datetime.now().strftime("%Y-%m-%d"):
+    if contract["enddate"] < datetime.now().strftime("%Y-%m-%d"):
         logger.warning(f"Contract with ID: '{contract_id}' is not active.")
         flash("Contract is not active")
         return redirect(url_for('dashboard'))
@@ -197,7 +199,7 @@ def update_contract(contract_id: str):
         raise Invalid2FA
 
     # Check if user has the contract, get contract_list from user
-    contract_list = g.user.get_contract_list()
+    contract_list = g.user['contract_list']
 
     if contract_id not in contract_list:
         logger.warning(f"Contract with ID: '{contract_id}' does not exist for user with ID: '{g.user.get_id()}'.")
@@ -208,7 +210,7 @@ def update_contract(contract_id: str):
     contract = Contract.find_by_id(db=db, contract_id=contract_id)
 
     #Check if contract is still active
-    if contract.get_attribute("enddate") < datetime.now().strftime("%Y-%m-%d"):
+    if contract["enddate"] < datetime.now().strftime("%Y-%m-%d"):
         logger.warning(f"Contract with ID: '{contract_id}' is not active.")
         flash("Contract is not active")
         return redirect(url_for('dashboard'))
@@ -232,14 +234,14 @@ def update_contract(contract_id: str):
         
     if "notes" in request.form:
         # Update contract
-        contract.update_attribute(attribute="notes", value=request.form['notes'])
+        contract["notes"] = request.form['notes']
 
     if "auto_renew" in request.form:
         # Update contract
         if request.form["auto_renew"] == "true":
-            contract.update_attribute(attribute="auto_renew", value=True)
+            contract["auto_renew"] = True
         elif request.form["auto_renew"] == "false":
-            contract.update_attribute(attribute="auto_renew", value=False)
+            contract["auto_renew"] = False
 
 
     logger.debug(f"Contract with ID '{contract_id}' successfully updated.")
@@ -258,7 +260,7 @@ def request_termination_contract(contract_id: str):
         raise Invalid2FA
 
     # Check if user has the contract, get contract_list from user
-    contract_list = g.user.get_contract_list()
+    contract_list = g.user['contract_list']
 
     if contract_id not in contract_list:
         logger.warning(f"Contract with ID: '{contract_id}' does not exist for user with ID: '{g.user.get_id()}'.")
@@ -269,20 +271,20 @@ def request_termination_contract(contract_id: str):
     contract = Contract.find_by_id(db=db, contract_id=contract_id)
 
     #Check if contract is still active
-    if contract.get_attribute("enddate") < datetime.now().strftime("%Y-%m-%d"):
+    if contract["enddate"] < datetime.now().strftime("%Y-%m-%d"):
         logger.warning(f"Contract with ID: '{contract_id}' is not active.")
         flash("Contract is not active")
         return redirect(url_for('dashboard'))
 
     
     # Check if termination is already requested
-    if contract.get_attribute("termination_requested") == "True" or contract.get_attribute("termination_requested") == True or contract.get_attribute("termination_requested") == "true":
+    if contract["termination_requested"] == "True" or contract["termination_requested"] == True or contract["termination_requested"] == "true":
         logger.warning(f"Contract with ID: '{contract_id}' already requested termination.")
         flash("Contract already requested termination")
         return redirect(url_for('dashboard'))
     
     # Update contract
-    contract.update_attribute(attribute="termination_requested", value=True)
+    contract["termination_requested"] = True
 
     logger.debug(f"Contract with ID '{contract_id}' successfully requested termination.")
     flash("Successfully requested contract termination", "success")
@@ -303,7 +305,7 @@ def export_contract(contract_id: str):
         raise Invalid2FA
 
     # Check if user has the contract, get contract_list from user
-    contract_list = g.user.get_contract_list()
+    contract_list = g.user['contract_list']
 
     if contract_id not in contract_list:
         logger.warning(f"Contract with ID: '{contract_id}' does not exist for user with ID: '{g.user.get_id()}'.")
@@ -314,7 +316,7 @@ def export_contract(contract_id: str):
     contract = Contract.find_by_id(db=db, contract_id=contract_id)
 
     #Check if contract is still active
-    if contract.get_attribute("enddate") < datetime.now().strftime("%Y-%m-%d"):
+    if contract["enddate"] < datetime.now().strftime("%Y-%m-%d"):
         logger.warning(f"Contract with ID: '{contract_id}' is not active.")
         flash("Contract is not active")
         return redirect(url_for('dashboard'))
@@ -327,3 +329,30 @@ def export_contract(contract_id: str):
     return redirect(url_for('contract',
                             contract_id=contract_id,
                             contract_information_json=contract_information_json))
+
+def check_expired_contracts():
+    '''
+    This function checks every 24 hours if a contract is expired and sets the attribute "expired" to True.
+    '''
+
+    # Get all contracts
+    contracts = get_all_contracts(db=db)
+
+    # Check if contract is more then 90 days over enddate
+    for contract in contracts:
+        if contract["enddate"] < (datetime.now() - timedelta(days=90)).strftime("%Y-%m-%d"):
+            logger.debug(f"Contract with ID '{contract.get_id()}' is expired. Deleting it and removing from user.")
+            contract.delete()
+
+            # Remove contract from user
+            user = User.find_by_contract_id(db=db, contract_id=contract.get_id())
+
+            if user != None:
+                user.remove_contract(contract_id=contract.get_id())
+                logger.debug(f"Contract with ID '{contract.get_id()}' successfully removed from user with ID '{user.get_id()}'.")
+
+    # Check again in 24 hours
+    Timer(86400, check_expired_contracts).start()
+
+# Start the scheduler once
+check_expired_contracts()

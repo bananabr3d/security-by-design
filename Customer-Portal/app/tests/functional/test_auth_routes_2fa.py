@@ -20,7 +20,7 @@ class TestAuth2FARoutes:
         self.client = login_jwt(self.client)
 
         # Disable 2fa for user pytest
-        self.user.update_attribute(attribute="twofa_activated", value="False")
+        self.user["twofa_activated"] = False
 
     # GET Requests
     def test_get_register_2fa(self):
@@ -142,7 +142,7 @@ class TestAuth2FARoutes:
         backup_codes = [backup_code_hash] * 10
 
         # Update user backup codes
-        self.user.update_attribute(attribute="backup_codes", value=backup_codes)        
+        self.user["backup_codes"] = backup_codes        
 
         request_data = {
             "backup_code": backup_code

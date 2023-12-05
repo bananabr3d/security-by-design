@@ -59,7 +59,7 @@ def verify2fa(user: User, otp: str) -> bool:
 
     Returns True if the otp is valid, else False.
     '''
-    secret = user.get_attribute('twofa_secret')
+    secret = user['twofa_secret']
 
     if secret == None:
         flash('You have no 2-Factor-Authentification activated!',  'failed')
@@ -99,10 +99,10 @@ def register_2fa():
 
     # Generate a random secret and update the user attribute
     secret = pyotp.random_base32()
-    g.user.update_attribute(attribute="twofa_secret", value=secret)
+    g.user["twofa_secret"] = secret
 
     # Generate the OTP URI for the QR code
-    otp_uri = pyotp.TOTP(secret).provisioning_uri(g.user.get_attribute("username"), issuer_name="VoltWave")
+    otp_uri = pyotp.TOTP(secret).provisioning_uri(g.user["username"], issuer_name="VoltWave")
 
     # Generate a QR code image
     qr = qrcode.QRCode(
@@ -155,9 +155,9 @@ def register_2fa_post():
     # Verify otp
     if verify2fa(user=g.user, otp=request.form['otp']):
         # Set user attribute 2fa activated to True, flash success message and redirect to login_2fa
-        g.user.update_attribute(attribute="twofa_activated", value=True)
+        g.user["twofa_activated"] = True
         flash('2FA Verification Successful', 'success')
-        logger.debug(f"User: '{g.user.get_attribute('username')}' has successfully verified its 2fa")
+        logger.debug(f"User: '{g.user['username']}' has successfully verified its 2fa")
 
         # Generate 2fa backup codes 10 * (random 6 digit numbers)
         backup_codes = list()
@@ -168,13 +168,13 @@ def register_2fa_post():
         
         # Update user backup codes -> save the hashes of the backup_codes
         backup_codes = [bcrypt.generate_password_hash(str(code)).decode('utf-8') for code in backup_codes]
-        g.user.update_attribute("backup_codes", backup_codes)
+        g.user["backup_codes"] = backup_codes
         
         return redirect(url_for('login_2fa'))
     
     else: # If otp is not valid, flash error message and redirect to register_2fa
         flash('User 2FA could not be verified', 'failed')
-        logger.debug(f"User: '{g.user.get_attribute('username')}' failed to verify its 2fa")
+        logger.debug(f"User: '{g.user['username']}' failed to verify its 2fa")
         return redirect(url_for('register_2fa'))
     
 
@@ -236,7 +236,7 @@ def login_2fa_post():
     if verify2fa(user=g.user, otp=otp):
         # Flash success message, log user in and redirect to dashboard
         flash('2FA Authentication Successful', 'success')
-        logger.debug(f"User: '{g.user.get_attribute('username')}' has successfully authenticated with 2fa")
+        logger.debug(f"User: '{g.user['username']}' has successfully authenticated with 2fa")
 
         resp = make_response(redirect(url_for('dashboard')))
         access_token = create_access_token(identity=g.user.get_id(), fresh=timedelta(minutes=jwt_token_refresh_expiration), additional_claims={'2fa_timestamp': datetime.now()})
@@ -246,7 +246,7 @@ def login_2fa_post():
     
     else: # If otp is not valid, flash error message and redirect to login_2fa
         flash('User 2FA could not be authenticated', 'failed')
-        logger.debug(f"User: '{g.user.get_attribute('username')}' failed to authenticate with 2fa")
+        logger.debug(f"User: '{g.user['username']}' failed to authenticate with 2fa")
         return redirect(url_for('login_2fa'))
 
 
@@ -263,11 +263,11 @@ def reset_2fa():
     '''
 
     if g.twofa_authenticated:
-        logger.debug(f"User: '{g.user.get_attribute('username')}' tried to reset its 2fa, while being 2fa authenticated")
+        logger.debug(f"User: '{g.user['username']}' tried to reset its 2fa, while being 2fa authenticated")
         return resp_reset_2fa()
 
     elif "backup_code" in request.form.keys():
-        logger.debug(f"User: '{g.user.get_attribute('username')}' tried to reset its 2fa, with a backup code")
+        logger.debug(f"User: '{g.user['username']}' tried to reset its 2fa, with a backup code")
     
         # = Input Validation =
         # Backup Code
@@ -276,10 +276,10 @@ def reset_2fa():
             return redirect(url_for('dashboard'))
 
         # Check if user has backup codes
-        backup_codes = g.user.get_backup_codes()
+        backup_codes = g.user['backup_codes']
         if backup_codes == None: # Should not happen normally, because the user has to have backup codes to get to this route
             flash("Invalid Backup Code", "error")
-            logger.error(f"User: '{g.user.get_attribute('username')}' provided a backup code, but there are none in the database")
+            logger.error(f"User: '{g.user['username']}' provided a backup code, but there are none in the database")
             return redirect(url_for('dashboard'))
         
         # Check if backup code is correct
@@ -292,21 +292,21 @@ def reset_2fa():
         return redirect(url_for('dashboard'))
     
     else:
-        logger.debug(f"User: '{g.user.get_attribute('username')}' didnt provide a backup code or is 2fa authenticated during the 2fa reset")
+        logger.debug(f"User: '{g.user['username']}' didnt provide a backup code or is 2fa authenticated during the 2fa reset")
         flash("2FA could not be reset", "error")
         return redirect(url_for('dashboard'))
 
 def resp_reset_2fa() -> Response:
     # Update user 2fa secret
-    g.user.update_attribute(attribute="twofa_secret", value=None)
+    g.user["twofa_secret"] = None
     # Update user 2fa activated
-    g.user.update_attribute(attribute="twofa_activated", value=False)
+    g.user["twofa_activated"] = False
 
-    g.user.update_attribute(attribute="backup_codes", value=None)
+    g.user["backup_codes"] = None
 
     # Unset JWT and redirect to login
     resp = make_response(redirect(url_for('login')))
-    logger.debug(f"User: '{g.user.get_attribute('username')}' has successfully reset its 2fa")
+    logger.debug(f"User: '{g.user['username']}' has successfully reset its 2fa")
     flash("Your 2 FA has been reset successfully", "success")
     unset_jwt_cookies(resp)
     return resp

@@ -55,21 +55,21 @@ def admin_dashboard():
         
         # for every contract search for the user and add its username as "customer" key
         user = User.find_by_contract_id(db=db, contract_id=temp_contract["_id"])
-        temp_contract["customer"] = user.get_attribute("username")
+        temp_contract["customer"] = user["username"]
         logger.debug(temp_contract)
 
         contracts_termination_requested_data_list.append(temp_contract)
 
     logger.debug(contracts_termination_requested_data_list)
 
-    logger.info(f"Admin {g.user.get_attribute('username')} accessed the admin dashboard.")
+    logger.info(f"Admin {g.user['username']} accessed the admin dashboard.")
 
     # Render the admin dashboard
     return render_template('admin_dashboard.html', user_count=user_count, 
                            jwt_authenticated=g.jwt_authenticated, 
                            twofa_activated=g.twofa_activated, 
                            twofa_authenticated=g.twofa_authenticated, 
-                           username=g.user.get_attribute('username'), 
+                           username=g.user['username'], 
                            admin=g.admin, usernames=usernames,
                            contracts_termination_requested=contracts_termination_requested_data_list)
 
@@ -104,12 +104,46 @@ def confirm_contract_termination(contract_id):
     # Remove contract from user
     g.user.remove_contract(contract_id=contract_id)
 
-    logger.info(f"Admin {g.user.get_attribute('username')} confirmed the termination of contract {contract_id}.")
+    logger.info(f"Admin {g.user['username']} confirmed the termination of contract {contract_id}.")
 
     logger.debug(f"Contract with ID '{contract_id}' successfully deleted.")
     flash("Contract successfully deleted", "success")
     return redirect(url_for('dashboard'))
 
+# === Decline Contract Termination ===
+@app.route('/admin/decline-contract-termination/<contract_id>', methods=['POST'])
+@jwt_required(fresh=True)
+def decline_contract_termination(contract_id):
+    '''
+    This function handles the POST admin/decline-contract-termination/<contract_id> route.
+
+    Raise Invalid2FA if the user is not 2fa authenticated.
+
+    Returns the decline contract termination template.
+    '''
+    # Check if the user is 2fa authenticated
+    if not g.twofa_authenticated:
+        raise Invalid2FA
+    
+    # Check if the user is an admin
+    if not g.admin:
+        # If not, redirect to dashboard
+        return redirect(url_for('dashboard'))
+
+    # Get the contract
+    contract = Contract.find_by_id(db=db, contract_id=contract_id)
+
+    # Set termination_requested to False
+    contract.set_attribute("termination_requested", False)
+
+    logger.info(f"Admin {g.user['username']} declined the termination of contract {contract_id}.")
+
+    logger.debug(f"Contract with ID '{contract_id}' successfully declined.")
+    flash("Contract termination successfully declined", "success")
+    return redirect(url_for('dashboard'))
+
+
+# === Admin Before Request ===
 @app.before_request
 @jwt_required(optional=True)
 def before_request_admin():
@@ -123,7 +157,7 @@ def before_request_admin():
         g.admin = False
 
         if g.user:
-            if g.user.get_attribute("admin") == True or g.user.get_attribute("admin") == "True" or g.user.get_attribute("admin") == "true":
+            if g.user["admin"] == True or g.user["admin"] == "True" or g.user["admin"] == "true":
                 logger.debug("User is admin.")
 
                 g.admin = True

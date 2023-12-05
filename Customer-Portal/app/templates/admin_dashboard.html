@@ -115,6 +115,9 @@ Admin Panel
                             <form action="/admin/confirm-contract-termination/{{ contract._id }}" method="POST" onsubmit="return confirm('Are you sure you want to confirm this earlier contract termination?');">
                                 <button type="submit" name="action" value="confirm">Confirm</button>
                             </form>
+                            <form action="admin/decline-contract-termination/{{ contract._id }}" method="POST" onsubmit="return confirm('Are you sure you want to decline this earlier contract termination?');">
+                                <button type="submit" name="action" value="decline">Decline</button>
+                            </form>
                         </td>
                     </tr>
                     {% endfor %}

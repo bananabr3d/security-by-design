@@ -5,6 +5,9 @@ from app.models.contract import Contract
 from datetime import date
 
 def get_user_count(db: pymongo.database.Database) -> int:
+    '''
+    Returns the number of users in the database.
+    '''
     try:
         user_count = db.users.count_documents({})
     except:
@@ -13,6 +16,9 @@ def get_user_count(db: pymongo.database.Database) -> int:
     return user_count
 
 def get_usernames(db: pymongo.database.Database) -> list:
+    '''
+    Returns a list of all usernames in the database.
+    '''
     try:
         usernames = db.users.distinct('username')
     except:
@@ -30,7 +36,10 @@ class User():
                  address_street:str = None, address_street_house_number:int = None, 
                  address_city:str = None, address_country:str = None, 
                  phone_number:str = None, name:str = None, surname:str = None) -> None:
-        
+        '''
+        Creates a new user object.
+        '''
+
         self._db = db
 
         address = {'plz': address_plz, 'street': address_street, 
@@ -53,6 +62,9 @@ class User():
     
     @classmethod
     def find_by_id(cls, db:pymongo.database.Database, user_id:str):
+        '''
+        Returns the user with the given ID.
+        '''
         try:
             user_data = db.users.find_one({'_id': ObjectId(user_id)}, allow_partial_results=False)
         except:
@@ -80,6 +92,9 @@ class User():
 
     @classmethod 
     def find_by_username(cls, db:pymongo.database.Database, username: str):
+        '''
+        Returns the user with the given username.
+        '''
         try:
             user_data = db.users.find_one({'username': username}, allow_partial_results=False)
         except:
@@ -96,6 +111,9 @@ class User():
     
     @classmethod
     def find_by_email(cls, db:pymongo.database.Database, email: str):
+        '''
+        Returns the user with the given email.
+        '''
         try:
             user_data = db.users.find_one({'email': email}, allow_partial_results=False)
         except:
@@ -112,6 +130,9 @@ class User():
     
     @classmethod
     def find_by_contract_id(cls, db:pymongo.database.Database, contract_id: str):
+        '''
+        Returns the user with the given contract_id.
+        '''
         try:
             # Find user with contract_id in contract_list list
             user_data = db.users.find_one({'contract_list': { '$in': [str(contract_id)] }} , allow_partial_results=False)
@@ -126,24 +147,23 @@ class User():
                     address_street=user_data["address"]["street"], address_street_house_number=user_data["address"]["street_house_number"],
                     address_city=user_data["address"]["city"], address_country=user_data["address"]["country"],
                     phone_number=user_data["phone_number"], name=user_data["name"], surname=user_data["surname"]) if user_data else None
-        
+
+    def __getitem__(self, key: str) -> str:
+        return self.user_data[key]
+    
+    def __setitem__(self, key: str, value: str) -> None:
+        if key in self.user_data:
+            self.user_data[key] = value
+
+            try:
+                self._db.users.update_one({'_id': self.user_data['_id']}, {'$set': {key: value}})
+            except:
+                raise DBConnectionError
+        else:
+            raise AttributeError
+
     def get_id(self) -> str:
         return str(self.user_data['_id'])
-    
-    def get_attribute(self, attribute: str) -> str:
-        return str(self.user_data[attribute])
-    
-    def get_contract_list(self) -> list:
-        return self.user_data['contract_list']
-    
-    def get_backup_codes(self) -> list:
-        return self.user_data['backup_codes']
-    
-    def get_security_questions(self) -> dict:
-        return self.user_data['security_questions']
-    
-    def get_address(self) -> dict:
-        return self.user_data['address']
 
     def get_all_key_values(self) -> dict:
         '''
@@ -159,30 +179,33 @@ class User():
         temp_user_data.pop('security_questions')
 
         return temp_user_data
-    
-    def update_attribute(self, attribute: str, value: str) -> None:
-        if self.get_attribute(attribute=attribute) != None: # Check if user has the attribute
-            try:
-                self._db.users.update_one({'_id': self.user_data['_id']}, {'$set': {attribute: value}})
-            except:
-                raise DBConnectionError
-        else:
-            raise AttributeError
         
     def update_address(self, attribute: str, value: str) -> None:
+        '''
+        Updates the address of the user.
+        '''
         try:
+            self.user_data['address'][attribute] = value
             self._db.users.update_one({'_id': self.user_data['_id']}, {'$set': {'address.' + attribute: value}})
         except:
             raise DBConnectionError
 
     def add_contract(self, contract_id: int) -> None: #Get the list of contracts and append the new one
+        '''
+        Adds a contract to the user.
+        '''
         try:
+            self.user_data['contract_list'] = self['contract_list'].append(contract_id)
             self._db.users.update_one({'_id': self.user_data['_id']}, {'$push': {'contract_list': contract_id}}) # update the contract list
         except:
             raise DBConnectionError
         
     def remove_contract(self, contract_id: int) -> None: #Get the list of contracts and remove the one
+        '''
+        Removes a contract from the user.
+        '''
         try:
+            self.user_data['contract_list'] = self['contract_list'].remove(contract_id)
             self._db.users.update_one({'_id': self.user_data['_id']}, {'$pull': {'contract_list': contract_id}}) # update the contract list
         except:
             raise DBConnectionError
@@ -197,13 +220,21 @@ class User():
             logger.error(f"Contract with ID '{contract_id}' could not be removed from user with ID '{self.get_id()}'.")
         
     def add_security_question(self, question: str, answer: str) -> None:
+        '''
+        Adds a security question to the user.
+        '''
         try:
+            self.user_data['security_questions'][question] = answer
             self._db.users.update_one({'_id': self.user_data['_id']}, {'$set': {'security_questions.' + question: answer}})
         except:
             raise DBConnectionError
 
     def remove_security_question(self, question: str) -> None:
+        '''
+        Removes a security question from the user.
+        '''
         try:
+            self.user_data['security_questions'].pop(question)
             self._db.users.update_one({'_id': self.user_data['_id']}, {'$unset': {'security_questions.' + question: ""}})
         except:
             raise DBConnectionError
@@ -218,15 +249,21 @@ class User():
             logger.error(f"Security question with question '{question}' could not be removed from user with ID '{self.get_id()}'.")
 
     def save(self) -> None:
-            try:
-                self._db.users.insert_one(self.user_data)
+        '''
+        Saves the user to the database.
+        '''
+        try:
+            self._db.users.insert_one(self.user_data)
 
-                user_data = self._db.users.find_one({'email': self.user_data["email"]}, allow_partial_results=False)
-                self.user_data["_id"] = user_data["_id"]
-            except:
-                raise DBConnectionError
+            user_data = self._db.users.find_one({'email': self.user_data["email"]}, allow_partial_results=False)
+            self.user_data["_id"] = user_data["_id"]
+        except:
+            raise DBConnectionError
             
     def delete(self) -> None:
+        '''
+        Deletes the user from the database.
+        '''
         try:
             self._db.users.delete_one({'_id': self.user_data['_id']})
         except:
@@ -244,7 +281,7 @@ class User():
         logger.debug(f"User with ID '{self.get_id()}' successfully deleted.")
 
         # Check if user has contracts and delete them
-        for contract_id in self.get_contract_list():
+        for contract_id in self['contract_list']:
             contract = Contract.find_by_id(db=self._db, contract_id=contract_id)
             contract.delete(db=self._db)
             logger.debug(f"Contract with ID '{contract_id}' of user with ID '{self.get_id()}' successfully deleted.")
