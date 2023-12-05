@@ -59,32 +59,32 @@ paths:
           description: The ID of the electricity meter.
           required: true
           type: string
-        - name: PLZ
+        - name: address_plz
           in: formData
           description: The PLZ of the city in billing address
           required: true
           type: string
-        - name: Street
+        - name: address_street
           in: formData
           description: The Street of the city in billing address
           required: true
           type: string
-        - name: Street Number
+        - name: address_street_number
           in: formData
           description: The Street Number of the city in billing address
           required: true
           type: string
-        - name: City
+        - name: address_city
           in: formData
           description: The city of billing address
           required: true
           type: string
-        - name: Country
+        - name: address_country
           in: formData
           description: The Country in billing address
           required: true
           type: string
-        - name: Notes
+        - name: notes
           in: formData
           description: Notes that should be added to contract
           required: true
