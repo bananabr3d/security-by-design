@@ -56,3 +56,12 @@ def user_info_update():
     This function handles the maintenance page of the web application.
     '''
     return render_template('user_info.html')
+
+
+@app.route('/overview', methods=['GET'])
+@jwt_required() # optional=True allows to access the route without a valid JWT, but checks it if it is present
+def overview():
+    '''
+    This function handles the maintenance page of the web application.
+    '''
+    return render_template('overview.html')

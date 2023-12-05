@@ -48,6 +48,7 @@
             border-radius: 4px;
             cursor: pointer;
         }
+
         button:hover {
             background-color: #FFAB11;
         }
@@ -60,72 +61,72 @@
 <body>
 
 <div style="margin: 10px 10px 0px 10px">
-<!-- Header -->
-<div class="topnav" id="myTopnav">
-    <a id="logo" tabindex="-1" title="Zurück zur Startseite" href="index.html"> <img
-            src="../static/images/Logo_mpo_icon_white.png" width="80px" height=auto" alt="Logo">
+    <!-- Header -->
+    <div class="topnav" id="myTopnav">
+        <a id="logo" tabindex="-1" title="Zurück zur Startseite" href="/home"> <img
+                src="../static/images/Logo_mpo_icon_white.png" width="80px" height=auto" alt="Logo">
 
-    </a>
+        </a>
 
-      <a href="overview.html" >Overview</a>
-        <a href="maintenance.html">Maintenance</a>
-        <a href="user_info.html">User Info</a>
-    <a class="right-align" href="login.html">Logout</a>
+        <a href="/overview">Overview</a>
+        <a href="/maintenance">Maintenance</a>
+        <a href="/user-info">User Info</a>
+        <a class="right-align" href="/logout">Logout</a>
 
-    <a href="javascript:void(0);" class="icon" onclick="myFunction()">
-        <i class="fa fa-bars"></i>
-    </a>
-</div>
-
-
-<script>
-    function myFunction() {
-        var x = document.getElementById("myTopnav");
-        if (x.className === "topnav") {
-            x.className += " responsive";
-        } else {
-            x.className = "topnav";
-        }
-    }
-</script>
-
-
-<!-- Tabelle -->
-
-<div class="row">
-    <div class="col-25 col-s-25 menu">
-
+        <a href="javascript:void(0);" class="icon" onclick="myFunction()">
+            <i class="fa fa-bars"></i>
+        </a>
     </div>
-    <div class="col-50 col-s-75 mid">
 
-        <div class="display-container" style="max-width:800px">
 
-            <section>
-                <h2>Register your 2fa</h2>
-                <p>Scan the QR code with your 2fa app and enter the code below.</p>
-                <form method="post">
-                    <label for="secret">Secret Token</label>
-                    <input type="text" class="form-control" id="secret" value="{{ secret }}" readonly
-                           onblur='generateBarCode();'>
+    <script>
+        function myFunction() {
+            var x = document.getElementById("myTopnav");
+            if (x.className === "topnav") {
+                x.className += " responsive";
+            } else {
+                x.className = "topnav";
+            }
+        }
+    </script>
 
-                    <label for="otp">OTP / 2FA Code:</label>
-                    <input type="text" id="otp" name="otp" required>
-                    <button type="submit">Register your 2 FA</button>
-                </form>
-                <img id='barcode'
-                     src="data:image/png;base64,{{ img_qrcode_data }}"
-                     alt=""
-                     title="QR Code 2fa"/>
-            </section>
+
+    <!-- Tabelle -->
+
+    <div class="row">
+        <div class="col-25 col-s-25 menu">
+
+        </div>
+        <div class="col-50 col-s-75 mid">
+
+            <div class="display-container" style="max-width:800px">
+
+                <section>
+                    <h2>Register your 2fa</h2>
+                    <p>Scan the QR code with your 2fa app and enter the code below.</p>
+                    <form method="post">
+                        <label for="secret">Secret Token</label>
+                        <input type="text" class="form-control" id="secret" value="{{ secret }}" readonly
+                               onblur='generateBarCode();'>
+
+                        <label for="otp">OTP / 2FA Code:</label>
+                        <input type="text" id="otp" name="otp" required>
+                        <button type="submit">Register your 2 FA</button>
+                    </form>
+                    <img id='barcode'
+                         src="data:image/png;base64,{{ img_qrcode_data }}"
+                         alt=""
+                         title="QR Code 2fa"/>
+                </section>
+
+            </div>
+        </div>
+
+        <div class="col-25 col-s-100">
 
         </div>
     </div>
-
-    <div class="col-25 col-s-100">
-
-    </div>
 </div>
-    </div>
 
 <div class="footer">
     <p>Copyright 2023 VoltWave</p>

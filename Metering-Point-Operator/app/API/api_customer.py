@@ -1,7 +1,7 @@
 from app import app, db, logger
 
 from flask import request, make_response
-from models.electricity_meter import load_electricity_meter
+from ..models.electricity_meter import load_electricity_meter
 
 import hashlib
 
