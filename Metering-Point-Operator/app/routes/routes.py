@@ -3,7 +3,7 @@
 
 # ===== Packages =====
 # Packages for Flask
-from flask import g
+from flask import g, render_template, flash
 
 # Packages for JWT
 from flask_jwt_extended import jwt_required
@@ -16,7 +16,7 @@ from app import app
 # === Home / Index ===
 @app.route('/test')
 @jwt_required(optional=True) # optional=True allows to access the route without a valid JWT, but checks it if it is present
-def home():
+def test():
     '''
     This function handles the home page of the web application.
     '''
@@ -25,7 +25,7 @@ def home():
 @app.route('/index', methods=['GET'])
 @app.route('/home', methods=['GET'])
 @app.route('/', methods=['GET'])
-@jwt_required # optional=True allows to access the route without a valid JWT, but checks it if it is present
+@jwt_required() # optional=True allows to access the route without a valid JWT, but checks it if it is present
 def home():
     '''
     This function handles the home page of the web application.
@@ -33,25 +33,25 @@ def home():
     return render_template('index.html')
 
 @app.route('/maintenance', methods=['GET'])
-@jwt_required # optional=True allows to access the route without a valid JWT, but checks it if it is present
+@jwt_required() # optional=True allows to access the route without a valid JWT, but checks it if it is present
 def maintenance():
     '''
     This function handles the maintenance page of the web application.
     '''
-    return render_template('Unterseite2.html')
+    return render_template('maintenance.html')
 
-
-@app.route('/user_info', methods=['GET'])
-@jwt_required # optional=True allows to access the route without a valid JWT, but checks it if it is present
+@app.route('/maintenance', methods=['POST'])
+@jwt_required() # optional=True allows to access the route without a valid JWT, but checks it if it is present
 def maintenance():
     '''
     This function handles the maintenance page of the web application.
     '''
-    return render_template('user_info.html')
+
+    return render_template('maintenance.html')
 
 @app.route('/user_info/update', methods=['POST'])
-@jwt_required # optional=True allows to access the route without a valid JWT, but checks it if it is present
-def maintenance():
+@jwt_required() # optional=True allows to access the route without a valid JWT, but checks it if it is present
+def user_info_update():
     '''
     This function handles the maintenance page of the web application.
     '''
