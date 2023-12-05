@@ -10,19 +10,20 @@ import os
 h = hashlib.sha256()
 load_dotenv()
 
-@app.route('/setcounter/<counter_id>', methods=['SET'])
+@app.route('/api/heartbeat/<counter_id>', methods=['POST'])
 def get_counter(counter_id):
     try:
         if authorize(request.headers.get('Authorization')):
-            db.counters.update_one({'_id': counter_id}, {'$set': {'counter': request.args.get('counter')}})
+
+            db.electricity_meter.update_one({'em_id': counter_id}, {'$set': {'counter': request.args.get('counter')}})
             return make_response(200)
         else:
-            return make_response({'counter': ''}, 401)
+            return make_response(401)
     except:
         return make_response(500)
 
 
-@app.route('/seterrorstatus/<counter_id>', methods=['SET'])
+
 
 def authorize(token) -> bool:
     h.update(os.getenv('SHARED_SECRET_C').encode('utf-8'))
