@@ -14,7 +14,7 @@ from app import get_em_id, get_em_value
 @app.route('/', methods=['GET'])
 def test():
 
-    return [get_em_id(), get_em_value()]
+    return f"EM_ID: {get_em_id()}, EM_Value: {get_em_value()}"
 
 @app.route('/maintenance', methods=['POST']) #TODO
 def maintenance():

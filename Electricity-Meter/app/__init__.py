@@ -18,6 +18,8 @@ from flask import Flask
 from threading import Timer
 from requests import post
 from random import randint
+from bson.objectid import ObjectId
+from hashlib import sha256
 
 # ===== Program configurations =====
 
@@ -64,12 +66,12 @@ app.config['SECRET_KEY'] = os.urandom(24)
 
 # === EM Initialisation ===
 
-em_id = randint(0, 9999999)
+em_id = ObjectId()
 em_value = randint(0,50000)
 
 maintenance_mode = False
 
-def get_em_id() -> int:
+def get_em_id() -> ObjectId:
     '''
     This function returns the ID of the electricity meter.
     '''
@@ -105,7 +107,11 @@ def heartbeat():
 
     logger.info("Sending heartbeat...")
     logger.debug(f"Value: {get_em_value()}")
-    #post("http://metering-point-operator:5000/api/heartbeat", json={"id": get_em_id(), "value": get_em_value(), "secret": os.getenv("SECRET_MPO_EM")}) TODO
+    # Build sha256 hash of the secret ("SECRET_MPO_EM")
+    h = sha256()
+    h.update(os.getenv("SECRET_MPO_EM").encode("utf-8"))
+    # Send the heartbeat to the metering-point-operator
+    post(f"http://metering-point-operator:5000/api/heartbeat/{get_em_id()}", json={"em_value": get_em_value()}, headers={"Authorization": h.hexdigest()})
 
     Timer(10, heartbeat).start() # Change time accordingly
 

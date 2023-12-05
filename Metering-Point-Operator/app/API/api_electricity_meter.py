@@ -1,4 +1,4 @@
-from app import app, db
+from app import app, db, logger
 
 from flask import request, make_response
 
@@ -7,27 +7,45 @@ import hashlib
 from dotenv import load_dotenv
 import os
 
-h = hashlib.sha256()
+from bson.objectid import ObjectId
+
 load_dotenv()
 
+# Delete all current electricity meters
+logger.info("Deleting all current electricity meters...")
+db.electricity_meter.delete_many({})
+
 @app.route('/api/heartbeat/<counter_id>', methods=['POST'])
-def get_counter(counter_id):
+def post_counter_hearbeat(counter_id):
     try:
         if authorize(request.headers.get('Authorization')):
+            # Check if the em with _id exists
+            data = db.electricity_meter.find_one({"_id": ObjectId(counter_id)})
+            
+            if data:
+                logger.info(f"Electricity meter with ID {counter_id} exists.")
+            else:
+                logger.info(f"Electricity meter with ID {counter_id} does not exist yet.")
+                # If not, create it
+                db.electricity_meter.insert_one({"_id": ObjectId(counter_id)})
 
-            db.electricity_meter.update_one({'em_id': counter_id}, {'$set': {'counter': request.args.get('counter')}})
-            return make_response(200)
+            logger.info(f"Received heartbeat from electricity meter with ID {counter_id}. Update value...")
+            # Update the em_value
+            db.electricity_meter.update_one({"_id": ObjectId(counter_id)}, {"$set": {"em_value": request.json.get('em_value')}})
+            # Send 200 status code
+            return make_response('', 200)
         else:
-            return make_response(401)
+            return make_response('', 401)
     except:
-        return make_response(500)
+        return make_response('', 500)
 
 
 
 
 def authorize(token) -> bool:
-    h.update(os.getenv('SHARED_SECRET_C').encode('utf-8'))
-    if h.hexdigest() == token.encode('utf-8'):
+    h = hashlib.sha256()
+    h.update(os.getenv('SECRET_MPO_EM').encode('utf-8'))
+    if h.hexdigest() == token:
         return True
     else:
         return False
