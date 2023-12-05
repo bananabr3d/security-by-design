@@ -71,11 +71,42 @@ em_value = randint(0,50000)
 
 maintenance_mode = False
 
+manufacturer_list = ["EMH-metering", "EasyMeter", "eBZ", "Zwawe"]
+manufacturer = manufacturer_list[randint(0, len(manufacturer_list) - 1)]
+model = f"{randint(1, 9)}.{randint(0, 9)}.{randint(0, 9)}.{randint(0, 9)}"
+serial_number = f"{randint(10000000, 99999999)}-{randint(10000000, 99999999)}-{randint(10000000, 99999999)}"
+firmware_version = f"{randint(1, 9)}.{randint(0, 9)}.{randint(0, 9)}"
+
+# ===== Functions =====
 def get_em_id() -> ObjectId:
     '''
     This function returns the ID of the electricity meter.
     '''
     return em_id
+
+def get_manufacturer() -> str:
+    '''
+    This function returns the manufacturer of the electricity meter.
+    '''
+    return manufacturer
+
+def get_model() -> str:
+    '''
+    This function returns the model of the electricity meter.
+    '''
+    return model
+
+def get_serial_number() -> str:
+    '''
+    This function returns the serial number of the electricity meter.
+    '''
+    return serial_number
+
+def get_firmware_version() -> str:
+    '''
+    This function returns the firmware version of the electricity meter.
+    '''
+    return firmware_version
 
 def get_em_value() -> int:
     '''
@@ -111,7 +142,12 @@ def heartbeat():
     h = sha256()
     h.update(os.getenv("SECRET_MPO_EM").encode("utf-8"))
     # Send the heartbeat to the metering-point-operator
-    post(f"http://metering-point-operator:5000/api/heartbeat/{get_em_id()}", json={"em_value": get_em_value()}, headers={"Authorization": h.hexdigest()})
+    post(f"http://metering-point-operator:5000/api/heartbeat/{get_em_id()}", json={"em_value": get_em_value(),
+                                                                                   "manufacturer": get_manufacturer(), 
+                                                                                   "model": get_model(), 
+                                                                                   "serial_number": get_serial_number(),
+                                                                                   "firmware_version": get_firmware_version()}, 
+         headers={"Authorization": h.hexdigest()})
 
     Timer(10, heartbeat).start() # Change time accordingly
 

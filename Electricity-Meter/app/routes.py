@@ -6,7 +6,7 @@
 from app import app, logger
 
 # TODO remove
-from app import get_em_id, get_em_value
+from app import get_em_id, get_em_value, get_manufacturer, get_model, get_serial_number, get_firmware_version
 
 # ===== Routes =====
 
@@ -14,7 +14,7 @@ from app import get_em_id, get_em_value
 @app.route('/', methods=['GET'])
 def test():
 
-    return f"EM_ID: {get_em_id()}, EM_Value: {get_em_value()}"
+    return f"EM_ID: {get_em_id()}, EM_Value: {get_em_value()}, Manufacturer: {get_manufacturer()}, Model: {get_model()}, Serial Number: {get_serial_number()}, Firmware Version: {get_firmware_version()}"
 
 @app.route('/maintenance', methods=['POST']) #TODO
 def maintenance():
