@@ -70,13 +70,13 @@ def dashboard():
 
     # Transform contract objects in list to dicts
     for contract in contract_list:
-        temp_contract = {"_id": contract.get_id(), "electricity_meter_id": contract.get_attribute("electricity_meter_id")}#TODO: Add more attributes
+        temp_contract = {"_id": contract.get_id(), "electricity_meter_id": contract["electricity_meter_id"]}#TODO: Add more attributes?
         transformed_contract_list.append(temp_contract)
 
     # 2. make request on Messstellenbetreiber for data of each contract => How to implement? Do we load a contract.html in the dashboard.html or can we add it here in the return?
     
     #render_template with contract objects for each contract
-    return render_template('dashboard.html', jwt_authenticated=g.jwt_authenticated, twofa_activated=g.twofa_activated, twofa_authenticated=g.twofa_authenticated, admin=g.admin, username=g.user.get_attribute('username'), contract_list=transformed_contract_list)
+    return render_template('dashboard.html', jwt_authenticated=g.jwt_authenticated, twofa_activated=g.twofa_activated, twofa_authenticated=g.twofa_authenticated, admin=g.admin, username=g.user['username'], contract_list=transformed_contract_list)
 
 # === About ===
 @app.route('/about', methods=['GET'])
@@ -243,7 +243,7 @@ def update_user_info_post():
         if key in ['plz', 'street', 'street_house_number', 'city', 'country']:
             g.user.update_address(attribute=key, value=request_data[key])
         else:
-            g.user.update_attribute(attribute=key, value=request_data[key])
+            g.user[key] = request_data[key]
 
     logger.debug('User information updated successfully.')
     flash('Your information has been updated successfully.', 'success')

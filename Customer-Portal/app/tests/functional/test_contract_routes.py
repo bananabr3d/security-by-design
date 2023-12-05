@@ -21,7 +21,7 @@ class TestContractRoutes:
         self.client = login_jwt(self.client)
 
         # Check if account has 2fa enabled, if not enable it
-        if self.user.get_attribute("twofa_activated") != "True":
+        if self.user["twofa_activated"] != "True":
             logger.info("2fa enabled. Enabling...")
             otp = activate_2fa(self.client)
 
@@ -34,7 +34,7 @@ class TestContractRoutes:
         if self.user.get_contract_list() != [] or db.contracts.find_one({"electricity_meter_id": "pytest"}) != None:
             logger.info("Contract list not empty. Deleting all contracts...")
             # Set empty contract list
-            self.user.update_attribute(db=db, attribute="contract_list", value=[])
+            self.user["contract_list"] = []
             # Delete contracs in contract db
             db.contracts.delete_one({"electricity_meter_id": "pytest"})
 
@@ -66,7 +66,7 @@ class TestContractRoutes:
         # Check if contract is in contract list, else assert False
         for contract_id in contract_list:
             Contract = Contract_class.find_by_id(db, contract_id=contract_id)
-            if Contract != None and Contract.get_attribute("electricity_meter_id") == request_data["electricity_meter_id"]:
+            if Contract != None and Contract["electricity_meter_id"] == request_data["electricity_meter_id"]:
                 assert True
                 return
         
