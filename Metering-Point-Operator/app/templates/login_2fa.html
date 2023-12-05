@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Page</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .custom-btn {
+            background-color: #FFAB11;
+            color: #ffffff;
+            margin-top: 10px;
+            /* Weitere Stildefinitionen nach Bedarf */
+        }
+
+        body {
+            height: 100vh;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #f8f9fa;
+        }
+
+        .login-container {
+            width: 90%;
+            max-width: 400px;
+            margin: auto;
+        }
+
+        .image-container {
+            width: 100%;
+            text-align: center;
+        }
+
+        .image-container img {
+            max-width: 100%;
+            height: auto;
+        }
+
+
+        /* Standard-Linkfarbe */
+        a {
+            color: #FFAB11;
+        }
+
+
+        /* Ändern Sie die Linkfarbe, wenn der Mauszeiger darüber schwebt */
+        a:hover {
+            color: #FFAB11;
+        }
+    </style>
+</head>
+<body>
+<div class="container-fluid">
+    <div class="row">
+        <!-- Login Form -->
+        <div class="col-md-6 login-container">
+            <h2 class="text-center mb-4">Login with Two-factor Authentication </h2>
+
+            <form method="post">
+
+                <label for="otp">OTP / 2FA Code:</label>
+                <input type="text" id="otp" name="otp" required>
+                <button type="submit" class="btn custom-btn btn-block">Login with 2 FA</button>
+            </form>
+            <br>
+            <p>Forgot your password? <a href="/reset-password">Reset Password</a></p>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            <!--            wenn es nachrichten gibt, soll die div aufgebaut werden-->
+            {% if messages %}
+            <ul class=flashes>
+                <!--                für jede nachricht wird sie im frontend mit "liste" angezeigt -->
+                {% for category, message in messages %}
+                <li class="{{ category }}">{{ message }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+            {% endwith %}
+        </div>
+
+        <!-- Image Container -->
+        <div class="col-md-6 image-container">
+            <img src="../static/images/picture_login_page.png" alt="Placeholder Image">
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap JS and dependencies -->
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+</body>
+</html>
+
+
+
+
+
+
+
+
+
