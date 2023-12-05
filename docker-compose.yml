@@ -46,11 +46,11 @@ services:
     build: ./Electricity-Meter
     restart: unless-stopped
     deploy:
-      replicas: 2 # Change according to the number of meters
+      replicas: 1 # Change according to the number of meters
     depends_on:
       - metering-point-operator
     ports: #TESTING ONLY
-      - "5000-5002:5000"
+      - "5000:5000"
     environment:
       - SECRET_MPO_EM=01234567890123456
       - LOGGING_LEVEL=DEBUG
