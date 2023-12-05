@@ -42,7 +42,7 @@ def maintenance():
 
 @app.route('/maintenance', methods=['POST'])
 @jwt_required() # optional=True allows to access the route without a valid JWT, but checks it if it is present
-def maintenance():
+def maintenance_post():
     '''
     This function handles the maintenance page of the web application.
     '''
