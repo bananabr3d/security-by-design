@@ -718,7 +718,7 @@ def custom_unauthorized_response(callback):
     '''
     #TODO Customize the error response -> render Unauthorized.html -> button available to redirect to login
     flash("You are not authorized to do this.")
-    return redirect(url_for('login'))
+    return render_template('unauthorized.html')
 
 # Error handler for fresh JWT needed
 @jwt.needs_fresh_token_loader
