@@ -5,6 +5,9 @@ from app.models.contract import Contract
 from datetime import date
 
 def get_user_count(db: pymongo.database.Database) -> int:
+    '''
+    Returns the number of users in the database.
+    '''
     try:
         user_count = db.users.count_documents({})
     except:
@@ -13,6 +16,9 @@ def get_user_count(db: pymongo.database.Database) -> int:
     return user_count
 
 def get_usernames(db: pymongo.database.Database) -> list:
+    '''
+    Returns a list of all usernames in the database.
+    '''
     try:
         usernames = db.users.distinct('username')
     except:
@@ -30,7 +36,10 @@ class User():
                  address_street:str = None, address_street_house_number:int = None, 
                  address_city:str = None, address_country:str = None, 
                  phone_number:str = None, name:str = None, surname:str = None) -> None:
-        
+        '''
+        Creates a new user object.
+        '''
+
         self._db = db
 
         address = {'plz': address_plz, 'street': address_street, 
@@ -53,6 +62,9 @@ class User():
     
     @classmethod
     def find_by_id(cls, db:pymongo.database.Database, user_id:str):
+        '''
+        Returns the user with the given ID.
+        '''
         try:
             user_data = db.users.find_one({'_id': ObjectId(user_id)}, allow_partial_results=False)
         except:
@@ -80,6 +92,9 @@ class User():
 
     @classmethod 
     def find_by_username(cls, db:pymongo.database.Database, username: str):
+        '''
+        Returns the user with the given username.
+        '''
         try:
             user_data = db.users.find_one({'username': username}, allow_partial_results=False)
         except:
@@ -96,6 +111,9 @@ class User():
     
     @classmethod
     def find_by_email(cls, db:pymongo.database.Database, email: str):
+        '''
+        Returns the user with the given email.
+        '''
         try:
             user_data = db.users.find_one({'email': email}, allow_partial_results=False)
         except:
@@ -112,6 +130,9 @@ class User():
     
     @classmethod
     def find_by_contract_id(cls, db:pymongo.database.Database, contract_id: str):
+        '''
+        Returns the user with the given contract_id.
+        '''
         try:
             # Find user with contract_id in contract_list list
             user_data = db.users.find_one({'contract_list': { '$in': [str(contract_id)] }} , allow_partial_results=False)

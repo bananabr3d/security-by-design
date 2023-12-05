@@ -19,10 +19,10 @@ class TestPublicRoutes:
         response = self.client.get('/home')
         assert response.status_code == 200
 
-    # def test_get_about_route(self): #TODO
-    #     response = self.client.get('/about')
-    #     assert response.status_code == 200
+    def test_get_about_route(self):
+        response = self.client.get('/about')
+        assert response.status_code == 200
 
-    # def test_get_impressum_route(self): #TODO
-    #     response = self.client.get('/impressum')
-    #     assert response.status_code == 200
+    def test_get_impressum_route(self):
+        response = self.client.get('/impressum')
+        assert response.status_code == 200

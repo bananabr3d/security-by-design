@@ -3,6 +3,9 @@ from bson.objectid import ObjectId
 from flask_pymongo import pymongo
 
 def get_all_contracts(db: pymongo.database.Database) -> list:
+    '''
+    Returns a list of all contracts in the database.
+    '''
     try:
         contracts = db.contracts.find({}, allow_partial_results=False)
     except:
@@ -16,6 +19,9 @@ def get_all_contracts(db: pymongo.database.Database) -> list:
     return contract_list
 
 def load_contracts_by_id(db: pymongo.database.Database, contract_id_list: list) -> list:
+    '''
+    Returns a list of contracts with the given IDs.
+    '''
     contract_data_list = list()
 
     for contract_id in contract_id_list:
@@ -29,6 +35,9 @@ def load_contracts_by_id(db: pymongo.database.Database, contract_id_list: list) 
     return contract_data_list
 
 def load_contracts_by_user(user, db: pymongo.database.Database) -> list:
+    '''
+    Returns a list of contracts of the given user.
+    '''
     contract_list = user.get_contract_list()
     contract_data_list = list()
 
@@ -43,6 +52,9 @@ def load_contracts_by_user(user, db: pymongo.database.Database) -> list:
     return contract_data_list
 
 def get_contracts_termination_requested(db: pymongo.database.Database) -> list:
+    '''
+    Returns a list of all contracts in the database, where termination is requested.
+    '''
     try:
         contracts_termination_requested = db.contracts.find({'termination_requested': True}, allow_partial_results=False)
     except:
