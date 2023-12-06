@@ -99,7 +99,7 @@ def activate_2fa(client) -> str:
 
     # Post otp to /register/2fa
     response = client.post('/register/2fa', data=request_data_2fa_register)
-
+    logger.info(response.data.decode("utf-8"))
     # Check if redirect to /login/2fa page
     assert response.status_code == 302
     assert response.headers['Location'] == '/login/2fa'

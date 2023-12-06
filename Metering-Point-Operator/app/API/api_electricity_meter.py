@@ -28,6 +28,8 @@ def post_counter_hearbeat(counter_id):
                 logger.info(f"Electricity meter with ID {counter_id} does not exist yet.")
                 # If not, create it
                 db.electricity_meter.insert_one({"_id": ObjectId(counter_id)})
+                # Set the status to free (True)
+                db.electricity_meter.update_one({"_id": ObjectId(counter_id)}, {"$set": {"em_status": True}})
 
             logger.info(f"Received heartbeat from electricity meter with ID {counter_id}. Update value...")
             # Update the em_value

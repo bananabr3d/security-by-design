@@ -152,7 +152,7 @@ class Contract():
             self.contract_data[key] = value
 
             try:
-                self._db.contracts.update_one({'_id': self.user_data['_id']}, {'$set': {key: value}})
+                self._db.contracts.update_one({'_id': self.contract_data['_id']}, {'$set': {key: value}})
             except:
                 raise DBConnectionError
         else:
