@@ -24,7 +24,7 @@ Contract {{ contract._id }}
   <h3>Renew-Period: {{ contract.renew_period }}</h3>
   
   <h3>Electricity Meter ID: {{ contract.electricity_meter_id }}</h3>
-  <h3>Electricity Meter Last Updated Value: {{ electricity_meter_last_updated_value }} kWh</h3>
+  <h3>Electricity Meter Last Updated Value: {{ electricity_meter_value }} kWh</h3>
 
   <h3>Notes: 
     <form method="post" action="/update-contract/{{ contract._id }}" onsubmit="return confirm('Are you sure you want to submit this form?');">

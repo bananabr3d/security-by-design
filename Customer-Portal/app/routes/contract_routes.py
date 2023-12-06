@@ -18,6 +18,15 @@ from hashlib import sha256
 # For checking expired contracts
 from threading import Timer
 
+
+# Remove all existing contracts
+db.contracts.delete_many({})
+logger.info("All contracts deleted")
+# Remove all contracts in user db
+db.users.update_many({}, {"$set": {"contract_list": []}})
+logger.info("All contracts deleted in user db")
+
+
 @app.route('/add-contract', methods=['POST'])
 @jwt_required(fresh=True)
 def add_contract():
