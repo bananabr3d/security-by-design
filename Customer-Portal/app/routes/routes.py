@@ -87,12 +87,12 @@ def about():
     return render_template('about.html', jwt_authenticated=g.jwt_authenticated, twofa_activated=g.twofa_activated, twofa_authenticated=g.twofa_authenticated, admin=g.admin)
 
 # === Impressum ===
-@app.route('/impressum', methods=['GET'])
+@app.route('/Impressum', methods=['GET'])
 def impressum():
     '''
     This function handles the impressum page of the web application.
     '''
-    return render_template('impressum.html', jwt_authenticated=g.jwt_authenticated, twofa_activated=g.twofa_activated, twofa_authenticated=g.twofa_authenticated, admin=g.admin)
+    return render_template('Impressum.html', jwt_authenticated=g.jwt_authenticated, twofa_activated=g.twofa_activated, twofa_authenticated=g.twofa_authenticated, admin=g.admin)
 
 # === Add user info ===
 @app.route('/user-info/update', methods=['GET'])
