@@ -371,5 +371,6 @@ def check_expired_contracts():
     # Check again in 24 hours
     Timer(86400, check_expired_contracts).start()
 
-# Start the scheduler once
-check_expired_contracts()
+if not os.getenv("TESTING"):
+    # Start the scheduler once
+    check_expired_contracts()
