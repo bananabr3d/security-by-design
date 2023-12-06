@@ -42,7 +42,6 @@ jobs:
         python -m pip install --upgrade pip
         if [ -f Customer-Portal/requirements.txt ]; then pip install -r Customer-Portal/requirements.txt; fi
         if [ -f Metering-Point-Operator/requirements.txt ]; then pip install -r Metering-Point-Operator/requirements.txt; fi
-        if [ -f Electricity-Meter/requirements.txt ]; then pip install -r Electricity-Meter/requirements.txt; fi
     - name: Test with pytest
       run: |
         pip install pytest
