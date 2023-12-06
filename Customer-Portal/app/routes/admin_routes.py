@@ -13,6 +13,10 @@ from app import app, logger, db, Invalid2FA
 from app.models.user import get_user_count, get_usernames, User
 from app.models.contract import get_contracts_termination_requested, Contract
 
+# Import for mpo communication
+from requests import post
+from hashlib import sha256
+import os
 
 # ===== Routes =====
 # === Admin Panel ===
@@ -60,8 +64,6 @@ def admin_dashboard():
 
         contracts_termination_requested_data_list.append(temp_contract)
 
-    logger.debug(contracts_termination_requested_data_list)
-
     logger.info(f"Admin {g.user['username']} accessed the admin dashboard.")
 
     # Render the admin dashboard
@@ -96,19 +98,46 @@ def confirm_contract_termination(contract_id):
     # Get the contract
     contract = Contract.find_by_id(db=db, contract_id=contract_id)
 
-    #TODO Send API request to metering point operator to say the em is free again
+    # Get the electricity meter id
+    electricity_meter_id = contract["electricity_meter_id"]
+
+    # Set up secret header
+    h = sha256()
+    h.update(os.getenv("SECRET_CP_MPO").encode("utf-8"))
+
+    # Send post request to mpo in order to free the electricity meter
+    request = post(f"http://metering-point-operator:5000/api/freecounter/{electricity_meter_id}", headers={"Authorization":h.hexdigest()})
+
+    # Check status code of mpo response
+    if request.status_code == 200:
+        logger.info(f"Electricity meter with ID {electricity_meter_id} successfully freed.")
+
+        # Delete contract
+        contract.delete()
+
+        # Remove contract from user
+        g.user.remove_contract(contract_id=contract_id)
+
+        logger.info(f"Admin {g.user['username']} confirmed the termination of contract {contract_id}.")
+
+        logger.debug(f"Contract with ID '{contract_id}' successfully deleted.")
+        flash("Contract successfully deleted", "success")
+        return redirect(url_for('admin_dashboard'))
     
-    # Delete contract
-    contract.delete()
+    elif request.status_code == 301:
+        logger.error(f"Contract with electricity_meter_id: '{electricity_meter_id}'. Electricity meter is not free.")
+        flash("Contract termination could not be denied. Electricity meter is already free", "error")
+        return redirect(url_for('admin_dashboard'))
 
-    # Remove contract from user
-    g.user.remove_contract(contract_id=contract_id)
-
-    logger.info(f"Admin {g.user['username']} confirmed the termination of contract {contract_id}.")
-
-    logger.debug(f"Contract with ID '{contract_id}' successfully deleted.")
-    flash("Contract successfully deleted", "success")
-    return redirect(url_for('admin_dashboard'))
+    elif request.status_code == 401:
+        logger.error(f"Contract with electricity_meter_id: '{electricity_meter_id}'. Authentication failed.")
+        flash("Contract termination could not be denied. Authorization failed", "error")
+        return redirect(url_for('admin_dashboard'))
+    
+    elif request.status_code == 500:
+        logger.error(f"Contract with electricity_meter_id: '{electricity_meter_id}'. MPO internal server error.")
+        flash("Contract termination could not be denied. MPO internal server error", "error")
+        return redirect(url_for('admin_dashboard'))
 
 # === Decline Contract Termination ===
 @app.route('/admin/decline-contract-termination/<contract_id>', methods=['POST'])
@@ -133,6 +162,7 @@ def decline_contract_termination(contract_id):
     # Get the contract
     contract = Contract.find_by_id(db=db, contract_id=contract_id)
 
+
     # Set termination_requested to False
     contract["termination_requested"] = False
 
@@ -141,6 +171,7 @@ def decline_contract_termination(contract_id):
     logger.debug(f"Contract with ID '{contract_id}' successfully declined.")
     flash("Contract termination successfully declined", "success")
     return redirect(url_for('admin_dashboard'))
+    
 
 
 # === Admin Before Request ===

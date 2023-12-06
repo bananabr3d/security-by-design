@@ -105,7 +105,7 @@ def add_contract():
     blocked = True
 
     if response.status_code == 401:
-        logger.warning(f"Contract with electricity_meter_id: '{electricity_meter_id}'. Authentication failed.")
+        logger.error(f"Contract with electricity_meter_id: '{electricity_meter_id}'. Authentication failed.")
         flash("Contract could not be created. Please contact an Administrator")
         return redirect(url_for('dashboard'))
     
@@ -192,14 +192,43 @@ def contract(contract_id: str):
     except:
         contract_information_json = None
 
+    # Get em value from metering point operator
+    em_id = contract["electricity_meter_id"]
+
+    # Get secret for request
+    h = sha256()
+    h.update(os.getenv("SECRET_CP_MPO").encode("utf-8"))
+
+    # Send request to mpo
+    request = get(f"http://metering-point-operator:5000/api/getcounter/{em_id}", headers={"Authorization":h.hexdigest()})
+
+    electricity_meter_value = None
+
+    # Check status code of mpo response
+    if request.status_code == 200:
+        logger.debug(f"Electricity meter with ID '{em_id}' successfully requested.")
+        electricity_meter_value = request.json()["em_value"]
+        electricity_meter_last_update = request.json()["em_last_update"]
+
+    elif request.status_code == 401:
+        logger.error(f"Electricity meter with ID '{em_id}' could not be requested. Authentication failed.")
+        flash("Electricity meter could not be requested. Please contact an Administrator")
+        return redirect(url_for('dashboard'))
+    
+    elif request.status_code == 500:
+        logger.error(f"Electricity meter with ID '{em_id}' could not be requested. Server Error from Metering Point Operator.")
+        flash("Electricity meter could not be requested. Please contact an Administrator")
+        return redirect(url_for('dashboard'))
+
     return render_template('contract.html', 
                            contract=contract_show, 
                            jwt_authenticated=g.jwt_authenticated, 
                            twofa_activated=g.twofa_activated, 
                            twofa_authenticated=g.twofa_authenticated, 
                            admin=g.admin,
-                           contract_information_json=contract_information_json
-                           )
+                           contract_information_json=contract_information_json,
+                           electricity_meter_value=electricity_meter_value,
+                           electricity_meter_last_update=electricity_meter_last_update)
 
 @app.route('/update-contract/<contract_id>', methods=['POST'])
 @jwt_required(fresh=True)
@@ -359,6 +388,20 @@ def check_expired_contracts():
     for contract in contracts:
         if contract["enddate"] < (datetime.now() - timedelta(days=90)).strftime("%Y-%m-%d"):
             logger.debug(f"Contract with ID '{contract.get_id()}' is expired. Deleting it and removing from user.")
+            # Free the em
+            h = sha256()
+            h.update(os.getenv("SECRET_CP_MPO").encode("utf-8"))
+            url = "http://metering-point-operator:5000/api/freecounter/" + contract["electricity_meter_id"]
+
+            response = post(url, headers={"Authorization":h.hexdigest()})
+            if response.status_code == 200:
+                logger.debug(f"Electricity meter with ID '{contract['electricity_meter_id']}' successfully freed.")
+            elif response.status_code == 401:
+                logger.error(f"Electricity meter with ID '{contract['electricity_meter_id']}' could not be freed. Authentication failed.")
+            elif response.status_code == 500:
+                logger.error(f"Electricity meter with ID '{contract['electricity_meter_id']}' could not be freed. Server Error from Metering Point Operator.")
+
+            # Delete contract
             contract.delete()
 
             # Remove contract from user

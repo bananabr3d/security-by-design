@@ -9,6 +9,8 @@ import os
 
 from bson.objectid import ObjectId
 
+from datetime import datetime
+
 load_dotenv()
 
 # Delete all current electricity meters
@@ -30,10 +32,15 @@ def post_counter_hearbeat(counter_id):
                 db.electricity_meter.insert_one({"_id": ObjectId(counter_id)})
                 # Set the status to free (True)
                 db.electricity_meter.update_one({"_id": ObjectId(counter_id)}, {"$set": {"em_status": True}})
+                # Set em ip
+                db.electricity_meter.update_one({"_id": ObjectId(counter_id)}, {"$set": {"em_ip": request.remote_addr}})
+    
 
             logger.info(f"Received heartbeat from electricity meter with ID {counter_id}. Update value...")
             # Update the em_value
             db.electricity_meter.update_one({"_id": ObjectId(counter_id)}, {"$set": {"em_value": request.json.get('em_value')}})
+            # Update em timestamp
+            db.electricity_meter.update_one({"_id": ObjectId(counter_id)}, {"$set": {"em_last_update": datetime.now()}})
             # Send 200 status code
             return make_response('', 200)
         else:

@@ -21,6 +21,11 @@ from app.routes.auth_routes import regex_text
 # Import datetime
 from datetime import datetime
 
+# Import os, requests and hashlib for mpo request
+import os
+from hashlib import sha256
+from requests import get
+
 # ===== Regex =====
 # Regex for date_of_birth (YYYY-MM-DD)
 date_of_birth_regex = compile(r'^\d{4}-\d{2}-\d{2}$')
@@ -70,10 +75,36 @@ def dashboard():
 
     # Transform contract objects in list to dicts
     for contract in contract_list:
-        temp_contract = {"_id": contract.get_id(), "electricity_meter_id": contract["electricity_meter_id"]}#TODO: Add more attributes?
-        transformed_contract_list.append(temp_contract)
+        # 2. make request on Messstellenbetreiber for data of each contract
+        # Get em value from metering point operator
+        em_id = contract["electricity_meter_id"]
 
-    # 2. make request on Messstellenbetreiber for data of each contract => How to implement? Do we load a contract.html in the dashboard.html or can we add it here in the return?
+        # Get secret for request
+        h = sha256()
+        h.update(os.getenv("SECRET_CP_MPO").encode("utf-8"))
+
+        # Send request to mpo
+        request = get(f"http://metering-point-operator:5000/api/getcounter/{em_id}", headers={"Authorization":h.hexdigest()})
+
+        electricity_meter_value = None
+
+        # Check status code of mpo response
+        if request.status_code == 200:
+            logger.debug(f"Electricity meter with ID '{em_id}' successfully requested.")
+            electricity_meter_value = request.json()["em_value"]
+            electricity_meter_last_update = request.json()["em_last_update"]
+
+
+        elif request.status_code == 401:
+            logger.error(f"Electricity meter with ID '{em_id}' could not be requested. Authentication failed.")
+            flash("Electricity meter could not be requested. Please contact an Administrator")
+        
+        elif request.status_code == 500:
+            logger.error(f"Electricity meter with ID '{em_id}' could not be requested. Server Error from Metering Point Operator.")
+            flash("Electricity meter could not be requested. Please contact an Administrator")
+        
+        temp_contract = {"_id": contract.get_id(), "electricity_meter_id": contract["electricity_meter_id"], "electricity_meter_value": electricity_meter_value, "electricity_meter_last_update": electricity_meter_last_update}
+        transformed_contract_list.append(temp_contract)
     
     #render_template with contract objects for each contract
     return render_template('dashboard.html', jwt_authenticated=g.jwt_authenticated, twofa_activated=g.twofa_activated, twofa_authenticated=g.twofa_authenticated, admin=g.admin, username=g.user['username'], contract_list=transformed_contract_list)
