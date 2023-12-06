@@ -29,7 +29,7 @@
                 <ul class="navbar-nav">
                     <li class="nav-item">
                         <a class="nav-link" href="/">
-                            <i class="fas fa-home"></i> Home
+                            <i class="fas fa-home">Home</i> 
                         </a>
                     </li>
                     {% if not jwt_authenticated %}
@@ -40,30 +40,30 @@
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="/login">
-                                <i class="fas fa-sign-in-alt"></i> Login
+                                <i class="fas fa-sign-in-alt">Login</i>
                             </a>
                         </li>
                     {% elif jwt_authenticated and not twofa_authenticated %}
                         {% if not twofa_activated %}
                             <li class="nav-item">
                                 <a class="nav-link" href="/register/2fa">
-                                    <i class="fas fa-key"></i> Register 2FA
+                                    <i class="fas fa-key">Register 2FA</i> 
                                 </a>
                             </li>
                         {% else %}
                             <li class="nav-item">
                                 <a class="nav-link" href="/login/2fa">
-                                    <i class="fas fa-sign-in-alt"></i> Login 2FA
+                                    <i class="fas fa-sign-in-alt">Login 2FA</i> 
                                 </a>
                             </li>
                         {% endif %}
                     {% elif jwt_authenticated and twofa_authenticated %}
                         {% if admin %}
-                        <li class="nav-item"><a class="nav-link" href="/admin">Admin Panel</a></li>
+                        <li class="nav-item"><a class="nav-link" href="/admin">Admin Panel</li></a>
                         {% endif %}
                         <li class="nav-item">
                             <a class="nav-link" href="/dashboard">
-                                <i class="fas fa-tachometer-alt"></i> Dashboard
+                                <i class="fas fa-tachometer-alt">Dashboard</i> 
                             </a>
                         </li>
                     {% endif %}
@@ -129,9 +129,9 @@
         {% block content %} {% endblock %}
     </main>
     <footer>
-        <li><a href="/about.html">About</a></li>
+        <li><a href="/about">About</a></li>
         <p>&copy; 2023 VoltWave GMBH und CO KG AG</p>
-        <li><a href="/Impressum.html">Impressum</a></li>
+        <li><a href="/impressum">Impressum</a></li>
     </footer>
 </body>
 </html>
