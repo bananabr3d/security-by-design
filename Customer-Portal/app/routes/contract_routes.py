@@ -14,6 +14,7 @@ from re import fullmatch
 from dotenv import load_dotenv
 load_dotenv()
 import os
+from hashlib import sha256
 # For checking expired contracts
 from threading import Timer
 
@@ -80,21 +81,23 @@ def add_contract():
         flash("Your Notes are in an wrong format")
         return redirect(url_for('dashboard'))
     
-    elif not fullmatch(r"^[0-9]{1,8}$", electricity_meter_id):
+        # Match ObjectID String with RegEx (A-Z, a-z, 0-9)
+    elif not fullmatch(r'[a-zA-Z0-9]{24}', electricity_meter_id):
         logger.warning(f"Contract Denied Electricity Meter ID in wrong format")
         flash("Your Electricity Meter ID is in an wrong format")
         return redirect(url_for('dashboard'))
     
     # Check electricity_meter_id with metering point operator if it exists and is free
-    shared_secret =  os.getenv("authorization_header")#TODO change name to shared secret
-    url = "metering-point-operator:5000/getcounterstatus/" + electricity_meter_id
+    h = sha256()
+    h.update(os.getenv("SECRET_CP_MPO").encode("utf-8"))
+    url = "http://metering-point-operator:5000/api/getcounterstatus/" + electricity_meter_id
 
-    response = get(url,  headers={"Authorization":shared_secret})
+    response = get(url,  headers={"Authorization":h.hexdigest()})
     blocked = True
 
     if response.status_code == 401:
-        logger.warning(f"Contract with electricity_meter_id: '{electricity_meter_id}' shared secret wrong.")
-        flash("Contract could not be created Please contact an Administrator")
+        logger.warning(f"Contract with electricity_meter_id: '{electricity_meter_id}'. Authentication failed.")
+        flash("Contract could not be created. Please contact an Administrator")
         return redirect(url_for('dashboard'))
     
     elif response.status_code == 301:
@@ -108,6 +111,11 @@ def add_contract():
         blocked = False
         #TODO hier drin sind die eem daten
         # diese dann in dem contract speichern
+
+    elif response.status_code == 500:
+        logger.warning(f"Contract with electricity_meter_id: '{electricity_meter_id}' could not be created. Server Error from Metering Point Operator.")
+        flash("Contract could not be created. Please contact an Administrator")
+        return redirect(url_for('dashboard'))
 
     # Check if contract with electricity_meter_id already exists
     if Contract.find_by_electricity_meter_id(db=db, electricity_meter_id=electricity_meter_id) != None:
@@ -127,7 +135,7 @@ def add_contract():
         logger.debug(f"Contract with Electricity Meter ID '{electricity_meter_id}' successfully created.")
 
         # Add contract to user
-        user = User.find_by_id(user_id=get_jwt_identity())
+        user = User.find_by_id(db=db, user_id=get_jwt_identity())
         user.add_contract(contract_id=contract.get_id())
         logger.debug("Contract successfully added to user")
         flash("Contract successfully added", "success")

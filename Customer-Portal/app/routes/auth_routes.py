@@ -28,7 +28,7 @@ from hashlib import sha1
 
 
 # Regex for input validation
-regex_email = re.compile(r'/^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,7}$')
+regex_email = re.compile(r'^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,7}$')
 regex_username = re.compile(r'^[a-zA-Z0-9]+([_ -]?[a-zA-Z0-9])*$')
 # regex password with at least 1 uppercase, 1 lowercase, 1 number and 1 special character
 regex_password = re.compile(r'^.*(?=.{12,128})(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!#$%&?"]).*$')

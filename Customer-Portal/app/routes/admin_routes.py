@@ -108,7 +108,7 @@ def confirm_contract_termination(contract_id):
 
     logger.debug(f"Contract with ID '{contract_id}' successfully deleted.")
     flash("Contract successfully deleted", "success")
-    return redirect(url_for('dashboard'))
+    return redirect(url_for('admin_dashboard'))
 
 # === Decline Contract Termination ===
 @app.route('/admin/decline-contract-termination/<contract_id>', methods=['POST'])
@@ -134,13 +134,13 @@ def decline_contract_termination(contract_id):
     contract = Contract.find_by_id(db=db, contract_id=contract_id)
 
     # Set termination_requested to False
-    contract.set_attribute("termination_requested", False)
+    contract["termination_requested"] = False
 
     logger.info(f"Admin {g.user['username']} declined the termination of contract {contract_id}.")
 
     logger.debug(f"Contract with ID '{contract_id}' successfully declined.")
     flash("Contract termination successfully declined", "success")
-    return redirect(url_for('dashboard'))
+    return redirect(url_for('admin_dashboard'))
 
 
 # === Admin Before Request ===
