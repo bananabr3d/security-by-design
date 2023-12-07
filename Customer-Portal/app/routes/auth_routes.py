@@ -751,14 +751,13 @@ def expired_token_callback(jwt_header, jwt_payload):
     return resp
 
 # Error handler for invalid JWT
-@jwt.unauthorized_loader #TODO
+@jwt.unauthorized_loader
 def custom_unauthorized_response(callback):
     '''
     This function handles the custom_unauthorized_response.
 
     This function renders the Unauthorized.html template and flashes a error message.
     '''
-    #TODO Customize the error response -> render Unauthorized.html -> button available to redirect to login
     flash("You are not authorized to do this.")
     return render_template('unauthorized.html')
 
