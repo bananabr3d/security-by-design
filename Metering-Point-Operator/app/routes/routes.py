@@ -4,6 +4,7 @@
 # ===== Packages =====
 # Packages for Flask
 from flask import g, render_template, flash, request
+import re
 
 # Packages for JWT
 from flask_jwt_extended import jwt_required
@@ -15,6 +16,9 @@ from ..models.electricity_meter import em_exists, load_electricity_meter, Electr
 # Import app, logger and db object from app package
 from app import app, logger, db
 
+# ===== Regex =====
+em_id_reg = re.compile(r'[A-Za-z0-9]{24}')
+duration_reg = re.compile(r'[0-9]{1,3}')
 # ===== Routes =====
 
 # === Home / Index ===
@@ -30,11 +34,12 @@ def test():
 @app.route('/home', methods=['GET'])
 @app.route('/', methods=['GET'])
 @jwt_required() # optional=True allows to access the route without a valid JWT, but checks it if it is present
-def home():
+def dashboard():
     '''
     This function handles the home page of the web application.
     '''
     return render_template('index.html')
+
 
 @app.route('/maintenance', methods=['GET'])
 @jwt_required() # optional=True allows to access the route without a valid JWT, but checks it if it is present
@@ -56,6 +61,14 @@ def maintenance_post():
     # for em in emmm:
     #     logger.info("halli", em)
     # logger.info(request.form['electricity_meter_id'])
+    if not verify_em_id(request.form['electricity_meter_id']):
+        flash('Invalid electricity meter id.')
+        return render_template('maintenance.html', ems = db.electricity_meter.find({'em_maintain': True}))
+    if not verify_duration(request.form['duration_min']):
+        flash('Invalid duration.')
+        return render_template('maintenance.html', ems = db.electricity_meter.find({'em_maintain': True}))
+
+
     if em_exists(db, request.form['electricity_meter_id']):
         em = load_electricity_meter(db, request.form['electricity_meter_id'])
         #logger.info(em)
@@ -100,3 +113,23 @@ def impressum():
     This function handles the maintenance page of the web application.
     '''
     return render_template('impressum.html')
+
+
+def verify_em_id(em_id):
+    '''
+    This function verifies the input of the maintenance form.
+    '''
+    if re.fullmatch(em_id_reg, em_id):
+        logger.info(f"Input em_id:{em_id} verified.")
+        return True
+    else:
+        logger.info(f"Input em_id:{em_id}not verified.")
+        return False
+
+def verify_duration(duration):
+    if re.fullmatch(duration_reg, duration):
+        logger.info(f"Input duration: {duration} verified.")
+        return True
+    else:
+        logger.info(f"Input duration: {duration} not verified.")
+        return False
