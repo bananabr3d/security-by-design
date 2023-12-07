@@ -7,6 +7,7 @@ from app import app, logger
 
 # TODO remove
 from app import get_em_id, get_em_value, get_manufacturer, get_model, get_serial_number, get_firmware_version
+from flask import request, make_response
 
 # ===== Routes =====
 
@@ -16,12 +17,18 @@ def test():
 
     return f"EM_ID: {get_em_id()}, EM_Value: {get_em_value()}, Manufacturer: {get_manufacturer()}, Model: {get_model()}, Serial Number: {get_serial_number()}, Firmware Version: {get_firmware_version()}"
 
-@app.route('/maintenance', methods=['POST']) #TODO
+@app.route('/api/maintenance', methods=['POST']) #TODO
 def maintenance():
     '''
     This function handles the maintenance page of the web application.
     '''
-    return "test"
+    request.json.get('duration')
+    make_response('', 200)
+    # TODO
+    # mpo postet direkt zur ip
+    # hier sleep rein?
+    # müssen wir id übergeben oder sprechen wir die zähler über die ports an?
+
 
 
 @app.before_request

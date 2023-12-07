@@ -98,6 +98,10 @@
                     <details>
                         <summary> currently maintained</summary>
                         <p> hier müssen die ems rein </p>
+                        {% for em in ems %}
+                        <p> {{ em['_id']}} </p>
+                        {% endfor %}
+
                     </details>
                 </li>
 

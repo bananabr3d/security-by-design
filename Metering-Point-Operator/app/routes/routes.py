@@ -3,17 +3,17 @@
 
 # ===== Packages =====
 # Packages for Flask
-from flask import g, render_template, flash
+from flask import g, render_template, flash, request
 
 # Packages for JWT
 from flask_jwt_extended import jwt_required
 
-from requests import post, form
-from app import em_exists, load_eletricity_meter
+from requests import post
+from ..models.electricity_meter import em_exists, load_electricity_meter, ElectricityMeter
 
 
 # Import app, logger and db object from app package
-from app import app
+from app import app, logger, db
 
 # ===== Routes =====
 
@@ -42,7 +42,7 @@ def maintenance():
     '''
     This function handles the maintenance page of the web application.
     '''
-    return render_template('maintenance.html')
+    return render_template('maintenance.html', ems = db.electricity_meter.find({'em_maintain': True}))
 
 @app.route('/maintenance', methods=['POST'])
 @jwt_required() # optional=True allows to access the route without a valid JWT, but checks it if it is present
@@ -50,19 +50,31 @@ def maintenance_post():
     '''
     This function handles the maintenance page of the web application.
     '''
-    if em_exists(form['electricity_meter_id']):
-        em = load_eletricity_meter(form['electricity_meter_id'])
+    # logger.info("Hallo")
+    # emmm = db.electricity_meter.find({'em_maintain': True})
+    # logger.info("emmm", emmm)
+    # for em in emmm:
+    #     logger.info("halli", em)
+    # logger.info(request.form['electricity_meter_id'])
+    if em_exists(db, request.form['electricity_meter_id']):
+        em = load_electricity_meter(db, request.form['electricity_meter_id'])
+        #logger.info(em)
         if not em.get_em_maintain():
-            post('http://electricity-meter:5001/api/maintainance', json={'duration': form['duration']})
+            post('http://electricity-meter:5000/api/maintenance', json={'duration': request.form['duration_min']})
             em.toggle_maintain()
         else:
             flash('Electricity meter is already in maintenance mode.')
     else:
         flash('Electricity meter does not exist.')
+    #TODO request to em with ip and duration
 
+    list_em_id = list()
+    for em in db.electricity_meter.find({'em_maintain': True}):
+        logger.info('laaaaa', em)
+        list_em_id.append(em['_id'])
+    logger.info(list_em_id)
 
-
-    return render_template('maintenance.html')
+    return render_template('maintenance.html', ems= list_em_id)
 
 @app.route('/user_info/update', methods=['POST'])
 @jwt_required() # optional=True allows to access the route without a valid JWT, but checks it if it is present

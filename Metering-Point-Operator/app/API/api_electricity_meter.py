@@ -11,7 +11,7 @@ from bson.objectid import ObjectId
 
 from datetime import datetime
 
-from ..models.electricity_meter import ElectricityMeter
+from ..models.electricity_meter import ElectricityMeter, load_electricity_meter
 
 load_dotenv()
 
@@ -37,7 +37,10 @@ def post_counter_hearbeat(counter_id):
                     em_manufacturer=request.json.get('manufacturer'),
                     em_model=request.json.get('model'),
                     em_serial_number=request.json.get('serial_number'),
-                    em_firmware_version=request.json.get('firmware_version')
+                    em_firmware_version=request.json.get('firmware_version'),
+                    em_maintain=False,
+                    em_ip = request.remote_addr
+
                 )
                 em.save(db=db)
                 logger.info(f"Electricity meter with ID {db.electricity_meter.find_one({"_id" : ObjectId(counter_id)})} does not exist yet. Saving new one")
@@ -48,8 +51,10 @@ def post_counter_hearbeat(counter_id):
                 # Update the em_value
                 db.electricity_meter.update_one({"_id": ObjectId(counter_id)}, {"$set": {"em_value": request.json.get('em_value')}})
                 db.electricity_meter.update_one({"_id": ObjectId(counter_id)}, {"$set": {"em_last_update": datetime.fromtimestamp(datetime.now().timestamp())}})
-                # Update the em ip
-                db.electricity_meter.update_one({"_id": ObjectId(counter_id)}, {"$set": {"em_ip": request.remote_addr}})
+                em = load_electricity_meter(db=db, em_id=counter_id)
+                if em.get_em_maintain():
+                    logger.info(f"Electricity meter with ID {counter_id} is not in maintenance mode anymore. Not updating value.")
+                    em.toggle_maintain()
                 # Send 200 status code
             return make_response('', 200)
         else:
