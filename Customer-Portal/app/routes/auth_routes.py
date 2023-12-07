@@ -315,7 +315,10 @@ def user_info():
                             twofa_authenticated=g.twofa_authenticated,
                             security_questions=security_questions_show,
                             security_questions_user=security_questions_user,
-                            user_information_json=user_information_json)
+                            user_information_json=user_information_json,
+                            jwt_time=g.jwt_time,
+                            jwt_freshness=g.jwt_freshness,
+                            twofa_time=g.twofa_time)
 
 
 # === Reset password ===
@@ -327,6 +330,10 @@ def reset_password():
 
     Returns the reset_password.html template.
     '''
+
+    # If user is already logged in, redirect to dashboard
+    if g.jwt_authenticated == True:
+        raise ValidJWT
 
     security_questions_show = list()
     security_questions_show.append("Please select a security question...")
@@ -597,6 +604,9 @@ def before_request_auth():
     g.twofa_activated = False
     g.twofa_authenticated = False
     g.user = None
+    g.jwt_time = 0
+    g.jwt_freshness = 0
+    g.twofa_time = 0
 
     # Only log the request path if the request is not a static file
     if not request.path.startswith("/static"):
@@ -611,6 +621,31 @@ def before_request_auth():
                 g.jwt_authenticated = True
                 g.user = User.find_by_id(db=db, user_id=get_jwt_identity())
 
+                # === Calculate Rest times JWT and JWT Freshness ===
+                # Get the current time
+                date_now = datetime.strptime(str(datetime.now())[:19], '%Y-%m-%d %H:%M:%S')
+
+                # Get the JWT expiration time
+                jwt_expiration = get_jwt()["exp"]
+                # Calculate the JWT rest time
+                # Convert the JWT expiration time to datetime object
+                date_jwt = datetime.strptime(str(datetime.fromtimestamp(jwt_expiration))[:19], '%Y-%m-%d %H:%M:%S') 
+
+                # Calculate the JWT rest time in seconds (int)
+                g.jwt_time = int((date_jwt - date_now).total_seconds())
+
+
+                jwt_freshness_expiration = get_jwt()["fresh"]
+
+                if jwt_freshness_expiration >= 0:
+                    # Calculate the JWT freshness rest time
+                    # Convert the JWT freshness expiration time to datetime object
+                    date_jwt_freshness = datetime.strptime(str(datetime.fromtimestamp(jwt_freshness_expiration))[:19], '%Y-%m-%d %H:%M:%S')
+
+                    # Calculate the JWT freshness rest time in seconds (int)
+                    g.jwt_freshness = int((date_jwt_freshness - date_now).total_seconds())
+
+
                 twofa_activated = g.user['twofa_activated']
 
                 # Check if user has 2fa activated
@@ -621,14 +656,21 @@ def before_request_auth():
                     if "2fa_timestamp" in get_jwt():
                         # Check if user is 2fa authenticated
                         
-                        # Get the current time and the timestamp of when the user authenticated with 2fa
-                        date_now = datetime.strptime(str(datetime.now())[:19], '%Y-%m-%d %H:%M:%S')
+                        # Get the timestamp of when the user authenticated with 2fa
                         date_2fa = datetime.strptime(get_jwt()["2fa_timestamp"], '%a, %d %b %Y %H:%M:%S %Z')
 
                         # Check if the 2fa timestamp is older than time specified in environment variable
                         if (date_now - date_2fa) <= timedelta(minutes=int(os.getenv("2FA_EXPIRATION_MINUTES"))):
                             logger.debug("User is 2fa authenticated")
                             g.twofa_authenticated = True
+
+                            logger.info(date_2fa)
+                            logger.info(date_now)
+
+                            # Calculate the 2fa rest time in seconds (int)
+                            difference = (date_2fa + timedelta(minutes=int(os.getenv("2FA_EXPIRATION_MINUTES")))) - date_now
+                            g.twofa_time = int(difference.total_seconds())
+
                 
         except Exception as e:
             logger.error(f"Error in before_request_auth: {e}")

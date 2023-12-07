@@ -228,7 +228,10 @@ def contract(contract_id: str):
                            admin=g.admin,
                            contract_information_json=contract_information_json,
                            electricity_meter_value=electricity_meter_value,
-                           electricity_meter_last_update=electricity_meter_last_update)
+                           electricity_meter_last_update=electricity_meter_last_update,
+                           jwt_time=g.jwt_time,
+                           jwt_freshness=g.jwt_freshness,
+                           twofa_time=g.twofa_time)
 
 @app.route('/update-contract/<contract_id>', methods=['POST'])
 @jwt_required(fresh=True)

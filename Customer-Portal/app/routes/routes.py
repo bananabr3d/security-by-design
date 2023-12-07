@@ -53,7 +53,10 @@ def home():
     '''
     This function handles the home page of the web application.
     '''
-    return render_template('index.html', jwt_authenticated=g.jwt_authenticated, twofa_activated=g.twofa_activated, twofa_authenticated=g.twofa_authenticated, admin=g.admin)
+    return render_template('index.html', jwt_authenticated=g.jwt_authenticated, twofa_activated=g.twofa_activated, twofa_authenticated=g.twofa_authenticated, admin=g.admin,
+                            jwt_time=g.jwt_time,
+                            jwt_freshness=g.jwt_freshness,
+                            twofa_time=g.twofa_time)
 
 # === Dashboard ===
 @app.route('/dashboard', methods=['GET'])
@@ -107,7 +110,10 @@ def dashboard():
         transformed_contract_list.append(temp_contract)
     
     #render_template with contract objects for each contract
-    return render_template('dashboard.html', jwt_authenticated=g.jwt_authenticated, twofa_activated=g.twofa_activated, twofa_authenticated=g.twofa_authenticated, admin=g.admin, username=g.user['username'], contract_list=transformed_contract_list)
+    return render_template('dashboard.html', jwt_authenticated=g.jwt_authenticated, twofa_activated=g.twofa_activated, twofa_authenticated=g.twofa_authenticated, admin=g.admin, username=g.user['username'], contract_list=transformed_contract_list,
+                            jwt_time=g.jwt_time,
+                            jwt_freshness=g.jwt_freshness,
+                            twofa_time=g.twofa_time)
 
 # === About ===
 @app.route('/about', methods=['GET'])
@@ -115,7 +121,10 @@ def about():
     '''
     This function handles the about page of the web application.
     '''
-    return render_template('about.html', jwt_authenticated=g.jwt_authenticated, twofa_activated=g.twofa_activated, twofa_authenticated=g.twofa_authenticated, admin=g.admin)
+    return render_template('about.html', jwt_authenticated=g.jwt_authenticated, twofa_activated=g.twofa_activated, twofa_authenticated=g.twofa_authenticated, admin=g.admin,
+                            jwt_time=g.jwt_time,
+                            jwt_freshness=g.jwt_freshness,
+                            twofa_time=g.twofa_time)
 
 # === Impressum ===
 @app.route('/impressum', methods=['GET'])
@@ -123,7 +132,10 @@ def impressum():
     '''
     This function handles the impressum page of the web application.
     '''
-    return render_template('impressum.html', jwt_authenticated=g.jwt_authenticated, twofa_activated=g.twofa_activated, twofa_authenticated=g.twofa_authenticated, admin=g.admin)
+    return render_template('impressum.html', jwt_authenticated=g.jwt_authenticated, twofa_activated=g.twofa_activated, twofa_authenticated=g.twofa_authenticated, admin=g.admin,
+                            jwt_time=g.jwt_time,
+                            jwt_freshness=g.jwt_freshness,
+                            twofa_time=g.twofa_time)
 
 # === Add user info ===
 @app.route('/user-info/update', methods=['GET'])
@@ -162,7 +174,10 @@ def update_user_info():
     for key in remove_keys_address:
         user_information["address"].pop(key)
 
-    return render_template('update_user_info.html', jwt_authenticated=g.jwt_authenticated, twofa_activated=g.twofa_activated, twofa_authenticated=g.twofa_authenticated, admin=g.admin, not_provided_information=not_provided_information, user_information=user_information)
+    return render_template('update_user_info.html', jwt_authenticated=g.jwt_authenticated, twofa_activated=g.twofa_activated, twofa_authenticated=g.twofa_authenticated, admin=g.admin, not_provided_information=not_provided_information, user_information=user_information,
+                            jwt_time=g.jwt_time,
+                            jwt_freshness=g.jwt_freshness,
+                            twofa_time=g.twofa_time)
 
 @app.route('/user-info/update', methods=['POST'])
 @jwt_required()

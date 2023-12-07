@@ -207,3 +207,13 @@ body.hide-on-index main {
     background-color: #8E8DA8;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
+
+/* JWT and 2fa timer */
+.timer {
+    position: absolute;
+    top: 0;
+    right: 0;
+    margin: 5px;
+    z-index: 1000000;
+    font-size: 12px;
+}

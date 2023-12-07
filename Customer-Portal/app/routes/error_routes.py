@@ -81,7 +81,10 @@ def errorhandler_page_not_found(errorhandler_error):
     logger.debug(f"Error on Code 404: {errorhandler_error}")
 
     try: # last resort error handling
-        return render_template('PageNotFound.html', jwt_authenticated=g.jwt_authenticated, twofa_activated=g.twofa_activated, twofa_authenticated=g.twofa_authenticated), 404
+        return render_template('PageNotFound.html', jwt_authenticated=g.jwt_authenticated, twofa_activated=g.twofa_activated, twofa_authenticated=g.twofa_authenticated,
+                            jwt_time=g.jwt_time,
+                            jwt_freshness=g.jwt_freshness,
+                            twofa_time=g.twofa_time), 404
     except Exception as e:
         logger.error(f"Error: e")
         flash("Internal Server Error, redirect to home", "error")

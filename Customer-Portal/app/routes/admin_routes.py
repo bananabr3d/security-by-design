@@ -73,7 +73,10 @@ def admin_dashboard():
                            twofa_authenticated=g.twofa_authenticated, 
                            username=g.user['username'], 
                            admin=g.admin, usernames=usernames,
-                           contracts_termination_requested=contracts_termination_requested_data_list)
+                           contracts_termination_requested=contracts_termination_requested_data_list,
+                            jwt_time=g.jwt_time,
+                            jwt_freshness=g.jwt_freshness,
+                            twofa_time=g.twofa_time)
 
 # === Confirm Contract Termination ===
 @app.route('/admin/confirm-contract-termination/<contract_id>', methods=['POST'])

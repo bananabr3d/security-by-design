@@ -14,11 +14,67 @@
     <script type="text/javascript" src="../static/cookiebanner.js"></script>
     <script type="text/javascript" src="../static/password-strength-meter.js"></script>
     <script type="text/javascript" src="../static/passwords-match.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get the remaining time value passed from Flask
+            var remainingTime_jwt = {{ jwt_time }};
+            var remainingTime_jwt_freshness = {{ jwt_freshness }};
+            var remainingTime_twofa = {{ twofa_time }};
+            // Function to update the remaining time on the frontend
+            function updateRemainingTime() {
+                var minutes_jwt = Math.floor((remainingTime_jwt % 3600) / 60);
+                var seconds_jwt = remainingTime_jwt % 60;
+                var minutes_jwt_freshness = Math.floor((remainingTime_jwt_freshness % 3600) / 60);
+                var seconds_jwt_freshness = remainingTime_jwt_freshness % 60;
+                var minutes_twofa = Math.floor((remainingTime_twofa % 3600) / 60);
+                var seconds_twofa = remainingTime_twofa % 60;
+
+                // Format the time as MM:SS
+                var formattedTime_jwt = pad(minutes_jwt) + ":" + pad(seconds_jwt);
+                var formattedTime_jwt_freshness = pad(minutes_jwt_freshness) + ":" + pad(seconds_jwt_freshness);
+                var formattedTime_twofa = pad(minutes_twofa) + ":" + pad(seconds_twofa);
+
+                document.getElementById("jwt_time_left").textContent = formattedTime_jwt;
+                document.getElementById("jwt_freshness_left").textContent = formattedTime_jwt_freshness;
+                {% if twofa_time %}
+                document.getElementById("twofa_time_left").textContent = formattedTime_twofa;
+                {% endif %}
+                
+                // Reduce time if not 0
+                if (remainingTime_jwt > 0){remainingTime_jwt--;}
+                if (remainingTime_jwt_freshness > 0){remainingTime_jwt_freshness--;}
+                if (remainingTime_twofa > 0){remainingTime_twofa--;}
+
+                // Update every second
+                setTimeout(updateRemainingTime, 1000)
+            }
+
+            // Function to pad single digits with leading zeros (e.g., 1 -> 01)
+            function pad(number) {
+                return (number < 10 ? "0" : "") + number;
+            }
+
+            // Initial call to start updating the remaining time
+            updateRemainingTime();
+        });
+    </script>
 </head>
 <body {% block body_attributes %}class="default-body"{% endblock %}>
     <header class="mb-4">
         <h1>{% block header_title required %} {% endblock %}</h1>
         <canvas></canvas>
+        <!-- Show JWT, freshness and 2fa rest of the time -->
+        <div class="timer">
+            {% if jwt_time %}
+            <p>JWT: <span id="jwt_time_left"></span> time left</p>
+            {% endif %}
+            {% if jwt_freshness %}
+            <p>JWT: <span id="jwt_freshness_left"></span> time fresh</p>
+            {% endif %}
+            {% if twofa_time %}
+            <p>2FA: <span id="twofa_time_left"></span> time left</p>
+            {% endif %}
+        </div>
     </header>
     <nav class="navbar navbar-expand-lg navbar-light bg-light static justify-content-center">
         <div class="container">

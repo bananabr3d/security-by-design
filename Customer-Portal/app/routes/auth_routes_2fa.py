@@ -124,7 +124,10 @@ def register_2fa():
     # Encode the image as a base64 data URI
     img_qrcode_data = b64encode(img_bytes_io.read()).decode()
 
-    return render_template('register_2fa.html', secret=secret, img_qrcode_data=img_qrcode_data, jwt_authenticated=g.jwt_authenticated, twofa_activated=g.twofa_activated)
+    return render_template('register_2fa.html', secret=secret, 
+                           img_qrcode_data=img_qrcode_data, jwt_authenticated=g.jwt_authenticated, 
+                           twofa_activated=g.twofa_activated, jwt_time=g.jwt_time,
+                            jwt_freshness=g.jwt_freshness, twofa_time=g.twofa_time)
 
 @app.route('/register/2fa', methods=['POST'])
 @jwt_required()
@@ -200,7 +203,10 @@ def login_2fa():
         raise Valid2FA
 
 
-    return render_template('login_2fa.html', jwt_authenticated=g.jwt_authenticated, twofa_activated=g.twofa_activated)
+    return render_template('login_2fa.html', jwt_authenticated=g.jwt_authenticated, twofa_activated=g.twofa_activated,
+                            jwt_time=g.jwt_time,
+                            jwt_freshness=g.jwt_freshness,
+                            twofa_time=g.twofa_time)
     
 @app.route('/login/2fa', methods=['POST'])
 @jwt_required()
