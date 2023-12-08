@@ -200,22 +200,22 @@ def contract(contract_id: str):
     h.update(os.getenv("SECRET_CP_MPO").encode("utf-8"))
 
     # Send request to mpo
-    request = get(f"http://metering-point-operator:5000/api/getcounter/{em_id}", headers={"Authorization":h.hexdigest()})
+    response = get(f"http://metering-point-operator:5000/api/getcounter/{em_id}", headers={"Authorization":h.hexdigest()})
 
     electricity_meter_value = None
 
     # Check status code of mpo response
-    if request.status_code == 200:
+    if response.status_code == 200:
         logger.debug(f"Electricity meter with ID '{em_id}' successfully requested.")
-        electricity_meter_value = request.json()["em_value"]
-        electricity_meter_last_update = request.json()["em_last_update"]
+        electricity_meter_value = response.json()["em_value"]
+        electricity_meter_last_update = response.json()["em_last_update"]
 
-    elif request.status_code == 401:
+    elif response.status_code == 401:
         logger.error(f"Electricity meter with ID '{em_id}' could not be requested. Authentication failed.")
         flash("Electricity meter could not be requested. Please contact an Administrator")
         return redirect(url_for('dashboard'))
     
-    elif request.status_code == 500:
+    elif response.status_code == 500:
         logger.error(f"Electricity meter with ID '{em_id}' could not be requested. Server Error from Metering Point Operator.")
         flash("Electricity meter could not be requested. Please contact an Administrator")
         return redirect(url_for('dashboard'))
