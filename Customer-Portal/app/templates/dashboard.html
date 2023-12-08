@@ -9,10 +9,11 @@ Dashboard
 
 {% block content %}
 <section>
-  <h2>Hello, {{ username }}!</h2>
-  <h3>Contracts</h3>
+  <h1>Hello, {{ username }}!</h1>
+  <h2>Contracts</h2>
   <div class="contract-list">
     {% for contract in contract_list %}
+    <hr class="dashed">
       <div class="contract">
         <h5>Contract ID: <a href="/dashboard/{{ contract._id }}">{{ contract._id }}</a></h3>
         <h6>Electricity Meter ID: {{ contract.electricity_meter_id }}</h6>
@@ -21,7 +22,9 @@ Dashboard
       </div>
     {% endfor %}
   </div>
+  <hr>
   <div>
+    <h2>Add a contract</h2>
     <!-- Add a contract with em-id -->
     <form method="post" action="/add-contract" onsubmit="return confirm('Are you sure you want to submit this form?');">
       <label for="">Electricity Meter ID</label>

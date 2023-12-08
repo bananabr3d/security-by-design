@@ -9,13 +9,14 @@ Admin Panel
 
 {% block content %}
 <section>
-    <h2>Logged in as {{ username }}</h2>
+    <h1>Logged in as '{{ username }}'</h1>
+    <hr>
     <br>
-    <h2>User Management</h2>
+    <h1>User Management</h1>
     <p>Manage users and their activities.</p>
     <div class="user-management">
         <div class="user-management__users">
-            <h3>Users</h3>
+            <h2>Users</h2>
             <p>User count: {{ user_count }}</p>
             <br>
             <table>
@@ -30,18 +31,22 @@ Admin Panel
                     <tr>
                         <td>{{ username }}</td>
                         <td> <!-- TODO + Only show if user inactive(?) -->
+                            {% if inactive_users %}
                             <form action="/admin/active-user" method="POST" onsubmit="return confirm('Are you sure you want to activate this user?');">
                                 <input type="hidden" name="username" value="{{ username }}">
                                 <button type="submit" name="action" value="activate">Activate</button>
                             </form>
+                            {% endif %}
                         </td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
+        {% if activities %}
+        <hr class="dashed">
         <div class="user-management__activities"> <!-- TODO -->
-            <h3>Activities</h3>
+            <h2>Activities</h2>
             <br>
             <table>
                 <thead>
@@ -62,8 +67,11 @@ Admin Panel
                 </tbody>
             </table>
         </div>
+        {% endif %}
+        {% if blocked_ips %}
+        <hr class="dashed">
         <div class="user-management__blocked_ips"> <!-- TODO -->
-            <h3>Blocked IPs</h3>
+            <h2>Blocked IPs</h2>
             <br>
             <table>
                 <thead>
@@ -86,13 +94,16 @@ Admin Panel
                     {% endfor %}
                 </tbody>
             </table>
+        </div>
+        {% endif %}
     </div>
+    <hr>
     <div class="contract-management">
-        <h2>Contract Management</h2>
+        <h1>Contract Management</h1>
         <p>Manage customer contracts.</p>
         {% if contracts_termination_requested|length > 0 %}
         <div class="confirm-contract-termination">
-            <h3>Confirm contract termination</h3>
+            <h2>Confirm contract termination</h2>
             <p>List of customer contracts that are pending earlier termination.</p>
             <table>
                 <thead>

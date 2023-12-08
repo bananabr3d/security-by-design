@@ -139,33 +139,6 @@
             </div>
         </div>
     </nav>
-    <!--
-    <nav>
-        <ul>
-            <li><a href="/">Start</a></li>
-            {% if not jwt_authenticated %}
-                <li><a href="/register">Register</a></li>
-                <li><a href="/login">Login</a></li>
-            {% elif jwt_authenticated and not twofa_authenticated %}
-                {% if not twofa_activated %}
-                    <li><a href="/register/2fa">Register 2FA</a></li>
-                {% else %}
-                    <li><a href="/login/2fa">Login 2FA</a></li>
-                {% endif %}
-            {% elif jwt_authenticated and twofa_authenticated %}
-                {% if admin %}
-                    <li><a href="/admin">Admin Panel</a></li>
-                {% endif %}
-                <li><a href="/dashboard">Dashboard</a></li>
-            {% endif %}
-
-            {% if jwt_authenticated %}
-                <li><a href="/user-info">User Information</a></li>
-                <li><a href="/logout">Logout</a></li>
-            {% endif %}
-        </ul>
-    </nav>
-    //-->
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
             <ul class=flashes>

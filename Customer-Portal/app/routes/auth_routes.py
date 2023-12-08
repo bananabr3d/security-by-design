@@ -664,9 +664,6 @@ def before_request_auth():
                             logger.debug("User is 2fa authenticated")
                             g.twofa_authenticated = True
 
-                            logger.info(date_2fa)
-                            logger.info(date_now)
-
                             # Calculate the 2fa rest time in seconds (int)
                             difference = (date_2fa + timedelta(minutes=int(os.getenv("2FA_EXPIRATION_MINUTES")))) - date_now
                             g.twofa_time = int(difference.total_seconds())
