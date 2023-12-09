@@ -176,15 +176,20 @@ def contract(contract_id: str):
     # Load contract
     contract = Contract.find_by_id(db=db, contract_id=contract_id)
 
-    #Check if contract is still active
-    if contract["enddate"] < datetime.now().strftime("%Y-%m-%d"):
-        logger.warning(f"Contract with ID: '{contract_id}' is not active.")
-        flash("Contract is not active")
-        return redirect(url_for('dashboard'))
-
     # Build contract_show dict
     contract_show = contract.get_contract_data()
-    contract_show["active"] = True # As the contract is still active, see if statement before
+    contract_show["active"] = "Yes" # As the contract is still active, see if statement before
+
+    contract["enddate"] = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
+    # Check if contract is still active
+    if contract["enddate"] < datetime.now().strftime("%Y-%m-%d"):
+        logger.warning(f"Contract with ID: '{contract_id}' is not active anymore.")
+        contract_show["active"] = "No"
+        if contract["enddate"] < (datetime.now() - timedelta(days=90)).strftime("%Y-%m-%d"):
+            flash("The requested contract is already expired.")
+            return redirect(url_for('dashboard'))
+        else:
+            flash(f"Contract is not active anymore. You can renew your current contract or it will expire in {90 - (datetime.now() - datetime.strptime(contract['enddate'], '%Y-%m-%d')).days} days.")
 
     try:
         # Get contract_information_json from contract
