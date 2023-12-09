@@ -62,7 +62,7 @@ def verify2fa(user: User, otp: str) -> bool:
     secret = user['twofa_secret']
 
     if secret == None:
-        flash('You have no 2-Factor-Authentification activated!',  'failed')
+        flash('You have no 2-Factor-Authentification activated!', 'failed')
         return False
     else:
         totp = pyotp.TOTP(secret)
@@ -152,7 +152,7 @@ def register_2fa_post():
 
     # Validate otp format
     if not validate_6digits(text=request.form['otp']):
-        flash("The OTP code has a invalid format. The OTP code has to contain 6 digits.")
+        flash("The OTP code has a invalid format. The OTP code has to contain 6 digits.", "failed")
         return redirect(url_for('register_2fa'))
 
     # Verify otp
@@ -232,7 +232,7 @@ def login_2fa_post():
     # Validate otp
     # Validate otp format
     if not validate_6digits(text=request.form['otp']):
-        flash("The OTP code has a invalid format. The OTP code has to contain 6 digits.")
+        flash("The OTP code has a invalid format. The OTP code has to contain 6 digits.", "failed")
         return redirect(url_for('login_2fa'))
     
     # Set otp from form
@@ -278,7 +278,7 @@ def reset_2fa():
         # = Input Validation =
         # Backup Code
         if not validate_6digits(request.form['backup_code']):
-            flash("Invalid Backup Code", "error") # Dont send another flash message as if the backup code itself is invalid. So the attacker doesnt know if it has the wrong format or is invalid itself.
+            flash("Invalid Backup Code", "failed") # Dont send another flash message as if the backup code itself is invalid. So the attacker doesnt know if it has the wrong format or is invalid itself.
             return redirect(url_for('dashboard'))
 
         # Check if user has backup codes

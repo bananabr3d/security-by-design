@@ -755,7 +755,7 @@ def custom_unauthorized_response(callback):
 
     This function renders the Unauthorized.html template and flashes a error message.
     '''
-    flash("You are not authorized to do this.")
+    flash("You are not authorized to do this.", "error")
     return render_template('unauthorized.html')
 
 # Error handler for fresh JWT needed

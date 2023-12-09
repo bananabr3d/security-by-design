@@ -43,7 +43,7 @@ def add_contract():
     for attribute in ["name", "surname", "phone_number", "email", "date_of_birth"]:
         if g.user[attribute] == None or g.user[attribute] == "None":
             logger.warning(f"Contract Denied. User with ID: '{g.user.get_id()}' has no '{attribute}' provided.")
-            flash("Please provide your personal information first")
+            flash("Please provide your personal information first", "warning")
             return redirect(url_for('update_user_info'))
         
     # Check if user has his address provided
@@ -52,7 +52,7 @@ def add_contract():
     for attribute in ["plz", "street", "street_house_number", "city", "country"]:
         if address_dict[attribute] == None:
             logger.warning(f"Contract Denied. User with ID: '{g.user.get_id()}' has no '{attribute}' provided.")
-            flash("Please provide your address first")
+            flash("Please provide your address first", "warning")
             return redirect(url_for('update_user_info'))
 
 
@@ -62,38 +62,38 @@ def add_contract():
     # Check with regex if all attributes are in the correct format
     if not fullmatch( address_plz_regex , request.form['address_plz']):
         logger.warning(f"Contract Denied PLZ in wrong format")
-        flash("Your PLZ is in an wrong format")
+        flash("Your PLZ is in an wrong format", "failed")
         return redirect(url_for('dashboard'))
     
     elif not fullmatch( address_street_city_country_regex, request.form['address_street']):
         logger.warning(f"Contract Denied street in wrong format")
-        flash("Your Street is in an wrong format")
+        flash("Your Street is in an wrong format", "failed")
         return redirect(url_for('dashboard'))
     
     elif not fullmatch( address_street_city_country_regex, request.form['address_city']):
         logger.warning(f"Contract Denied City in wrong format")
-        flash("Your City is in an wrong format")
+        flash("Your City is in an wrong format", "failed")
         return redirect(url_for('dashboard'))
     
     elif not fullmatch( address_street_city_country_regex, request.form['address_country'],):
         logger.warning(f"Contract Denied Country in wrong format")
-        flash("Your Country is in an wrong format")
+        flash("Your Country is in an wrong format", "failed")
         return redirect(url_for('dashboard'))
     
     elif not fullmatch( address_street_house_number_regex, request.form['address_street_number']):
         logger.warning(f"Contract Denied Street Number in wrong format")
-        flash("Your Street Number is in an wrong format")
+        flash("Your Street Number is in an wrong format", "failed")
         return redirect(url_for('dashboard'))
     
     elif not validate_text(request.form['notes']):
         logger.warning(f"Contract Denied Notes in wrong format")
-        flash("Your Notes are in an wrong format")
+        flash("Your Notes are in an wrong format", "failed")
         return redirect(url_for('dashboard'))
     
         # Match ObjectID String with RegEx (A-Z, a-z, 0-9)
     elif not fullmatch(r'[a-zA-Z0-9]{24}', electricity_meter_id):
         logger.warning(f"Contract Denied Electricity Meter ID in wrong format")
-        flash("Your Electricity Meter ID is in an wrong format")
+        flash("Your Electricity Meter ID is in an wrong format", "failed")
         return redirect(url_for('dashboard'))
     
     # Check electricity_meter_id with metering point operator if it exists and is free
@@ -106,30 +106,28 @@ def add_contract():
 
     if response.status_code == 401:
         logger.error(f"Contract with electricity_meter_id: '{electricity_meter_id}'. Authentication failed.")
-        flash("Contract could not be created. Please contact an Administrator")
+        flash("Contract could not be created. Please contact an Administrator", "error")
         return redirect(url_for('dashboard'))
     
     elif response.status_code == 301:
         logger.warning(f"Contract with electricity_meter_id: '{electricity_meter_id}' is checked out already.")
-        flash(f"The electricity meter with ID '{electricity_meter_id}' is blocked")
+        flash(f"The electricity meter with ID '{electricity_meter_id}' is blocked", "failed")
         return redirect(url_for('dashboard'))
     
     elif response.status_code == 200:
         logger.debug("Electricitymeter is not taken")
         
         blocked = False
-        #TODO hier drin sind die eem daten
-        # diese dann in dem contract speichern
 
     elif response.status_code == 500:
         logger.warning(f"Contract with electricity_meter_id: '{electricity_meter_id}' could not be created. Server Error from Metering Point Operator.")
-        flash("Contract could not be created. Please contact an Administrator")
+        flash("Contract could not be created. Please contact an Administrator", "error")
         return redirect(url_for('dashboard'))
 
     # Check if contract with electricity_meter_id already exists
     if Contract.find_by_electricity_meter_id(db=db, electricity_meter_id=electricity_meter_id) != None:
         logger.warning(f"Contract with electricity_meter_id: '{electricity_meter_id}' already exists.")
-        flash("A contract with the provided Electricity Meter ID already exists")
+        flash("A contract with the provided Electricity Meter ID already exists", "failed")
         return redirect(url_for('dashboard'))
     
     elif blocked == False:
@@ -153,7 +151,7 @@ def add_contract():
     
     else:
         logger.warning(f"Contract with electricity_meter_id: '{electricity_meter_id}' could not be created.")
-        flash("Contract could not be created. Please contact an Administrator")
+        flash("Contract could not be created. Please contact an Administrator", "error")
         return redirect(url_for('dashboard'))
 
 @app.route('/dashboard/<contract_id>', methods=['GET'])
@@ -170,7 +168,7 @@ def contract(contract_id: str):
 
     if contract_id not in contract_list:
         logger.warning(f"Contract with ID: '{contract_id}' does not exist for user with ID: '{g.user.get_id()}'.")
-        flash("Contract does not exist")
+        flash("Contract does not exist", "failed")
         return redirect(url_for('dashboard'))
     
     # Load contract
@@ -186,10 +184,10 @@ def contract(contract_id: str):
         logger.warning(f"Contract with ID: '{contract_id}' is not active anymore.")
         contract_show["active"] = "No"
         if contract["enddate"] < (datetime.now() - timedelta(days=90)).strftime("%Y-%m-%d"):
-            flash("The requested contract is already expired.")
+            flash("The requested contract is already expired.", "warning")
             return redirect(url_for('dashboard'))
         else:
-            flash(f"Contract is not active anymore. You can renew your current contract or it will expire in {90 - (datetime.now() - datetime.strptime(contract['enddate'], '%Y-%m-%d')).days} days.")
+            flash(f"Contract is not active anymore. You can renew your current contract or it will expire in {90 - (datetime.now() - datetime.strptime(contract['enddate'], '%Y-%m-%d')).days} days.", "warning")
 
     try:
         # Get contract_information_json from contract
@@ -217,12 +215,12 @@ def contract(contract_id: str):
 
     elif response.status_code == 401:
         logger.error(f"Electricity meter with ID '{em_id}' could not be requested. Authentication failed.")
-        flash("Electricity meter could not be requested. Please contact an Administrator")
+        flash("Electricity meter could not be requested. Please contact an Administrator", "error")
         return redirect(url_for('dashboard'))
     
     elif response.status_code == 500:
         logger.error(f"Electricity meter with ID '{em_id}' could not be requested. Server Error from Metering Point Operator.")
-        flash("Electricity meter could not be requested. Please contact an Administrator")
+        flash("Electricity meter could not be requested. Please contact an Administrator", "error")
         return redirect(url_for('dashboard'))
 
     return render_template('contract.html', 
@@ -257,7 +255,7 @@ def update_contract(contract_id: str):
 
     if contract_id not in contract_list:
         logger.warning(f"Contract with ID: '{contract_id}' does not exist for user with ID: '{g.user.get_id()}'.")
-        flash("Contract does not exist")
+        flash("Contract does not exist", "failed")
         return redirect(url_for('dashboard'))
     
     # Load contract
@@ -266,24 +264,24 @@ def update_contract(contract_id: str):
     #Check if contract is still active
     if contract["enddate"] < datetime.now().strftime("%Y-%m-%d"):
         logger.warning(f"Contract with ID: '{contract_id}' is not active.")
-        flash("Contract is not active")
+        flash("Contract is not active", "failed")
         return redirect(url_for('dashboard'))
         
     # Check if "notes" or "auto_renew" in request.form
     if "notes" not in request.form and "auto_renew" not in request.form:
         logger.warning(f"Attribute is not allowed to be updated.")
-        flash("Attribute is not allowed to be updated")
+        flash("Attribute is not allowed to be updated", "failed")
         return redirect(url_for('contract', contract_id=contract_id))
     
     # Check regex for "notes" and format of "auto_renew"
     if "auto_renew" in request.form and request.form["auto_renew"] not in ["true", "false"]:
         logger.warning(f"Auto renew in wrong format.")
-        flash("Auto renew in wrong format")
+        flash("Auto renew in wrong format", "failed")
         return redirect(url_for('contract', contract_id=contract_id))
 
     if "notes" in request.form and not validate_text(request.form['notes']):
         logger.warning(f"Notes in wrong format.")
-        flash("Notes in wrong format")
+        flash("Notes in wrong format", "failed")
         return redirect(url_for('contract', contract_id=contract_id))
         
     if "notes" in request.form:
@@ -318,7 +316,7 @@ def request_termination_contract(contract_id: str):
 
     if contract_id not in contract_list:
         logger.warning(f"Contract with ID: '{contract_id}' does not exist for user with ID: '{g.user.get_id()}'.")
-        flash("Contract does not exist")
+        flash("Contract does not exist", "failed")
         return redirect(url_for('dashboard'))
     
     # Load contract
@@ -327,14 +325,14 @@ def request_termination_contract(contract_id: str):
     #Check if contract is still active
     if contract["enddate"] < datetime.now().strftime("%Y-%m-%d"):
         logger.warning(f"Contract with ID: '{contract_id}' is not active.")
-        flash("Contract is not active")
+        flash("Contract is not active", "failed")
         return redirect(url_for('dashboard'))
 
     
     # Check if termination is already requested
     if contract["termination_requested"] == "True" or contract["termination_requested"] == True or contract["termination_requested"] == "true":
         logger.warning(f"Contract with ID: '{contract_id}' already requested termination.")
-        flash("Contract already requested termination")
+        flash("Contract already requested termination", "failed")
         return redirect(url_for('dashboard'))
     
     # Update contract
@@ -363,7 +361,7 @@ def export_contract(contract_id: str):
 
     if contract_id not in contract_list:
         logger.warning(f"Contract with ID: '{contract_id}' does not exist for user with ID: '{g.user.get_id()}'.")
-        flash("Contract does not exist")
+        flash("Contract does not exist", "failed")
         return redirect(url_for('dashboard'))
     
     # Load contract
@@ -372,7 +370,7 @@ def export_contract(contract_id: str):
     #Check if contract is still active
     if contract["enddate"] < datetime.now().strftime("%Y-%m-%d"):
         logger.warning(f"Contract with ID: '{contract_id}' is not active.")
-        flash("Contract is not active")
+        flash("Contract is not active", "failed")
         return redirect(url_for('dashboard'))
 
     # Get contract data

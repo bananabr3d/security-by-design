@@ -124,6 +124,48 @@ hr.dashed {
     border-top: 1px dashed black;
   }
 
+/* Flash messages */
+.flash-messages {
+    position: absolute;
+    z-index: 1000000;
+    top: 20%;
+    list-style: none;
+    padding: 0;
+}
+
+.flash-message {
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    width: 300px;
+}
+
+.success {
+    background-color: #4CAF50;
+    color: white;
+}
+
+.failed {
+    background-color: #F44336;
+    color: white;
+}
+
+.warning {
+    background-color: yellow;
+    color: white;
+}
+
+.error {
+    background-color: #FF9800;
+    color: white;
+}
+
+.backup_codes {
+    background-color: #2196F3;
+    color: white;
+}
+
+
 /* Index Page */
 
 .index_image {

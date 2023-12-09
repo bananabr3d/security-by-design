@@ -129,7 +129,7 @@ def confirm_contract_termination(contract_id):
     
     elif request.status_code == 301:
         logger.error(f"Contract with electricity_meter_id: '{electricity_meter_id}'. Electricity meter is not free.")
-        flash("Contract termination could not be denied. Electricity meter is already free", "error")
+        flash("Contract termination could not be denied. Electricity meter is already free", "failed")
         return redirect(url_for('admin_dashboard'))
 
     elif request.status_code == 401:

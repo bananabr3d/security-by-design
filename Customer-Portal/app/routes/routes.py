@@ -100,11 +100,11 @@ def dashboard():
 
         elif request.status_code == 401:
             logger.error(f"Electricity meter with ID '{em_id}' could not be requested. Authentication failed.")
-            flash("Electricity meter could not be requested. Please contact an Administrator")
+            flash("Electricity meter could not be requested. Please contact an Administrator", "error")
         
         elif request.status_code == 500:
             logger.error(f"Electricity meter with ID '{em_id}' could not be requested. Server Error from Metering Point Operator.")
-            flash("Electricity meter could not be requested. Please contact an Administrator")
+            flash("Electricity meter could not be requested. Please contact an Administrator", "error")
         
         temp_contract = {"_id": contract.get_id(), "electricity_meter_id": contract["electricity_meter_id"], "electricity_meter_value": electricity_meter_value, "electricity_meter_last_update": electricity_meter_last_update}
         transformed_contract_list.append(temp_contract)
