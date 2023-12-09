@@ -60,6 +60,9 @@ class ElectricityMeter:
         except:
             DBConnectionError()
 
+    def get_em_ip(self):
+        return self.em_ip
+
     def get_em_maintain(self):
         return self.em_maintain
 

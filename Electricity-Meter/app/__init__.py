@@ -21,6 +21,10 @@ from random import randint
 from bson.objectid import ObjectId
 from hashlib import sha256
 
+# ===== Global Variables =====
+
+sleep = False
+
 # ===== Program configurations =====
 
 # === Logger ===
@@ -124,6 +128,10 @@ def set_em_value(value:int) -> None:
 logger.info(f"ID: {get_em_id()}")
 logger.debug(f"Initialisation Value: {get_em_value()}")
 
+
+
+
+
 def heartbeat():
     '''
     This function sends a heartbeat to the metering-point-operator every 10 seconds.
@@ -142,12 +150,16 @@ def heartbeat():
     h = sha256()
     h.update(os.getenv("SECRET_MPO_EM").encode("utf-8"))
     # Send the heartbeat to the metering-point-operator
-    post(f"http://metering-point-operator:5000/api/heartbeat/{get_em_id()}", json={"em_value": get_em_value(),
-                                                                                   "manufacturer": get_manufacturer(), 
-                                                                                   "model": get_model(), 
-                                                                                   "serial_number": get_serial_number(),
-                                                                                   "firmware_version": get_firmware_version()}, 
-         headers={"Authorization": h.hexdigest()})
+    global sleep
+    if not sleep:
+        post(f"http://metering-point-operator:5000/api/heartbeat/{get_em_id()}", json={"em_value": get_em_value(),
+                                                                                       "manufacturer": get_manufacturer(),
+                                                                                       "model": get_model(),
+                                                                                       "serial_number": get_serial_number(),
+                                                                                       "firmware_version": get_firmware_version()},
+             headers={"Authorization": h.hexdigest()})
+    else:
+        logger.info("electricity_meter is sleeping...")
 
     Timer(10, heartbeat).start() # Change time accordingly
 

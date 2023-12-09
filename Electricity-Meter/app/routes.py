@@ -3,7 +3,7 @@
 
 # ===== Packages =====
 # Import app from app package
-from app import app, logger
+from app import app, logger, toggle_sleep, maintanance_mode
 
 # TODO remove
 from app import get_em_id, get_em_value, get_manufacturer, get_model, get_serial_number, get_firmware_version
@@ -28,7 +28,7 @@ def maintenance():
     # mpo postet direkt zur ip
     # hier sleep rein?
     # müssen wir id übergeben oder sprechen wir die zähler über die ports an?
-
+    return make_response('', 200)
 
 
 @app.before_request
