@@ -39,10 +39,6 @@ def home():
     This function handles the home page of the web application.
     '''
 
-    list_em_id = list()
-    for em in db.electricity_meter.find({}):
-            logger.info(f'laaaaa {em['_id']}')
-            list_em_id.append([em['_id'], em['em_value'], em['em_status'],  em['em_last_update'], em['em_manufacturer'], em['em_model'], em['em_serial_number'], em['em_firmware_version'], em['em_maintain'], em['em_ip']])
 
     return render_template('index.html')
 
@@ -127,7 +123,14 @@ def overview():
     '''
     This function handles the maintenance page of the web application.
     '''
-    return render_template('overview.html')
+
+    list_em_id = list()
+    for em in db.electricity_meter.find({}):
+        logger.info(f'laaaaa {em['_id'], em['em_value']}')
+        em = load_electricity_meter(db, em['_id'])
+        list_em_id.append(em)
+
+    return render_template('overview.html', ems = list_em_id)
 
 
 @app.route('/impressum', methods=['GET'])

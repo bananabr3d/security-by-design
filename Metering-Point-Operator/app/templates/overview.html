@@ -135,6 +135,40 @@
                     <body>
                     <h1>Overview</h1>
                     </body>
+
+                    <table>
+                      <tr>
+                        <th>EM ID</th>
+                          <th>Value</th>
+                          <th>Available</th>
+                        <th>Maintained</th>
+                        <th>Manufacturer</th>
+                          <th>Model</th>
+                        <th>Serialnumber</th>
+                        <th> Firmware Version</th>
+                      </tr>
+
+                        {% for em in ems %}
+
+                        <div>
+                          <tr>
+
+                         <td>{{ em.em_id }}</td>
+                        <td>{{em.em_value}}</td>
+                        <td>{{em.em_status}}</td>
+                          <td>{{em.em_maintain}}</td>
+                        <td>{{em.em_manufacturer}}</td>
+                        <td>{{em.em_model}}</td>
+                          <td>{{em.em_serial_number}}</td>
+                        <td>{{em.em_firmware_version}}</td>
+                       </tr>
+                            
+                        </div>
+                        {% endfor %}
+                    </table>
+
+
+
                 </section>
             </div>
 
