@@ -21,7 +21,7 @@
 #             db.users.update_one({"username": "pytest"}, {"$set": {"twofa_activated": False}})
 #
 #     def test_maintain(self):
-#         response = self.client.get('/maintain')
+#         response = self.client.get('/maintenance')
 #         assert response.status_code == 200
 #
 #
@@ -31,7 +31,7 @@
 #         em_id = db.electricity_meter.find_one({})["_id"]
 #         request_data = {
 #             "electricity_meter_id": em_id,
-#             "duration_min": 2,
+#             "duration_min": 20,
 #
 #         }
 #
