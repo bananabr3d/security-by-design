@@ -103,7 +103,15 @@
         }
     </script>
 
-
+       {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            <ul class=flashes>
+                {% for category, message in messages %}
+                <li class="{{ category }}">{{ message }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+            {% endwith %}
     <!-- Tabelle -->
 
     <div class="row">
@@ -135,6 +143,7 @@
                             (a-z, A-Z), one special character (!#$%&?") and a length of 12 - 128</p>
                         <div>
                             <button type="submit">Register</button>
+                        </div>
                     </form>
                     <p class="tiny-gray-text">Already have an account? <a href="/login">Login</a></p>
                 </section>
