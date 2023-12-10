@@ -22,9 +22,6 @@ from bson.objectid import ObjectId
 from hashlib import sha256
 
 # ===== Global Variables =====
-
-sleep = False
-
 # ===== Program configurations =====
 
 # === Logger ===
@@ -128,7 +125,14 @@ def set_em_value(value:int) -> None:
 logger.info(f"ID: {get_em_id()}")
 logger.debug(f"Initialisation Value: {get_em_value()}")
 
-
+def toggle_sleep(duration=0):
+    global maintenance_mode
+    if not maintenance_mode:
+        maintenance_mode = True
+        logger.info(f"sending to sleep with duration {duration}")
+        Timer(int(duration) * 60, toggle_sleep).start()
+    else:
+        maintenance_mode = False
 
 
 
@@ -139,6 +143,7 @@ def heartbeat():
     # Check if maintenance mode is active, if so, check again in 10 seconds
     if maintenance_mode:
         Timer(10, heartbeat).start()
+        logger.info("Electricity meter is in maintenance mode. Not sending heartbeat.")
         return
     
     # Count up the em_value
@@ -150,16 +155,15 @@ def heartbeat():
     h = sha256()
     h.update(os.getenv("SECRET_MPO_EM").encode("utf-8"))
     # Send the heartbeat to the metering-point-operator
-    global sleep
-    if not sleep:
-        post(f"http://metering-point-operator:5000/api/heartbeat/{get_em_id()}", json={"em_value": get_em_value(),
+
+    post(f"http://metering-point-operator:5000/api/heartbeat/{get_em_id()}", json={"em_value": get_em_value(),
                                                                                        "manufacturer": get_manufacturer(),
                                                                                        "model": get_model(),
                                                                                        "serial_number": get_serial_number(),
                                                                                        "firmware_version": get_firmware_version()},
              headers={"Authorization": h.hexdigest()})
-    else:
-        logger.info("electricity_meter is sleeping...")
+
+
 
     Timer(10, heartbeat).start() # Change time accordingly
 

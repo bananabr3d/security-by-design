@@ -3,7 +3,7 @@
 
 # ===== Packages =====
 # Packages for Flask
-from flask import g, render_template, flash, request
+from flask import g, render_template, flash, request, redirect, url_for
 import re
 
 # Packages for JWT
@@ -38,12 +38,19 @@ def home():
     '''
     This function handles the home page of the web application.
     '''
+
+    list_em_id = list()
+    for em in db.electricity_meter.find({}):
+            logger.info(f'laaaaa {em['_id']}')
+            list_em_id.append([em['_id'], em['em_value'], em['em_status'],  em['em_last_update'], em['em_manufacturer'], em['em_model'], em['em_serial_number'], em['em_firmware_version'], em['em_maintain'], em['em_ip']])
+
     return render_template('index.html')
 
 @app.route('/dashboard', methods=['GET'])
 @jwt_required
 def dashboard():
-    return render_template('index.html')
+    return redirect(url_for("overview"))
+
 
 # ===== Maintainance ======
 
@@ -53,7 +60,14 @@ def maintenance():
     '''
     This function handles the maintenance page of the web application.
     '''
-    return render_template('maintenance.html', ems = db.electricity_meter.find({'em_maintain': True}))
+    list_em_id = list()
+    for em in db.electricity_meter.find({}):
+        logger.info(f'laaaaa {em["em_maintain"]}')
+        if em['em_maintain']:
+            logger.info(f'laaaaa {em['_id']}')
+            list_em_id.append(em['_id'])
+    logger.info(list_em_id)
+    return render_template('maintenance.html', ems = list_em_id)
 
 @app.route('/maintenance', methods=['POST'])
 @jwt_required() # optional=True allows to access the route without a valid JWT, but checks it if it is present
@@ -81,7 +95,7 @@ def maintenance_post():
         #logger.info(em)
         if not em.get_em_maintain():
             logger.info(f"Duration: {request.form['duration_min']}")
-            post(f'http://electricity-meter:5000/api/maintenance', json={'duration': request.form['duration_min']})
+            post(f'http://{em.get_em_ip()}:5000/api/maintenance', json={'duration': request.form['duration_min']})
             em.toggle_maintain()
         else:
             flash('Electricity meter is already in maintenance mode.')
@@ -90,9 +104,10 @@ def maintenance_post():
     #TODO request to em with ip and duration
 
     list_em_id = list()
-    for em in db.electricity_meter.find({'em_maintain': True}):
-        logger.info('laaaaa', em)
-        list_em_id.append(em['_id'])
+    for em in db.electricity_meter.find({}):
+        if em['em_maintain']:
+            logger.info('laaaaa', em)
+            list_em_id.append(em['_id'])
     logger.info(list_em_id)
 
     return render_template('maintenance.html', ems= list_em_id)

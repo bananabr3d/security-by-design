@@ -3,7 +3,9 @@
 
 # ===== Packages =====
 # Import app from app package
-from app import app, logger, toggle_sleep, maintanance_mode
+from app import app, logger, toggle_sleep
+
+from threading import Timer
 
 # TODO remove
 from app import get_em_id, get_em_value, get_manufacturer, get_model, get_serial_number, get_firmware_version
@@ -23,7 +25,7 @@ def maintenance():
     This function handles the maintenance page of the web application.
     '''
     request.json.get('duration')
-    make_response('', 200)
+    toggle_sleep(request.json.get('duration'))
     # TODO
     # mpo postet direkt zur ip
     # hier sleep rein?

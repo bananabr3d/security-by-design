@@ -88,42 +88,44 @@ class ElectricityMeter:
     def set_em_value(self, em_value):
         try:
             self.em_value = em_value
-            self.db.users.update_one({'_id': self.em_id}, {'$set': {'em_value': em_value}})
+            self.db.electricity_meter.update_one({'_id': self.em_id}, {'$set': {'em_value': em_value}})
         except:
             DBConnectionError()
 
     def set_em_status(self, em_status):
         try:
             self.em_status = em_status
-            self.db.users.update_one({'_id': self.em_id}, {'$set': {'em_status': em_status}})
+            self.db.electricity_meter.update_one({'_id': self.em_id}, {'$set': {'em_status': em_status}})
         except:
             DBConnectionError()
 
     def set_em_error(self, em_error):
         try:
             self.em_error = em_error
-            self.db.users.update_one({'_id': self.em_id}, {'$set': {'em_error': em_error}})
+            self.db.electricity_meter.update_one({'_id': self.em_id}, {'$set': {'em_error': em_error}})
         except:
             DBConnectionError()
 
     def set_em_last_update(self, em_last_update):
         try:
             self.em_last_update = em_last_update
-            self.db.users.update_one({'_id': self.em_id}, {'$set': {'em_last_update': em_last_update}})
+            self.db.electricity_meter.update_one({'_id': self.em_id}, {'$set': {'em_last_update': em_last_update}})
         except:
             DBConnectionError()
 
     def update_em_value(self, em_value):
         try:
             self.em_value = em_value
-            self.db.users.update_one({'_id': self.em_id}, {'$set': {'em_value': em_value}})
+            self.db.electricity_meter.update_one({'_id': self.em_id}, {'$set': {'em_value': em_value}})
         except:
             DBConnectionError()
 
     def toggle_maintain(self):
         if self.em_maintain:
             self.em_maintain = False
-            self.db.users.update_one({'_id': self.em_id}, {'$set': {'em_maintain': False}})
+            logger.info("toggled to False")
+            self.db.electricity_meter.update_one({'_id': self.em_id}, {'$set': {'em_maintain': False}})
         else:  # if not self.em_maintain
+            logger.info("toggled to True")
             self.em_maintain = True
-            self.db.users.update_one({'_id': self.em_id}, {'$set': {'em_maintain': True}})
+            self.db.electricity_meter.update_one({'_id': self.em_id}, {'$set': {'em_maintain': True}})
