@@ -15,24 +15,30 @@ User Information
     <p>Email: {{ email }}</p>
 
     <!-- Update user information -->
-    <p>Want to update your user information? <a href="/user-info/update">Click here</a></p>
+    <p>Want to update your additional user information? <a href="/user-info/update">Click here</a></p>
+
+    <hr>
 
     <!-- Export user account information Button + div to show json output with correct indentation -->
     {% if twofa_authenticated %}
     <div>
+        <h2>Export User Information</h2>
         <form method="get" action="/export-user">
             <button type="submit">Export User Information</button>
         </form>
         {% if user_information_json %}
         <div>
-            <pre id="user_json_output">{{ user_information_json }}</pre>
+            <pre width="100%" id="user_json_output">{{ user_information_json }}</pre>
         </div>
         {% endif %}
     </div>
     {% endif %}
 
+    <hr>
+
     <!-- Set new password by sending old, new and new2 -->
     <div> <!-- Set new password -->
+        <h2>Set new Password</h2>
         <form method="post" action="/set-new-password" onsubmit="return confirm('Are you sure you want to submit this form?');">
             <label for="old_password">Old Password</label>
             <input type="password" id="old_password" name="old_password" required>
@@ -52,7 +58,10 @@ User Information
         </form>
     </div>
 
+    <hr>
+
     {% if twofa_activated %}
+        <h2>Reset 2FA</h2>
         {% if twofa_authenticated %}
             <!-- Reset 2FA Button with 2FA auth -->
             <form method="post" action="/reset-2fa" onsubmit="return confirm('Are you sure you want to submit this form?');">
@@ -70,7 +79,10 @@ User Information
         {% endif %}
     {% endif %}
 
+    <hr>
+
     <!-- Show answered security questions -->
+    {% if security_questions_user %}
     <div>
         <h2>Security Questions answered</h2>
         <ul>
@@ -79,6 +91,8 @@ User Information
             {% endfor %}
         </ul>
     </div>
+    <hr class="dashed">
+    {% endif %}
     <!-- Add new security question -->
     <div>
         <h2>Add new Security Question</h2>
@@ -97,6 +111,7 @@ User Information
     </div>
     <!-- Remove security question -->
     {% if security_questions_user %}
+    <hr class="dashed">
         <div>
             <h2>Remove Security Question</h2>
             <form method="post" action="/remove-security-question">
@@ -113,12 +128,14 @@ User Information
             </form>
         </div>
     {% endif %}
+    <hr>
     <!-- Delete user -->
     <div>
         <form method="post" action="/delete-user" onsubmit="return confirm('Are you sure you want to submit this form?');">
             <button type="submit">Delete Account</button>
         </form>
     </div>
+    <hr>
     <h2>Two-Factor Authentication</h2>
     <p>2FA Activated: {% if twofa_activated %}Yes{% else %}No{% endif %}</p>
     <p>2FA Authenticated: {% if twofa_authenticated %}Yes{% else %}No{% endif %}</p>

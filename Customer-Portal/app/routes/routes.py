@@ -12,7 +12,7 @@ from flask_jwt_extended import jwt_required
 from app import app, db, Invalid2FA, logger
 
 # Import models
-from app.models.contract import load_contract_data
+from app.models.contract import load_contracts_by_user
 
 # Import regex
 from re import compile, fullmatch
@@ -20,6 +20,11 @@ from app.routes.auth_routes import regex_text
 
 # Import datetime
 from datetime import datetime
+
+# Import os, requests and hashlib for mpo request
+import os
+from hashlib import sha256
+from requests import get
 
 # ===== Regex =====
 # Regex for date_of_birth (YYYY-MM-DD)
@@ -48,7 +53,10 @@ def home():
     '''
     This function handles the home page of the web application.
     '''
-    return render_template('index.html', jwt_authenticated=g.jwt_authenticated, twofa_activated=g.twofa_activated, twofa_authenticated=g.twofa_authenticated, admin=g.admin)
+    return render_template('index.html', jwt_authenticated=g.jwt_authenticated, twofa_activated=g.twofa_activated, twofa_authenticated=g.twofa_authenticated, admin=g.admin,
+                            jwt_time=g.jwt_time,
+                            jwt_freshness=g.jwt_freshness,
+                            twofa_time=g.twofa_time)
 
 # === Dashboard ===
 @app.route('/dashboard', methods=['GET'])
@@ -64,19 +72,48 @@ def dashboard():
         raise Invalid2FA
     
     # 1. load all contract objects of user
-    contract_list = load_contract_data(g.user, db)
+    contract_list = load_contracts_by_user(g.user, db)
 
     transformed_contract_list = list()
 
     # Transform contract objects in list to dicts
     for contract in contract_list:
-        temp_contract = {"_id": contract.get_id(), "electricity_meter_id": contract.get_attribute("electricity_meter_id")}#TODO: Add more attributes
-        transformed_contract_list.append(temp_contract)
+        # 2. make request on Messstellenbetreiber for data of each contract
+        # Get em value from metering point operator
+        em_id = contract["electricity_meter_id"]
 
-    # 2. make request on Messstellenbetreiber for data of each contract => How to implement? Do we load a contract.html in the dashboard.html or can we add it here in the return?
+        # Get secret for request
+        h = sha256()
+        h.update(os.getenv("SECRET_CP_MPO").encode("utf-8"))
+
+        # Send request to mpo
+        request = get(f"http://metering-point-operator:5000/api/getcounter/{em_id}", headers={"Authorization":h.hexdigest()})
+
+        electricity_meter_value = None
+
+        # Check status code of mpo response
+        if request.status_code == 200:
+            logger.debug(f"Electricity meter with ID '{em_id}' successfully requested.")
+            electricity_meter_value = request.json()["em_value"]
+            electricity_meter_last_update = request.json()["em_last_update"]
+
+
+        elif request.status_code == 401:
+            logger.error(f"Electricity meter with ID '{em_id}' could not be requested. Authentication failed.")
+            flash("Electricity meter could not be requested. Please contact an Administrator")
+        
+        elif request.status_code == 500:
+            logger.error(f"Electricity meter with ID '{em_id}' could not be requested. Server Error from Metering Point Operator.")
+            flash("Electricity meter could not be requested. Please contact an Administrator")
+        
+        temp_contract = {"_id": contract.get_id(), "electricity_meter_id": contract["electricity_meter_id"], "electricity_meter_value": electricity_meter_value, "electricity_meter_last_update": electricity_meter_last_update}
+        transformed_contract_list.append(temp_contract)
     
     #render_template with contract objects for each contract
-    return render_template('dashboard.html', jwt_authenticated=g.jwt_authenticated, twofa_activated=g.twofa_activated, twofa_authenticated=g.twofa_authenticated, admin=g.admin, username=g.user.get_attribute('username'), contract_list=transformed_contract_list)
+    return render_template('dashboard.html', jwt_authenticated=g.jwt_authenticated, twofa_activated=g.twofa_activated, twofa_authenticated=g.twofa_authenticated, admin=g.admin, username=g.user['username'], contract_list=transformed_contract_list,
+                            jwt_time=g.jwt_time,
+                            jwt_freshness=g.jwt_freshness,
+                            twofa_time=g.twofa_time)
 
 # === About ===
 @app.route('/about', methods=['GET'])
@@ -84,7 +121,10 @@ def about():
     '''
     This function handles the about page of the web application.
     '''
-    return render_template('about.html', jwt_authenticated=g.jwt_authenticated, twofa_activated=g.twofa_activated, twofa_authenticated=g.twofa_authenticated, admin=g.admin)
+    return render_template('about.html', jwt_authenticated=g.jwt_authenticated, twofa_activated=g.twofa_activated, twofa_authenticated=g.twofa_authenticated, admin=g.admin,
+                            jwt_time=g.jwt_time,
+                            jwt_freshness=g.jwt_freshness,
+                            twofa_time=g.twofa_time)
 
 # === Impressum ===
 @app.route('/impressum', methods=['GET'])
@@ -92,7 +132,10 @@ def impressum():
     '''
     This function handles the impressum page of the web application.
     '''
-    return render_template('impressum.html', jwt_authenticated=g.jwt_authenticated, twofa_activated=g.twofa_activated, twofa_authenticated=g.twofa_authenticated, admin=g.admin)
+    return render_template('impressum.html', jwt_authenticated=g.jwt_authenticated, twofa_activated=g.twofa_activated, twofa_authenticated=g.twofa_authenticated, admin=g.admin,
+                            jwt_time=g.jwt_time,
+                            jwt_freshness=g.jwt_freshness,
+                            twofa_time=g.twofa_time)
 
 # === Add user info ===
 @app.route('/user-info/update', methods=['GET'])
@@ -131,7 +174,10 @@ def update_user_info():
     for key in remove_keys_address:
         user_information["address"].pop(key)
 
-    return render_template('update_user_info.html', jwt_authenticated=g.jwt_authenticated, twofa_activated=g.twofa_activated, twofa_authenticated=g.twofa_authenticated, admin=g.admin, not_provided_information=not_provided_information, user_information=user_information)
+    return render_template('update_user_info.html', jwt_authenticated=g.jwt_authenticated, twofa_activated=g.twofa_activated, twofa_authenticated=g.twofa_authenticated, admin=g.admin, not_provided_information=not_provided_information, user_information=user_information,
+                            jwt_time=g.jwt_time,
+                            jwt_freshness=g.jwt_freshness,
+                            twofa_time=g.twofa_time)
 
 @app.route('/user-info/update', methods=['POST'])
 @jwt_required()
@@ -241,9 +287,9 @@ def update_user_info_post():
     # Update user object
     for key in keys:
         if key in ['plz', 'street', 'street_house_number', 'city', 'country']:
-            g.user.update_address(db=db, attribute=key, value=request_data[key])
+            g.user.update_address(attribute=key, value=request_data[key])
         else:
-            g.user.update_attribute(db=db, attribute=key, value=request_data[key])
+            g.user[key] = request_data[key]
 
     logger.debug('User information updated successfully.')
     flash('Your information has been updated successfully.', 'success')

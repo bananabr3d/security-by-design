@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-
+{% block body_attributes %}class="hide-on-index"{% endblock %}
 {% block header_title %}
 {% block title %}
 Start Page
@@ -7,7 +7,7 @@ Start Page
 {% endblock %}
 
 {% block content %}
-<a href="https://imgflip.com/i/81na2x">
-    <img class="index_image" src="https://i.imgflip.com/81na2x.jpg" title="made at imgflip.com"/>
+<a href="../static/VoltWave Logo.png">
+    <img class="index_image" src="../static/VoltWave Logo.png" title="Logo"/>
 </a>
 {% endblock %}

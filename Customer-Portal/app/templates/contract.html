@@ -9,44 +9,58 @@ Contract {{ contract._id }}
 
 {% block content %}
 <section>
-  <h3>Active: {{ contract.active }}</h3>
-  <h3>Start- & Enddate: {{ contract.startdate }} - {{ contract.enddate }}</h3>
-  <h3>Contract Address: {{ contract.address.Street}} {{ contract.address.Street_Number }}, {{ contract.address.PLZ }} {{ contract.address.City }}, {{ contract.address.Country }}</h3>
-  <h3>Auto-Renew:
+  <h2>Contract Information</h2>
+  <p>Active: {{ contract.active }}</p>
+  <p>Start- & Enddate: {{ contract.startdate }} - {{ contract.enddate }}</p>
+  <p>Contract Address: {{ contract.address.Street}} {{ contract.address.Street_Number }}, {{ contract.address.PLZ }} {{ contract.address.City }}, {{ contract.address.Country }}</p>
+  <p>Renew-Period: {{ contract.renew_period }}</p>
+  <p>Auto-Renew:
     <form method="post" action="/update-contract/{{ contract._id }}" onsubmit="return confirm('Are you sure you want to submit this form?');">
-      <input type="radio" name="auto_renew" value="true" {% if contract.auto_renew %}checked{% endif %}>
       <label for="true">Yes</label>
-      <input type="radio" name="auto_renew" value="false" {% if not contract.auto_renew %}checked{% endif %}>
+      <input type="radio" name="auto_renew" value="true" {% if contract.auto_renew %}checked{% endif %}>
       <label for="false">No</label>
+      <input type="radio" name="auto_renew" value="false" {% if not contract.auto_renew %}checked{% endif %}>
       <button type="submit">Update</button>
     </form>
-  </h3>
-  <h3>Renew-Period: {{ contract.renew_period }}</h3>
-  
-  <h3>Electricity Meter ID: {{ contract.electricity_meter_id }}</h3>
-  <h3>Electricity Meter Last Updated Value: {{ electricity_meter_last_updated_value }} kWh</h3>
+  </p>
 
-  <h3>Notes: 
+  <hr class="dashed">
+  
+  <h3>Electricity Meter Information</h3>
+  <p>ID: {{ contract.electricity_meter_id }}</p>
+  <p>Value: {{ electricity_meter_value }} kWh</p>
+  <p>Updated on: {{ electricity_meter_last_update }}</p>
+
+  <hr class="dashed">
+
+  <p>Notes: 
     <form method="post" action="/update-contract/{{ contract._id }}" onsubmit="return confirm('Are you sure you want to submit this form?');">
       <input type="text" id="notes" name="notes" placeholder="{{ contract.notes }}">
       <button type="submit">Update</button>
     </form>
-  </h3>
+  </p>
   <br>
-  <br>
+  <hr>
   <!-- Remove contract -->
-  <form method="post" action="/remove-contract/{{ contract._id }}" onsubmit="return confirm('Are you sure you want to submit this form?');">
-    <button type="submit">Remove Contract</button>
-  </form>
+  <br>
+  <p>Termination Requested: {{ contract.termination_requested }}</p>
+  {% if not contract.termination_requested %}
+    <form method="post" action="/request-termination-contract/{{ contract._id }}" onsubmit="return confirm('Are you sure you want to submit this form?');">
+      <button type="submit">Request Contract Termination</button>
+    </form>
+  {% endif %}
+  <br>
+  <hr>
   <!-- Export contract information button + div to show json output with correct indentation -->
   {% if twofa_authenticated %}
+  <br>
   <div>
       <form method="get" action="/export-contract/{{ contract._id }}">
           <button type="submit">Export Contract Information</button>
       </form>
       {% if contract_information_json %}
       <div>
-          <pre id="contract_information_json">{{ contract_information_json }}</pre>
+          <pre width="100%" id="contract_information_json">{{ contract_information_json }}</pre>
       </div>
       {% endif %}
   </div>

@@ -2,6 +2,17 @@ from pytest import fixture
 from app import app, db, logger
 from app.tests.functional.auth_functions import register, login_jwt, activate_2fa, validate_2fa
 
+def add_user_information():
+    '''
+    Adds the required user information (date_of_birth, address (PLZ, Street, street house number, city, country, phone_number, name, surname), etc.) to the database.
+    '''
+    db.users.update_one({"username": "pytest"}, {"$set": {"date_of_birth": "01.01.1970"}})
+    # Address is a dictionary
+    db.users.update_one({"username": "pytest"}, {"$set": {"address": {"plz": "12345", "street": "Teststreet", "street_house_number": "1", "city": "Testcity", "country": "Testcountry"}}})
+    db.users.update_one({"username": "pytest"}, {"$set": {"phone_number": "0123456789"}})
+    db.users.update_one({"username": "pytest"}, {"$set": {"name": "Testname"}})
+    db.users.update_one({"username": "pytest"}, {"$set": {"surname": "Testsurname"}})
+
 class TestPrivateRoutes:
     @fixture(autouse=True)
     def setup(self):

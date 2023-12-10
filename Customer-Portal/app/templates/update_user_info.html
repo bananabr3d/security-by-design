@@ -10,7 +10,9 @@ Update User Information
 {% block content %}
 <section>
 <body>
+    <h1>Update your additional information</h1>
     <form method="post", onsubmit="return confirm('Are you sure you want to submit this form?');">
+        {% if not_provided_information %}
         <h2>Not provided information</h2>
         <!-- Check for keys in not_provided_information and spawn div and label -->
         {% for key in not_provided_information %}
@@ -26,6 +28,9 @@ Update User Information
             </div>
             {% endif %}
         {% endfor %}
+        {% endif %}
+        <hr class="dashed">
+        {% if user_information %}
         <h2>Provided information</h2>
         {% for key, value in user_information.items() %}
             {% if key == "date_of_birth" %}
@@ -47,6 +52,7 @@ Update User Information
             </div>
             {% endif %}
         {% endfor %}
+        {% endif %}
         <button type="submit">Update user information</button>
     </form>
 </body>

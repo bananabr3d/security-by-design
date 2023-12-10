@@ -59,16 +59,45 @@ paths:
           description: The ID of the electricity meter.
           required: true
           type: string
-        - name: coming soon
+        - name: address_plz
           in: formData
-          description: coming soon
+          description: The PLZ of the city in billing address
+          required: true
+          type: string
+        - name: address_street
+          in: formData
+          description: The Street of the city in billing address
+          required: true
+          type: string
+        - name: address_street_number
+          in: formData
+          description: The Street Number of the city in billing address
+          required: true
+          type: string
+        - name: address_city
+          in: formData
+          description: The city of billing address
+          required: true
+          type: string
+        - name: address_country
+          in: formData
+          description: The Country in billing address
+          required: true
+          type: string
+        - name: notes
+          in: formData
+          description: Notes that should be added to contract
           required: true
           type: string
       responses:
-        '302':
+        '200':
           description: Returned on success. Contract created and contract id added to user.
           schema:
             type: object
+        '301':
+          description: Contract already exist for this electricity meter
+        '500':
+          description: Please contact administrator
         '500':
           description: Internal server error
   /dashboard/<contract_id>:

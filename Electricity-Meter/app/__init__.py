@@ -21,7 +21,6 @@ from random import randint
 from bson.objectid import ObjectId
 from hashlib import sha256
 
-# ===== Global Variables =====
 # ===== Program configurations =====
 
 # === Logger ===
@@ -155,16 +154,15 @@ def heartbeat():
     h = sha256()
     h.update(os.getenv("SECRET_MPO_EM").encode("utf-8"))
     # Send the heartbeat to the metering-point-operator
-
-    post(f"http://metering-point-operator:5000/api/heartbeat/{get_em_id()}", json={"em_value": get_em_value(),
-                                                                                       "manufacturer": get_manufacturer(),
-                                                                                       "model": get_model(),
-                                                                                       "serial_number": get_serial_number(),
-                                                                                       "firmware_version": get_firmware_version()},
-             headers={"Authorization": h.hexdigest()})
-
-
-
+    try:
+        post(f"http://metering-point-operator:5000/api/heartbeat/{get_em_id()}", json={"em_value": get_em_value(),
+                                                                                   "manufacturer": get_manufacturer(),
+                                                                                   "model": get_model(),
+                                                                                   "serial_number": get_serial_number(),
+                                                                                   "firmware_version": get_firmware_version()},
+                                                                                   headers={"Authorization": h.hexdigest()})
+    except:
+        logger.error("Could not send heartbeat to metering-point-operator.")
     Timer(10, heartbeat).start() # Change time accordingly
 
 heartbeat()

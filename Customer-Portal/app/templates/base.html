@@ -8,41 +8,136 @@
     <link rel="shortcut icon" href="../static/Favicon-16x16.ico" sizes="96x96">
     <link rel="shortcut icon" href="../static/Favicon-32x32.ico" sizes="32x32">
     <link rel="shortcut icon" href="../static/Favicon-16x16.ico" sizes="16x16">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="../static/style.css">
     <script type="text/javascript" src="../static/logo.js"></script>
     <script type="text/javascript" src="../static/cookiebanner.js"></script>
     <script type="text/javascript" src="../static/password-strength-meter.js"></script>
     <script type="text/javascript" src="../static/passwords-match.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get the remaining time value passed from Flask
+            var remainingTime_jwt = {{ jwt_time }};
+            var remainingTime_jwt_freshness = {{ jwt_freshness }};
+            var remainingTime_twofa = {{ twofa_time }};
+            // Function to update the remaining time on the frontend
+            function updateRemainingTime() {
+                var minutes_jwt = Math.floor((remainingTime_jwt % 3600) / 60);
+                var seconds_jwt = remainingTime_jwt % 60;
+                var minutes_jwt_freshness = Math.floor((remainingTime_jwt_freshness % 3600) / 60);
+                var seconds_jwt_freshness = remainingTime_jwt_freshness % 60;
+                var minutes_twofa = Math.floor((remainingTime_twofa % 3600) / 60);
+                var seconds_twofa = remainingTime_twofa % 60;
+
+                // Format the time as MM:SS
+                var formattedTime_jwt = pad(minutes_jwt) + ":" + pad(seconds_jwt);
+                var formattedTime_jwt_freshness = pad(minutes_jwt_freshness) + ":" + pad(seconds_jwt_freshness);
+                var formattedTime_twofa = pad(minutes_twofa) + ":" + pad(seconds_twofa);
+
+                document.getElementById("jwt_time_left").textContent = formattedTime_jwt;
+                document.getElementById("jwt_freshness_left").textContent = formattedTime_jwt_freshness;
+                {% if twofa_time %}
+                document.getElementById("twofa_time_left").textContent = formattedTime_twofa;
+                {% endif %}
+                
+                // Reduce time if not 0
+                if (remainingTime_jwt > 0){remainingTime_jwt--;}
+                if (remainingTime_jwt_freshness > 0){remainingTime_jwt_freshness--;}
+                if (remainingTime_twofa > 0){remainingTime_twofa--;}
+
+                // Update every second
+                setTimeout(updateRemainingTime, 1000)
+            }
+
+            // Function to pad single digits with leading zeros (e.g., 1 -> 01)
+            function pad(number) {
+                return (number < 10 ? "0" : "") + number;
+            }
+
+            // Initial call to start updating the remaining time
+            updateRemainingTime();
+        });
+    </script>
 </head>
-<body>
-    <header>
+<body {% block body_attributes %}class="default-body"{% endblock %}>
+    <header class="mb-4">
         <h1>{% block header_title required %} {% endblock %}</h1>
         <canvas></canvas>
+        <!-- Show JWT, freshness and 2fa rest of the time -->
+        <div class="timer">
+            {% if jwt_time %}
+            <p>JWT: <span id="jwt_time_left"></span> time left</p>
+            {% endif %}
+            {% if jwt_freshness %}
+            <p>JWT: <span id="jwt_freshness_left"></span> time fresh</p>
+            {% endif %}
+            {% if twofa_time %}
+            <p>2FA: <span id="twofa_time_left"></span> time left</p>
+            {% endif %}
+        </div>
     </header>
-    <nav>
-        <ul>
-            <li><a href="/">Start</a></li>
-            {% if not jwt_authenticated %}
-                <li><a href="/register">Register</a></li>
-                <li><a href="/login">Login</a></li>
-            {% elif jwt_authenticated and not twofa_authenticated %}
-                {% if not twofa_activated %}
-                    <li><a href="/register/2fa">Register 2FA</a></li>
-                {% else %}
-                    <li><a href="/login/2fa">Login 2FA</a></li>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light static justify-content-center">
+        <div class="container">
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">
+                            <i class="fas fa-home">Home</i> 
+                        </a>
+                    </li>
+                    {% if not jwt_authenticated %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="/register">
+                                <i class="fas fa-user-plus">Register</i>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/login">
+                                <i class="fas fa-sign-in-alt">Login</i>
+                            </a>
+                        </li>
+                    {% elif jwt_authenticated and not twofa_authenticated %}
+                        {% if not twofa_activated %}
+                            <li class="nav-item">
+                                <a class="nav-link" href="/register/2fa">
+                                    <i class="fas fa-key">Register 2FA</i> 
+                                </a>
+                            </li>
+                        {% else %}
+                            <li class="nav-item">
+                                <a class="nav-link" href="/login/2fa">
+                                    <i class="fas fa-sign-in-alt">Login 2FA</i> 
+                                </a>
+                            </li>
+                        {% endif %}
+                    {% elif jwt_authenticated and twofa_authenticated %}
+                        {% if admin %}
+                        <li class="nav-item"><a class="nav-link" href="/admin">Admin Panel</li></a>
+                        {% endif %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="/dashboard">
+                                <i class="fas fa-tachometer-alt">Dashboard</i> 
+                            </a>
+                        </li>
+                    {% endif %}
+    
+                    {% if jwt_authenticated %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <i class="fas fa-user"></i> User
+                        </a>
+                        <div class="dropdown-menu" aria-labelledby="userDropdown">
+                            <a class="dropdown-item" href="/user-info"><i class="fas fa-user"></i> User Information</a>
+                            <a class="dropdown-item" href="/logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                        </div>
+                    </li>
                 {% endif %}
-            {% elif jwt_authenticated and twofa_authenticated %}
-                {% if admin %}
-                    <li><a href="/admin">Admin Panel</a></li>
-                {% endif %}
-                <li><a href="/dashboard">Dashboard</a></li>
-            {% endif %}
-
-            {% if jwt_authenticated %}
-                <li><a href="/user-info">User Information</a></li>
-                <li><a href="/logout">Logout</a></li>
-            {% endif %}
-        </ul>
+                </ul>
+            </div>
+        </div>
     </nav>
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
@@ -63,7 +158,9 @@
         {% block content %} {% endblock %}
     </main>
     <footer>
+        <li><a href="/about">About</a></li>
         <p>&copy; 2023 VoltWave GMBH und CO KG AG</p>
+        <li><a href="/impressum">Impressum</a></li>
     </footer>
 </body>
 </html>

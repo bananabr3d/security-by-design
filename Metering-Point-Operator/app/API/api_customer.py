@@ -1,7 +1,7 @@
 from app import app, db, logger
 
 from flask import request, make_response
-from ..models.electricity_meter import load_electricity_meter
+#from models.electricity_meter import load_electricity_meter
 
 import hashlib
 
@@ -14,10 +14,13 @@ load_dotenv()
 
 @app.route('/api/getcounter/<counter_id>', methods=['GET'])
 def get_counter(counter_id):
+    logger.info(f"Received getcounter request for electricity meter with ID {counter_id}.")
     try:
-        if authorize(request.headers.get('Authorization')) and db.electricity_meter.find_one({'_id': ObjectId(counter_id)}) != None:
-            logger.info(f"Received getcounter request for electricity meter with ID {counter_id}. Sending 200...")
-            return make_response({'em_value': db.electricity_meter.find_one({'_id': ObjectId(counter_id)})['em_value'],
+        if authorize(request.headers.get('Authorization')):
+            logger.info(f"Autorization successful. Checking if counter exists")
+            if db.electricity_meter.find_one({'_id': ObjectId(counter_id)}) != None:
+                logger.info(f"Received getcounter request for electricity meter with ID {counter_id}. Sending 200...")
+                return make_response({'em_value': db.electricity_meter.find_one({'_id': ObjectId(counter_id)})['em_value'],
                                         'em_last_update': db.electricity_meter.find_one({'_id': ObjectId(counter_id)})['em_last_update']}, 200)
         else:
             logger.info(f"Received getcounter request for electricity meter with ID {counter_id}. Sending 401...")
@@ -28,37 +31,42 @@ def get_counter(counter_id):
 @app.route('/api/getcounterstatus/<counter_id>', methods=['GET'])
 def get_counter_status(counter_id):
     try:
-        if ((authorize(request.headers.get('Authorization')) and
-                db.electricity_meter.find_one({'_id': ObjectId(counter_id)}) != None) and
-                db.electricity_meter.find_one({'_id': ObjectId(counter_id)})['em_status']):
-            logger.info(f"Received getcounterstatus request for electricity meter with ID {counter_id}. Sending 200...")
+        logger.info(f"Received getcounterstatus request for electricity meter with ID {counter_id}.")
+        # Try to authenticate the request
+        if authorize(request.headers.get('Authorization')):
+             # Check if the counter exists and status is free "True"
+             if db.electricity_meter.find_one({'_id': ObjectId(counter_id)}) != None and db.electricity_meter.find_one({'_id': ObjectId(counter_id)})['em_status']:
+                logger.info(f"Received getcounterstatus request for electricity meter with ID {counter_id}. Sending 200...")
 
-            db.electricity_meter.update_one({'_id': ObjectId(counter_id)}, {'$set': {'em_status': False}})
-            return make_response(
-                {
-                    'em_value': db.electricity_meter.find_one({'_id': ObjectId(counter_id)})['em_value']
-                }, 200)
-        else:
+                db.electricity_meter.update_one({'_id': ObjectId(counter_id)}, {'$set': {'em_status': False}})
+                return make_response('', 200)
+             
+             else: # If the counter is not free, return 301
+                logger.info(f"Received getcounterstatus request for electricity meter with ID {counter_id}. Sending 301...")
+                return make_response('', 301)
+        else: # If the request is not authenticated, return 401
             logger.info(f"Received getcounterstatus request for electricity meter with ID {counter_id}. Sending 401...")
-            return make_response(401)
-    except:
-        return make_response(500)
+            return make_response('', 401)
+    except: # If an error occurs, return 500
+        return make_response('', 500)
 
 @app.route('/api/freecounter/<counter_id>', methods=['POST'])
 def free_counter(counter_id):
 
     try:
-        if ((authorize(request.headers.get('Authorization')) and
-            db.electricity_meter.find_one({'_id': ObjectId(counter_id)}) != None) and not
-            db.electricity_meter.find_one({'_id': ObjectId(counter_id)})['em_status']):
-            db.electricity_meter.update_one({'_id': ObjectId(counter_id)}, {'$set': {'em_status': True}})
-            logger.info(f"Received free request for electricity meter with ID {counter_id}. Sending 200...")
-            return make_response(200)
+        if authorize(request.headers.get('Authorization')):
+            if db.electricity_meter.find_one({'_id': ObjectId(counter_id)}) != None and not db.electricity_meter.find_one({'_id': ObjectId(counter_id)})['em_status']:
+                db.electricity_meter.update_one({'_id': ObjectId(counter_id)}, {'$set': {'em_status': True}})
+                logger.info(f"Received free request for electricity meter with ID {counter_id}. Sending 200...")
+                return make_response('', 200)
+            else:
+                logger.info(f"Received free request for electricity meter with ID {counter_id}. Sending 301...")
+                return make_response('', 301)
         else:
             logger.info(f"Received free request for electricity meter with ID {counter_id}. Sending 401...")
-            return make_response(401)
+            return make_response('', 401)
     except:
-        return make_response(500)
+        return make_response('', 500)
 
 
 def authorize(token) -> bool:

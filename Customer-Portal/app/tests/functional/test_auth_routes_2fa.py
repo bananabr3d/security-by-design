@@ -1,7 +1,7 @@
 from pytest import fixture
 from app import app, logger, db, bcrypt
 from app.tests.functional.auth_functions import register, login_jwt, activate_2fa, validate_2fa
-from app.models.user import load_user
+from app.models.user import User
 
 
 class TestAuth2FARoutes:
@@ -14,13 +14,13 @@ class TestAuth2FARoutes:
             logger.info("User not existing. Registering...")
             register(self.client)
    
-        self.user = load_user(db=db, user_id=db.users.find_one({"username": "pytest"})["_id"])
+        self.user = User.find_by_id(db=db, user_id=db.users.find_one({"username": "pytest"})["_id"])
 
         # Login with jwt
         self.client = login_jwt(self.client)
 
         # Disable 2fa for user pytest
-        self.user.update_attribute(db=db, attribute="twofa_activated", value="False")
+        self.user["twofa_activated"] = False
 
     # GET Requests
     def test_get_register_2fa(self):
@@ -142,7 +142,7 @@ class TestAuth2FARoutes:
         backup_codes = [backup_code_hash] * 10
 
         # Update user backup codes
-        self.user.update_attribute(db=db, attribute="backup_codes", value=backup_codes)        
+        self.user["backup_codes"] = backup_codes        
 
         request_data = {
             "backup_code": backup_code

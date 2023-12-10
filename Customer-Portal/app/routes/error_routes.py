@@ -8,7 +8,7 @@ from flask import render_template, url_for, redirect, flash, g
 # Packages for JWT
 from flask_jwt_extended import jwt_required
 
-# Import app, logger and db object from app package
+# Import app, logger and Exceptions from app package
 from app import app, logger, Inactive2FA, Invalid2FA, Active2FA, Valid2FA, ValidJWT
 
 # ===== Routes =====
@@ -81,7 +81,10 @@ def errorhandler_page_not_found(errorhandler_error):
     logger.debug(f"Error on Code 404: {errorhandler_error}")
 
     try: # last resort error handling
-        return render_template('PageNotFound.html', jwt_authenticated=g.jwt_authenticated, twofa_activated=g.twofa_activated, twofa_authenticated=g.twofa_authenticated), 404
+        return render_template('PageNotFound.html', jwt_authenticated=g.jwt_authenticated, twofa_activated=g.twofa_activated, twofa_authenticated=g.twofa_authenticated,
+                            jwt_time=g.jwt_time,
+                            jwt_freshness=g.jwt_freshness,
+                            twofa_time=g.twofa_time), 404
     except Exception as e:
         logger.error(f"Error: e")
         flash("Internal Server Error, redirect to home", "error")

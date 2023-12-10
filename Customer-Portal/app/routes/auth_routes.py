@@ -14,7 +14,7 @@ from flask_jwt_extended import (
 from app import app, logger, db, bcrypt, jwt, Invalid2FA, ValidJWT, security_questions
 
 # Import models
-from app.models.user import User, load_user
+from app.models.user import User
 
 # Import datetime for cookie expiration handling
 from datetime import datetime, timedelta, timezone
@@ -28,7 +28,7 @@ from hashlib import sha1
 
 
 # Regex for input validation
-regex_email = re.compile(r'([A-Za-z0-9]+[.-_])*[A-Za-z0-9]+@[A-Za-z0-9-]+(\.[A-Z|a-z]{2,320})+')
+regex_email = re.compile(r'^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,7}$')
 regex_username = re.compile(r'^[a-zA-Z0-9]+([_ -]?[a-zA-Z0-9])*$')
 # regex password with at least 1 uppercase, 1 lowercase, 1 number and 1 special character
 regex_password = re.compile(r'^.*(?=.{12,128})(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!#$%&?"]).*$')
@@ -160,7 +160,7 @@ def register_post():
     # = Input Validation =
     # Email address and password
 
-    if not validate_email(request.form['email']) or not validate_username(request.form['username']) or check_password_breach(request.form['password']):
+    if not validate_email(request.form['email']) or not validate_username(request.form['username']) or not validate_password(request.form['password']) or check_password_breach(request.form['password']):
         return redirect(url_for("register"))
     
     # set email in lowercase and username in original case           
@@ -185,7 +185,7 @@ def register_post():
     # hash pw, set user as object and save user
     hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
     user = User(db=db, email=email, username=username, password=hashed_password)
-    user.save(db=db)
+    user.save()
 
     flash('Your account has been created!', 'success')
     logger.debug("User Account has been created successfully")
@@ -238,7 +238,7 @@ def login_post():
 
     # check if user exists and if password is correct
     if user != None: # if user found
-        password_hash = user.get_attribute('password')
+        password_hash = user["password"]
 
         if bcrypt.check_password_hash(password_hash, password) == False: # if the password is wrong
             logger.warning("Wrong username/password combination provided")
@@ -293,7 +293,7 @@ def user_info():
     security_questions_show = list()
     security_questions_show.append("Please select a security question...")
 
-    security_questions_user = g.user.get_security_questions().keys()
+    security_questions_user = g.user['security_questions'].keys()
     for question in security_questions:
         if question not in security_questions_user:
             security_questions_show.append(question)
@@ -309,13 +309,16 @@ def user_info():
     # Render the user_info.html template with user data
     return render_template('user_info.html', 
                             jwt_authenticated=g.jwt_authenticated, 
-                            username=g.user.get_attribute("username"), 
-                            email=g.user.get_attribute('email'),
+                            username=g.user['username'], 
+                            email=g.user['email'],
                             twofa_activated=g.twofa_activated, 
                             twofa_authenticated=g.twofa_authenticated,
                             security_questions=security_questions_show,
                             security_questions_user=security_questions_user,
-                            user_information_json=user_information_json)
+                            user_information_json=user_information_json,
+                            jwt_time=g.jwt_time,
+                            jwt_freshness=g.jwt_freshness,
+                            twofa_time=g.twofa_time)
 
 
 # === Reset password ===
@@ -327,6 +330,10 @@ def reset_password():
 
     Returns the reset_password.html template.
     '''
+
+    # If user is already logged in, redirect to dashboard
+    if g.jwt_authenticated == True:
+        raise ValidJWT
 
     security_questions_show = list()
     security_questions_show.append("Please select a security question...")
@@ -376,25 +383,25 @@ def reset_password_post():
         return redirect(url_for('reset_password'))
     
     # Check if security question is answered
-    if request.form['security_question'] not in g.user.get_attribute('security_questions'):
+    if request.form['security_question'] not in g.user['security_questions']:
         logger.warning("User provided a security question that is not answered")
         flash('Your Answer is incorrect', 'failed') # That you cant differ between wrong answer and not answered is a feature, not a bug
         return redirect(url_for('reset_password'))
 
     # Check if answer is correct for the selected security question
-    hashed_answer = g.user.get_security_questions()[request.form['security_question']]
+    hashed_answer = g.user['security_questions'][request.form['security_question']]
 
     if bcrypt.check_password_hash(hashed_answer, request.form['answer']) == False:
         flash('Your answer is incorrect', 'failed')
-        logger.debug(f"User: '{g.user.get_attribute('username')}' provided a wrong answer to the security question during the reset password")
+        logger.debug(f"User: '{g.user['username']}' provided a wrong answer to the security question during the reset password")
         return redirect(url_for('reset_password'))
 
     # Set new password
     hashed_password = bcrypt.generate_password_hash(request.form['new_password']).decode('utf-8')
-    g.user.update_attribute(db, attribute="password", value=hashed_password)
+    g.user["password"] = hashed_password
 
     flash('Your password has been changed!', 'success')
-    logger.debug(f"User: '{g.user.get_attribute('username')}' has successfully changed its password")
+    logger.debug(f"User: '{g.user['username']}' has successfully changed its password")
     return redirect(url_for('login'))
 
 
@@ -422,17 +429,17 @@ def add_security_question():
         return redirect(url_for('user_info'))
     
     # Check if security question is already answered
-    if request.form['security_question'] in g.user.get_attribute('security_questions'):
+    if request.form['security_question'] in g.user['security_questions']:
         logger.warning("User provided a security question that is already answered")
         flash('You already answered this security question', 'failed')
         return redirect(url_for('user_info'))
     
     # Add hash of answer to user security questions
     hashed_answer = bcrypt.generate_password_hash(request.form['answer']).decode('utf-8')
-    g.user.add_security_question(db=db, question=request.form['security_question'], answer=hashed_answer)
+    g.user.add_security_question(question=request.form['security_question'], answer=hashed_answer)
 
     flash('Your security question has been added!', 'success')
-    logger.debug(f"User: '{g.user.get_attribute('username')}' has successfully added a security question")
+    logger.debug(f"User: '{g.user['username']}' has successfully added a security question")
     return redirect(url_for('user_info'))
 
 
@@ -461,24 +468,24 @@ def remove_security_question():
 
     
     # Check if security question is answered
-    if request.form['security_question'] not in g.user.get_attribute('security_questions'):
+    if request.form['security_question'] not in g.user['security_questions']:
         logger.warning("User provided a security question that is not answered")
         flash('You did not answer this security question', 'failed')
         return redirect(url_for('user_info'))
     
     # Check if answer is correct for the selected security question
-    hashed_answer = g.user.get_security_questions()[request.form['security_question']]
+    hashed_answer = g.user['security_questions'][request.form['security_question']]
 
     if bcrypt.check_password_hash(hashed_answer, request.form['answer']) == False:
         flash('Your answer is incorrect', 'failed')
-        logger.debug(f"User: '{g.user.get_attribute('username')}' provided a wrong answer to the security question during the remove security question")
+        logger.debug(f"User: '{g.user['username']}' provided a wrong answer to the security question during the remove security question")
         return redirect(url_for('user_info'))
     
     # Remove security question from user security questions
-    g.user.remove_security_question(db=db, question=request.form['security_question'])
+    g.user.remove_security_question(question=request.form['security_question'])
 
     flash('Your security question has been removed!', 'success')
-    logger.debug(f"User: '{g.user.get_attribute('username')}' has successfully removed a security question")
+    logger.debug(f"User: '{g.user['username']}' has successfully removed a security question")
     return redirect(url_for('user_info'))
 
 
@@ -503,17 +510,17 @@ def set_new_password():
         return redirect(url_for('user_info'))
         
     # Check if current password is correct
-    if bcrypt.check_password_hash(g.user.get_attribute('password'), request.form['old_password']) == False:
+    if bcrypt.check_password_hash(g.user['password'], request.form['old_password']) == False:
         flash('Current password is incorrect', 'failed')
-        logger.debug(f"User: '{g.user.get_attribute('username')}' provided a wrong old password during the set new password")
+        logger.debug(f"User: '{g.user['username']}' provided a wrong old password during the set new password")
         return redirect(url_for('user_info'))
 
     # Set new password
     hashed_password = bcrypt.generate_password_hash(request.form['new_password']).decode('utf-8')
-    g.user.update_attribute(db, attribute="password", value=hashed_password)
+    g.user["password"] = hashed_password
 
     flash('Your password has been changed!', 'success')
-    logger.debug(f"User: '{g.user.get_attribute('username')}' has successfully changed its password")
+    logger.debug(f"User: '{g.user['username']}' has successfully changed its password")
 
     # Unset JWT and redirect to login
     resp = make_response(redirect(url_for('login')))
@@ -537,20 +544,20 @@ def delete_user():
 
     # Check if user has 2fa activated, then 2fa authenticated is needed
     if g.twofa_activated and not g.twofa_authenticated:
-        logger.warning(f"User: '{g.user.get_attribute('username')}' has 2fa activated, but is not 2fa authenticated")
+        logger.warning(f"User: '{g.user['username']}' has 2fa activated, but is not 2fa authenticated")
         flash('You have 2fa activated, you need to authenticate with 2fa to delete your account', 'failed')
         raise Invalid2FA
     
     # Delete user
-    g.user.delete(db=db)
+    g.user.delete()
 
     # Check if user is deleted
-    if load_user(db=db, user_id=g.user.get_id()) != None:
-        logger.warning(f"User: '{g.user.get_attribute('username')}' could not be deleted")
+    if User.find_by_id(db=db, user_id=g.user.get_id()) != None:
+        logger.warning(f"User: '{g.user['username']}' could not be deleted")
         flash('User could not be deleted', 'failed')
         return redirect(url_for('dashboard'))
     
-    logger.debug(f"User: '{g.user.get_attribute('username')}' has successfully deleted its account")
+    logger.debug(f"User: '{g.user['username']}' has successfully deleted its account")
 
     # Unset JWT and redirect to login
     resp = make_response(redirect(url_for('login')))
@@ -572,7 +579,7 @@ def export_user():
 
     # Check if user has 2fa activated, then 2fa authenticated is needed
     if g.twofa_activated and not g.twofa_authenticated:
-        logger.warning(f"User: '{g.user.get_attribute('username')}' has 2fa activated, but is not 2fa authenticated")
+        logger.warning(f"User: '{g.user['username']}' has 2fa activated, but is not 2fa authenticated")
         flash('You have 2fa activated, you need to authenticate with 2fa to export your account information', 'failed')
         raise Invalid2FA
     
@@ -597,6 +604,9 @@ def before_request_auth():
     g.twofa_activated = False
     g.twofa_authenticated = False
     g.user = None
+    g.jwt_time = 0
+    g.jwt_freshness = 0
+    g.twofa_time = 0
 
     # Only log the request path if the request is not a static file
     if not request.path.startswith("/static"):
@@ -609,26 +619,55 @@ def before_request_auth():
             if get_jwt_identity():
                 logger.debug("User has a valid JWT")
                 g.jwt_authenticated = True
-                g.user = load_user(db=db, user_id=get_jwt_identity())
+                g.user = User.find_by_id(db=db, user_id=get_jwt_identity())
 
-                twofa_activated = g.user.get_attribute('twofa_activated')
+                # === Calculate Rest times JWT and JWT Freshness ===
+                # Get the current time
+                date_now = datetime.strptime(str(datetime.now())[:19], '%Y-%m-%d %H:%M:%S')
+
+                # Get the JWT expiration time
+                jwt_expiration = get_jwt()["exp"]
+                # Calculate the JWT rest time
+                # Convert the JWT expiration time to datetime object
+                date_jwt = datetime.strptime(str(datetime.fromtimestamp(jwt_expiration))[:19], '%Y-%m-%d %H:%M:%S') 
+
+                # Calculate the JWT rest time in seconds (int)
+                g.jwt_time = int((date_jwt - date_now).total_seconds())
+
+
+                jwt_freshness_expiration = get_jwt()["fresh"]
+
+                if jwt_freshness_expiration >= 0:
+                    # Calculate the JWT freshness rest time
+                    # Convert the JWT freshness expiration time to datetime object
+                    date_jwt_freshness = datetime.strptime(str(datetime.fromtimestamp(jwt_freshness_expiration))[:19], '%Y-%m-%d %H:%M:%S')
+
+                    # Calculate the JWT freshness rest time in seconds (int)
+                    g.jwt_freshness = int((date_jwt_freshness - date_now).total_seconds())
+
+
+                twofa_activated = g.user['twofa_activated']
 
                 # Check if user has 2fa activated
-                if twofa_activated == "True":
+                if twofa_activated == True:
                     logger.debug("User has 2fa activated")
                     g.twofa_activated = True
                     
                     if "2fa_timestamp" in get_jwt():
                         # Check if user is 2fa authenticated
                         
-                        # Get the current time and the timestamp of when the user authenticated with 2fa
-                        date_now = datetime.strptime(str(datetime.now())[:19], '%Y-%m-%d %H:%M:%S')
+                        # Get the timestamp of when the user authenticated with 2fa
                         date_2fa = datetime.strptime(get_jwt()["2fa_timestamp"], '%a, %d %b %Y %H:%M:%S %Z')
 
                         # Check if the 2fa timestamp is older than time specified in environment variable
                         if (date_now - date_2fa) <= timedelta(minutes=int(os.getenv("2FA_EXPIRATION_MINUTES"))):
                             logger.debug("User is 2fa authenticated")
                             g.twofa_authenticated = True
+
+                            # Calculate the 2fa rest time in seconds (int)
+                            difference = (date_2fa + timedelta(minutes=int(os.getenv("2FA_EXPIRATION_MINUTES")))) - date_now
+                            g.twofa_time = int(difference.total_seconds())
+
                 
         except Exception as e:
             logger.error(f"Error in before_request_auth: {e}")
@@ -709,16 +748,15 @@ def expired_token_callback(jwt_header, jwt_payload):
     return resp
 
 # Error handler for invalid JWT
-@jwt.unauthorized_loader #TODO
+@jwt.unauthorized_loader
 def custom_unauthorized_response(callback):
     '''
     This function handles the custom_unauthorized_response.
 
     This function renders the Unauthorized.html template and flashes a error message.
     '''
-    #TODO Customize the error response -> render Unauthorized.html -> button available to redirect to login
     flash("You are not authorized to do this.")
-    return redirect(url_for('login'))
+    return render_template('unauthorized.html')
 
 # Error handler for fresh JWT needed
 @jwt.needs_fresh_token_loader
