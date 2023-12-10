@@ -11,6 +11,8 @@ from bson.objectid import ObjectId
 
 from datetime import datetime
 
+from ..models.electricity_meter import ElectricityMeter, load_electricity_meter
+
 load_dotenv()
 
 # Delete all current electricity meters
@@ -23,25 +25,37 @@ def post_counter_hearbeat(counter_id):
         if authorize(request.headers.get('Authorization')):
             # Check if the em with _id exists
             data = db.electricity_meter.find_one({"_id": ObjectId(counter_id)})
-            
-            if data:
-                logger.info(f"Electricity meter with ID {counter_id} exists.")
-            else:
-                logger.info(f"Electricity meter with ID {counter_id} does not exist yet.")
-                # If not, create it
-                db.electricity_meter.insert_one({"_id": ObjectId(counter_id)})
-                # Set the status to free (True)
-                db.electricity_meter.update_one({"_id": ObjectId(counter_id)}, {"$set": {"em_status": True}})
-                # Set em ip
-                db.electricity_meter.update_one({"_id": ObjectId(counter_id)}, {"$set": {"em_ip": request.remote_addr}})
-    
+            if data == None:
 
-            logger.info(f"Received heartbeat from electricity meter with ID {counter_id}. Update value...")
-            # Update the em_value
-            db.electricity_meter.update_one({"_id": ObjectId(counter_id)}, {"$set": {"em_value": request.json.get('em_value')}})
-            # Update em timestamp
-            db.electricity_meter.update_one({"_id": ObjectId(counter_id)}, {"$set": {"em_last_update": datetime.now()}})
-            # Send 200 status code
+                em = ElectricityMeter(
+                    db=db,
+                    em_id=ObjectId(counter_id),
+                    em_value=request.json.get('em_value'),
+                    em_status=True,
+                    em_error= None,
+                    em_last_update=datetime.fromtimestamp(datetime.now().timestamp()),
+                    em_manufacturer=request.json.get('manufacturer'),
+                    em_model=request.json.get('model'),
+                    em_serial_number=request.json.get('serial_number'),
+                    em_firmware_version=request.json.get('firmware_version'),
+                    em_maintain=False,
+                    em_ip = request.remote_addr
+
+                )
+                em.save(db=db)
+                logger.info(f"Electricity meter with ID {db.electricity_meter.find_one({"_id" : ObjectId(counter_id)})} does not exist yet. Saving new one")
+
+            else:
+                logger.info(f"Received heartbeat from electricity meter with ID {counter_id}. Update value...")
+
+                # Update the em_value
+                db.electricity_meter.update_one({"_id": ObjectId(counter_id)}, {"$set": {"em_value": request.json.get('em_value')}})
+                db.electricity_meter.update_one({"_id": ObjectId(counter_id)}, {"$set": {"em_last_update": datetime.fromtimestamp(datetime.now().timestamp())}})
+                em = load_electricity_meter(db=db, em_id=counter_id)
+                if em.get_em_maintain():
+                    logger.info(f"Electricity meter with ID {counter_id} is not in maintenance mode anymore. Not updating value.")
+                    em.toggle_maintain()
+                # Send 200 status code
             return make_response('', 200)
         else:
             return make_response('', 401)

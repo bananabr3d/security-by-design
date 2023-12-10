@@ -21,7 +21,6 @@
         }
 
 
-
         label, select, input {
             display: block;
             margin: 20px auto;
@@ -62,15 +61,15 @@
 <div style="margin: 10px 10px 0px 10px">
     <!-- Header -->
     <div class="topnav" id="myTopnav">
-        <a id="logo" tabindex="-1" title="Zurück zur Startseite" href="index.html"> <img
+        <a id="logo" tabindex="-1" title="Zurück zur Startseite" href="/home"> <img
                 src="../static/images/Logo_mpo_icon_white.png" width="80px" height=auto" alt="Logo">
 
         </a>
 
-        <a href="overview.html">Overview</a>
-        <a href="maintenance.html" class="active">Maintenance</a>
-        <a href="user_info.html">User Info</a>
-
+        <a href="/overview">Overview</a>
+        <a href="/maintenance" class="active">Maintenance</a>
+        <a href="/user-info">User Info</a>
+        <a class="right-align" href="/logout">Logout</a>
 
         <a href="javascript:void(0);" class="icon" onclick="myFunction()">
             <i class="fa fa-bars"></i>
@@ -98,7 +97,12 @@
                 <li>
                     <details>
                         <summary> currently maintained</summary>
-                        <p> hier müssen die ems rein </p>
+                        {% for em in ems %}
+                        <div>
+                        <p> {{ em }} </p>
+                        </div>
+                        {% endfor %}
+
                     </details>
                 </li>
 
@@ -124,12 +128,23 @@
                 <!--                </li>-->
 
             </ul>
+
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            <ul class=flashes>
+                {% for category, message in messages %}
+                <li class="{{ category }}">{{ message }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+            {% endwith %}
         </div>
         <div class="col-50 col-s-75 mid">
 
             <div> <!-- Maintained EM id and time in minutes? -->
-                <form method="post" action="/maintain">
-                    <label for="em_id">Electricity Meter</label>
+                <form method="post" action="/maintenance">
+                    <label for="em_id">Electricity Meter ID</label>
                     <input type="text" id="em_id" name="electricity_meter_id" required>
                     <div class="password-container">
                         <label for="duration">Duration</label>
@@ -161,7 +176,7 @@
 </div>
 <div class="footer">
     <p>Copyright 2023 VoltWave</p>
-    <a href="impressum.html"> Impressum</a>
+    <a href="/impressum"> Impressum</a>
 
 </div>
 </body>

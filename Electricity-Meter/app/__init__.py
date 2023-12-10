@@ -21,9 +21,6 @@ from random import randint
 from bson.objectid import ObjectId
 from hashlib import sha256
 
-# Import sleep
-from time import sleep
-
 # ===== Program configurations =====
 
 # === Logger ===
@@ -127,8 +124,16 @@ def set_em_value(value:int) -> None:
 logger.info(f"ID: {get_em_id()}")
 logger.debug(f"Initialisation Value: {get_em_value()}")
 
-# Sleep for 10 seconds (wait for mpo db connection)
-sleep(10)
+def toggle_sleep(duration=0):
+    global maintenance_mode
+    if not maintenance_mode:
+        maintenance_mode = True
+        logger.info(f"sending to sleep with duration {duration}")
+        Timer(int(duration) * 60, toggle_sleep).start()
+    else:
+        maintenance_mode = False
+
+
 
 def heartbeat():
     '''
@@ -137,6 +142,7 @@ def heartbeat():
     # Check if maintenance mode is active, if so, check again in 10 seconds
     if maintenance_mode:
         Timer(10, heartbeat).start()
+        logger.info("Electricity meter is in maintenance mode. Not sending heartbeat.")
         return
     
     # Count up the em_value
@@ -150,10 +156,10 @@ def heartbeat():
     # Send the heartbeat to the metering-point-operator
     try:
         post(f"http://metering-point-operator:5000/api/heartbeat/{get_em_id()}", json={"em_value": get_em_value(),
-                                                                                   "manufacturer": get_manufacturer(), 
-                                                                                   "model": get_model(), 
+                                                                                   "manufacturer": get_manufacturer(),
+                                                                                   "model": get_model(),
                                                                                    "serial_number": get_serial_number(),
-                                                                                   "firmware_version": get_firmware_version()}, 
+                                                                                   "firmware_version": get_firmware_version()},
                                                                                    headers={"Authorization": h.hexdigest()})
     except:
         logger.error("Could not send heartbeat to metering-point-operator.")

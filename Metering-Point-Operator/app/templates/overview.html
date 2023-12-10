@@ -8,7 +8,9 @@
 
     <style>
 
-
+        .table-container {
+          overflow-x: auto;
+        }
         .display-container {
             max-width: 800px;
             margin: 20px auto;
@@ -72,6 +74,19 @@
             color: white;
             text-decoration: underline;
         }
+        table {
+          border-collapse: collapse;
+          width: 100%;
+        }
+
+        td, th {
+          border: 1px solid #dddddd;
+          text-align: left;
+          padding: 8px;
+        }
+        th {
+          background-color: #FFAB11;
+        }
 
     </style>
 </head>
@@ -82,16 +97,15 @@
 
     <!-- Header -->
     <div class="topnav" id="myTopnav">
-        <a id="logo" tabindex="-1" title="Zurück zur Startseite" href="index.html">
+        <a id="logo" tabindex="-1" title="Zurück zur Startseite" href="/home">
             <img src="../static/images/Logo_mpo_icon_white.png" width="80px" height=auto" alt="Logo">
 
         </a>
 
-        <a href="overview.html" class="active">Overview</a>
-        <a href="maintenance.html">Maintenance</a>
-        <a href="user_info.html">User Info</a>
-
-        <a class="right-align" href="login.html">Logout</a>
+        <a href="/overview" class="active">Overview</a>
+        <a href="/maintenance">Maintenance</a>
+        <a href="/user-info">User Info</a>
+        <a class="right-align" href="/logout">Logout</a>
 
         <a href="javascript:void(0);" class="icon" onclick="myFunction()">
             <i class="fa fa-bars"></i>
@@ -114,38 +128,69 @@
     <!-- Tabelle -->
 
     <div class="row">
-        <div class="col-25 col-s-25 menu">
+<!--        <div class="col-25 col-s-25 menu">-->
 
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            <ul class=flashes>
+                {% for category, message in messages %}
+                <li class="{{ category }}">{{ message }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+            {% endwith %}
 
         </div>
 
-        <div class="col-50 col-s-75 mid">
+<div class="table-container">
 
-
-            <div class="display-container" style="max-width:800px">
                 <section>
                     <body>
                     <h1>Overview</h1>
                     </body>
+
+                    <table>
+                      <tr>
+                        <th>EM ID</th>
+                          <th>Value</th>
+                          <th>Available</th>
+                        <th>Maintained</th>
+                        <th>Manufacturer</th>
+                          <th>Model</th>
+                        <th>Serialnumber</th>
+                        <th> Firmware Version</th>
+                      </tr>
+
+                        {% for em in ems %}
+
+                        <div>
+                          <tr>
+
+                         <td>{{ em.em_id }}</td>
+                        <td>{{em.em_value}}</td>
+                        <td>{{em.em_status}}</td>
+                          <td>{{em.em_maintain}}</td>
+                        <td>{{em.em_manufacturer}}</td>
+                        <td>{{em.em_model}}</td>
+                          <td>{{em.em_serial_number}}</td>
+                        <td>{{em.em_firmware_version}}</td>
+                       </tr>
+                            
+                        </div>
+                        {% endfor %}
+                    </table>
+
+
+
                 </section>
             </div>
 
 
-        </div>
-
-        <div class="col-25 col-s-100">
-            <div class="aside">
-                <h2>?</h2>
-                <p> </p>
-
-
-            </div>
-        </div>
     </div>
 </div>
 <div class="footer">
     <p>Copyright 2023 VoltWave Systems</p>
-    <a href="impressum.html"> Impressum</a>
+    <a href="/impressum"> Impressum</a>
 
 </div>
 
