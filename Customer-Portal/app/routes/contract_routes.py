@@ -178,7 +178,6 @@ def contract(contract_id: str):
     contract_show = contract.get_contract_data()
     contract_show["active"] = "Yes" # As the contract is still active, see if statement before
 
-    contract["enddate"] = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
     # Check if contract is still active
     if contract["enddate"] < datetime.now().strftime("%Y-%m-%d"):
         logger.warning(f"Contract with ID: '{contract_id}' is not active anymore.")
