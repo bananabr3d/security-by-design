@@ -13,14 +13,29 @@ def load_user(db, user_id:str):
 class User():
     def __init__(self, db:pymongo.database.Database, email:str, username:str, password:str, twofa_secret:str = None, twofa_activated:bool = False, backup_codes:list = [], security_questions:dict = {}) -> None:
         self.user_data = {'email': email, 'username': username, 'password': password, 'twofa_secret': twofa_secret, 'twofa_activated': twofa_activated, 'backup_codes': backup_codes, 'security_questions': security_questions}
-
+        self.db = db
         try:
             user_data = db.users.find_one({'email': email}, allow_partial_results=False)
             if user_data:
                 self.user_data['_id'] = user_data['_id']
         except:
             raise DBConnectionError
-        
+
+    def __getitem__(self, key: str) -> str:
+        return self.user_data[key]
+
+    def __setitem__(self, key: str, value: str) -> None:
+        if key in self.user_data:
+            self.user_data[key] = value
+
+            try:
+                self.db.users.update_one({'_id': self.user_data['_id']}, {'$set': {key: value}})
+            except:
+                raise DBConnectionError
+        else:
+            raise AttributeError
+
+
     def get_id(self) -> str:
         return str(self.user_data['_id'])
     
@@ -72,7 +87,27 @@ class User():
             raise DBConnectionError
         
         return User(db=db, email=user_data["email"], username=user_data["username"], password=user_data["password"], twofa_secret=user_data["twofa_secret"], twofa_activated=user_data["twofa_activated"], backup_codes=user_data["backup_codes"], security_questions=user_data["security_questions"]) if user_data else None # Add here user attributes
-        
+
+    @classmethod
+    def find_by_id(cls, db: pymongo.database.Database, user_id: str):
+        '''
+        Returns the user with the given ID.
+        '''
+        try:
+            user_data = db.users.find_one({'_id': ObjectId(user_id)}, allow_partial_results=False)
+        except:
+            raise DBConnectionError
+
+        return User(db=db,
+                    email=user_data["email"],
+                    username=user_data["username"],
+                    password=user_data["password"],
+                    twofa_secret=user_data["twofa_secret"],
+                    twofa_activated=user_data["twofa_activated"],
+
+                    backup_codes=user_data["backup_codes"],
+                    security_questions=user_data["security_questions"]) if user_data else None  # Add here user attributes
+
     def add_security_question(self, db: pymongo.database.Database, question: str, answer: str) -> None:
         try:
             db.users.update_one({'_id': self.user_data['_id']}, {'$set': {'security_questions.' + question: answer}})
@@ -94,11 +129,11 @@ class User():
         if question in user_data['security_questions']:
             logger.error(f"Security question with question '{question}' could not be removed from user with ID '{self.get_id()}'.")
 
-    def save(self, db:pymongo.database.Database) -> None:
+    def save(self) -> None:
             try:
-                db.users.insert_one(self.user_data)
+                self.db.users.insert_one(self.user_data)
 
-                user_data = db.users.find_one({'email': self.user_data["email"]}, allow_partial_results=False)
+                user_data = self.db.users.find_one({'email': self.user_data["email"]}, allow_partial_results=False)
                 self.user_data["_id"] = user_data["_id"]
             except:
                 raise DBConnectionError

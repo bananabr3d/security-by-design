@@ -96,7 +96,6 @@ def maintenance_post():
             logger.info(f"Duration: {request.form['duration_min']}")
             post(f'http://{em.get_em_ip()}:5000/api/maintenance', json={'duration': request.form['duration_min']})
             em.toggle_maintain()
-        else:
             flash('Electricity meter is already in maintenance mode.')
     else:
         flash('Electricity meter does not exist.')
@@ -108,15 +107,6 @@ def maintenance_post():
     logger.info(list_em_id)
 
     return render_template('maintenance.html', ems=list_em_id)
-
-
-@app.route('/user_info/update', methods=['POST'])
-@jwt_required()  # optional=True allows to access the route without a valid JWT, but checks it if it is present
-def user_info_update():
-    '''
-    This function handles the maintenance page of the web application.
-    '''
-    return render_template('user_info.html')
 
 
 @app.route('/overview', methods=['GET'])
