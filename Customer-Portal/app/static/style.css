@@ -285,3 +285,25 @@ body.hide-on-index main {
     z-index: 1000000;
     font-size: 12px;
 }
+/* Button als Textlink mit der normalen Farbe */
+.dropdown-toggle {
+    color: #BCA87F;
+  }
+
+/* Farbe ändern, wenn der Button gehovert wird oder gedrückt ist */
+.dropdown-toggle:hover,
+.dropdown-toggle:focus {
+color: #e9c54c;
+text-decoration: none; /* Optional: Remove underline on hover */
+}
+
+/* Dropdown-Elemente */
+.dropdown-item {
+color: #BCA87F;
+}
+
+.dropdown-item:hover,
+.dropdown-item:focus {
+color: #e9c54c;
+background-color: transparent; /* Optional: Remove background color on hover */
+}
