@@ -23,10 +23,6 @@ def maintenance():
     '''
     request.json.get('duration')
     toggle_sleep(request.json.get('duration'))
-    # TODO
-    # mpo postet direkt zur ip
-    # hier sleep rein?
-    # müssen wir id übergeben oder sprechen wir die zähler über die ports an?
     return make_response('', 200)
 
 
