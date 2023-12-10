@@ -8,7 +8,9 @@
 
     <style>
 
-
+        .table-container {
+          overflow-x: auto;
+        }
         .display-container {
             max-width: 800px;
             margin: 20px auto;
@@ -72,6 +74,19 @@
             color: white;
             text-decoration: underline;
         }
+        table {
+          border-collapse: collapse;
+          width: 100%;
+        }
+
+        td, th {
+          border: 1px solid #dddddd;
+          text-align: left;
+          padding: 8px;
+        }
+        th {
+          background-color: #FFAB11;
+        }
 
     </style>
 </head>
@@ -113,7 +128,7 @@
     <!-- Tabelle -->
 
     <div class="row">
-        <div class="col-25 col-s-25 menu">
+<!--        <div class="col-25 col-s-25 menu">-->
 
             {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
@@ -127,10 +142,8 @@
 
         </div>
 
-        <div class="col-50 col-s-75 mid">
+<div class="table-container">
 
-
-            <div class="display-container" style="max-width:800px">
                 <section>
                     <body>
                     <h1>Overview</h1>
@@ -173,16 +186,6 @@
             </div>
 
 
-        </div>
-
-        <div class="col-25 col-s-100">
-            <div class="aside">
-                <h2>?</h2>
-                <p></p>
-
-
-            </div>
-        </div>
     </div>
 </div>
 <div class="footer">
