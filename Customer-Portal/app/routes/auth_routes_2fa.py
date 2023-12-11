@@ -167,7 +167,7 @@ def register_2fa_post():
         for i in range(10):
             backup_codes.append(random.randint(100000, 999999)) # "000000" is explicitly excluded
 
-        flash('Your backup codes are: ' + str(backup_codes), 'backup-codes')
+        flash('Your backup codes are: ' + str(backup_codes), 'backup_codes')
         
         # Update user backup codes -> save the hashes of the backup_codes
         backup_codes = [bcrypt.generate_password_hash(str(code)).decode('utf-8') for code in backup_codes]
