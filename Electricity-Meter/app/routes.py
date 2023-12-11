@@ -4,6 +4,7 @@
 # ===== Packages =====
 # Import app from app package
 from app import app, logger, toggle_sleep
+from flask import make_response, request
 
 # TODO remove
 from app import get_em_id, get_em_value, get_manufacturer, get_model, get_serial_number, get_firmware_version

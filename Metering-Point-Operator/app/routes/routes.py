@@ -45,12 +45,6 @@ def home():
     return render_template('index.html')
 
 
-@app.route('/dashboard', methods=['GET'])
-@jwt_required
-def dashboard():
-    return redirect(url_for("overview"))
-
-
 # ===== Maintainance ======
 
 @app.route('/maintenance', methods=['GET'])
@@ -96,6 +90,7 @@ def maintenance_post():
             logger.info(f"Duration: {request.form['duration_min']}")
             post(f'http://{em.get_em_ip()}:5000/api/maintenance', json={'duration': request.form['duration_min']})
             em.toggle_maintain()
+        else:
             flash('Electricity meter is already in maintenance mode.')
     else:
         flash('Electricity meter does not exist.')
@@ -108,10 +103,10 @@ def maintenance_post():
 
     return render_template('maintenance.html', ems=list_em_id)
 
-
+@app.route('/dashboard', methods=['GET'])
 @app.route('/overview', methods=['GET'])
 @jwt_required()  # optional=True allows to access the route without a valid JWT, but checks it if it is present
-def overview():
+def dashboard():
     '''
     This function handles the maintenance page of the web application.
     '''
