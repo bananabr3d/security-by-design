@@ -16,6 +16,7 @@ Contract {{ contract._id }}
   <p>Renew-Period: {{ contract.renew_period }}</p>
   <p>Auto-Renew:
     <form method="post" action="/update-contract/{{ contract._id }}" onsubmit="return confirm('Are you sure you want to submit this form?');">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
       <label for="true">Yes</label>
       <input type="radio" name="auto_renew" value="true" {% if contract.auto_renew %}checked{% endif %}>
       <label for="false">No</label>
@@ -35,6 +36,7 @@ Contract {{ contract._id }}
 
   <p>Notes: 
     <form method="post" action="/update-contract/{{ contract._id }}" onsubmit="return confirm('Are you sure you want to submit this form?');">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
       <input type="text" id="notes" name="notes" placeholder="{{ contract.notes }}">
       <button type="submit">Update</button>
     </form>
@@ -46,6 +48,7 @@ Contract {{ contract._id }}
   <p>Termination Requested: {{ contract.termination_requested }}</p>
   {% if not contract.termination_requested %}
     <form method="post" action="/request-termination-contract/{{ contract._id }}" onsubmit="return confirm('Are you sure you want to submit this form?');">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
       <button type="submit">Request Contract Termination</button>
     </form>
   {% endif %}
@@ -56,6 +59,7 @@ Contract {{ contract._id }}
   <br>
   <div>
       <form method="get" action="/export-contract/{{ contract._id }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
           <button type="submit">Export Contract Information</button>
       </form>
       {% if contract_information_json %}

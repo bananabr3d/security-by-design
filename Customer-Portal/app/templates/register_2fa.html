@@ -12,6 +12,7 @@
     <h3>Register your 2fa</h3>
     <p>Scan the QR code with your 2fa app and enter the code below.</p>
     <form method="post">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
         <label for="secret">Secret Token</label>
         <input type="text" class="form-control" id="secret" value="{{ secret }}" readonly onblur='generateBarCode();'>
         

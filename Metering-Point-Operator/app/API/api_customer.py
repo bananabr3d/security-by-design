@@ -1,4 +1,4 @@
-from app import app, db, logger
+from app import app, db, logger, csrf
 
 from flask import request, make_response
 #from models.electricity_meter import load_electricity_meter
@@ -13,6 +13,7 @@ load_dotenv()
 
 
 @app.route('/api/getcounter/<counter_id>', methods=['GET'])
+@csrf.exempt
 def get_counter(counter_id):
     logger.info(f"Received getcounter request for electricity meter with ID {counter_id}.")
     try:
@@ -29,6 +30,7 @@ def get_counter(counter_id):
         return make_response(500)
 
 @app.route('/api/getcounterstatus/<counter_id>', methods=['GET'])
+@csrf.exempt
 def get_counter_status(counter_id):
     try:
         logger.info(f"Received getcounterstatus request for electricity meter with ID {counter_id}.")
@@ -51,6 +53,7 @@ def get_counter_status(counter_id):
         return make_response('', 500)
 
 @app.route('/api/freecounter/<counter_id>', methods=['POST'])
+@csrf.exempt
 def free_counter(counter_id):
 
     try:

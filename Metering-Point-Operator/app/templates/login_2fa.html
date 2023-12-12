@@ -60,7 +60,7 @@
             <h2 class="text-center mb-4">Login with Two-factor Authentication </h2>
 
             <form method="post">
-
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                 <label for="otp">OTP / 2FA Code:</label>
                 <input type="text" id="otp" name="otp" required>
                 <button type="submit" class="btn custom-btn btn-block">Login with 2 FA</button>
