@@ -43,6 +43,7 @@ class TestAuthRoutes:
     # Register Failed
     def test_post_register_email_invalid(self):
         request_data = {
+            "csrf_token": self.client.get('/register').data.decode("utf-8").split('name="csrf_token" value="')[1].split('"')[0],
             "email": "Pytest",
             "username": "pytest1",
             "password": "PytestPytest123!"
@@ -56,6 +57,7 @@ class TestAuthRoutes:
     
     def test_post_register_username_invalid(self):
         request_data = {
+            "csrf_token": self.client.get('/register').data.decode("utf-8").split('name="csrf_token" value="')[1].split('"')[0],
             "email": "Pytest1@test.test",
             "username": "pytest!",
             "password": "PytestPytest123!"
@@ -69,6 +71,7 @@ class TestAuthRoutes:
 
     def test_post_register_password_invalid(self):
         request_data = {
+            "csrf_token": self.client.get('/register').data.decode("utf-8").split('name="csrf_token" value="')[1].split('"')[0],
             "email": "Pytest1@test.test",
             "username": "pytest1",
             "password": "testtest123!"
@@ -82,6 +85,7 @@ class TestAuthRoutes:
 
     def test_post_register_existing_email(self):
         request_data = {
+            "csrf_token": self.client.get('/register').data.decode("utf-8").split('name="csrf_token" value="')[1].split('"')[0],
             "email": "Pytest@test.test",
             "username": "pytest1",
             "password": "PytestPytest123!"
@@ -95,6 +99,7 @@ class TestAuthRoutes:
 
     def test_post_register_existing_username(self):
         request_data = {
+            "csrf_token": self.client.get('/register').data.decode("utf-8").split('name="csrf_token" value="')[1].split('"')[0],
             "email": "Pytest1@test.test",
             "username": "pytest",
             "password": "PytestPytest123!"
@@ -109,6 +114,7 @@ class TestAuthRoutes:
     # Login Failed
     def test_post_login_username_invalid(self):
         request_data = {
+            "csrf_token": self.client.get('/login').data.decode("utf-8").split('name="csrf_token" value="')[1].split('"')[0],
             "username": "pytest!",
             "password": "PytestPytest123!",
         }
@@ -121,6 +127,7 @@ class TestAuthRoutes:
 
     def test_post_login_password_invalid(self):
         request_data = {
+            "csrf_token": self.client.get('/login').data.decode("utf-8").split('name="csrf_token" value="')[1].split('"')[0],
             "username": "pytest",
             "password": "testtest123!",
         }
@@ -133,6 +140,7 @@ class TestAuthRoutes:
 
     def test_post_login_username_not_found(self):
         request_data = {
+            "csrf_token": self.client.get('/login').data.decode("utf-8").split('name="csrf_token" value="')[1].split('"')[0],
             "username": "Pytest",
             "password": "PytestPytest123!",
         }
@@ -145,6 +153,7 @@ class TestAuthRoutes:
 
     def test_post_login_password_not_matching(self):
         request_data = {
+            "csrf_token": self.client.get('/login').data.decode("utf-8").split('name="csrf_token" value="')[1].split('"')[0],
             "username": "pytest",
             "password": "PytestPytest123!!",
         }
@@ -159,6 +168,7 @@ class TestAuthRoutes:
     def test_post_login(self):
         login_jwt(self.client)
 
+
     # Security Question Successfull
     def test_post_security_question(self):
         request_data = {
@@ -168,6 +178,9 @@ class TestAuthRoutes:
         
         # Login with jwt
         self.client = login_jwt(self.client)
+
+        request_data["csrf_token"] = self.client.get('/user-info').data.decode("utf-8").split('name="csrf_token" value="')[1].split('"')[0]
+        logger.info(request_data)
 
         response = self.client.post('/add-security-question', data=request_data)
 
@@ -185,6 +198,8 @@ class TestAuthRoutes:
         # Login with jwt
         self.client = login_jwt(self.client)
 
+        request_data["csrf_token"] = self.client.get('/user-info').data.decode("utf-8").split('name="csrf_token" value="')[1].split('"')[0]
+
         response = self.client.post('/add-security-question', data=request_data)
 
         # Check if redirect to user info page
@@ -199,6 +214,8 @@ class TestAuthRoutes:
         
         # Login with jwt
         self.client = login_jwt(self.client)
+
+        request_data["csrf_token"] = self.client.get('/user-info').data.decode("utf-8").split('name="csrf_token" value="')[1].split('"')[0]
 
         response = self.client.post('/add-security-question', data=request_data)
 
@@ -215,6 +232,8 @@ class TestAuthRoutes:
         # Login with jwt
         self.client = login_jwt(self.client)
 
+        request_data["csrf_token"] = self.client.get('/user-info').data.decode("utf-8").split('name="csrf_token" value="')[1].split('"')[0]
+
         response = self.client.post('/add-security-question', data=request_data)
 
         # Check if redirect to user info page
@@ -224,6 +243,7 @@ class TestAuthRoutes:
     # Reset Password with Security Question Failed
     def test_post_reset_password_email_invalid(self):
         request_data = {
+            "csrf_token": self.client.get('/reset-password').data.decode("utf-8").split('name="csrf_token" value="')[1].split('"')[0],
             "email": "pytest",
             "security_question": "What is your favorite color?",
             "answer": "Blue",
@@ -239,6 +259,7 @@ class TestAuthRoutes:
 
     def test_post_reset_password_security_question_invalid(self):
         request_data = {
+            "csrf_token": self.client.get('/reset-password').data.decode("utf-8").split('name="csrf_token" value="')[1].split('"')[0],
             "email": "pytest@test.test",
             "security_question": "What is your favorite color?PWNED",
             "answer": "Blue",
@@ -253,6 +274,7 @@ class TestAuthRoutes:
 
     def test_post_reset_password_answer_invalid(self):
         request_data = {
+            "csrf_token": self.client.get('/reset-password').data.decode("utf-8").split('name="csrf_token" value="')[1].split('"')[0],
             "email": "pytest@test.test",
             "security_question": "What is your favorite color?",
             "answer": "Red",
@@ -267,6 +289,7 @@ class TestAuthRoutes:
 
     def test_post_reset_password_password_invalid(self):
         request_data = {
+            "csrf_token": self.client.get('/reset-password').data.decode("utf-8").split('name="csrf_token" value="')[1].split('"')[0],
             "email": "pytest@test.test",
             "security_question": "What is your favorite color?",
             "answer": "Blue",
@@ -282,6 +305,7 @@ class TestAuthRoutes:
     # Reset Password with Security Question Successfull
     def test_post_reset_password(self):
         request_data = {
+            "csrf_token": self.client.get('/reset-password').data.decode("utf-8").split('name="csrf_token" value="')[1].split('"')[0],
             "email": "pytest@test.test",
             "security_question": "What is your favorite color?",
             "answer": "Blue",
@@ -307,7 +331,8 @@ class TestAuthRoutes:
 
         request_data = {
             "old_password": "testtest123!",
-            "new_password": "TestTest1234!"
+            "new_password": "TestTest1234!",
+            "csrf_token": self.client.get('/user-info').data.decode("utf-8").split('name="csrf_token" value="')[1].split('"')[0]
         }
 
         response = self.client.post('/set-new-password', data=request_data)
@@ -329,7 +354,8 @@ class TestAuthRoutes:
 
         request_data = {
             "old_password": "PytestPytest123!",
-            "new_password": "testtest123!"
+            "new_password": "testtest123!",
+            "csrf_token": self.client.get('/user-info').data.decode("utf-8").split('name="csrf_token" value="')[1].split('"')[0]
         }
 
         response = self.client.post('/set-new-password', data=request_data)
@@ -351,7 +377,8 @@ class TestAuthRoutes:
 
         request_data = {
             "old_password": "PytestPytest123!!",
-            "new_password": "TestTest1234!"
+            "new_password": "TestTest1234!",
+            "csrf_token": self.client.get('/user-info').data.decode("utf-8").split('name="csrf_token" value="')[1].split('"')[0]
         }
 
         response = self.client.post('/set-new-password', data=request_data)
@@ -373,6 +400,7 @@ class TestAuthRoutes:
         self.client = validate_2fa(self.client, otp)
 
         request_data = {
+            "csrf_token": self.client.get('/user-info').data.decode("utf-8").split('name="csrf_token" value="')[1].split('"')[0],
             "old_password": "PytestPytest123!",
             "new_password": "PytestPytest123!"
         }
