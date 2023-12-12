@@ -13,7 +13,7 @@ from requests import post
 from ..models.electricity_meter import em_exists, load_electricity_meter, ElectricityMeter
 
 # Import app, logger and db object from app package
-from app import app, logger, db
+from app import app, logger, db, Invalid2FA
 
 # ===== Regex =====
 em_id_reg = re.compile(r'[A-Za-z0-9]{24}')
@@ -42,6 +42,9 @@ def home():
     This function handles the home page of the web application.
     '''
 
+    if not g.twofa_authenticated:
+        raise Invalid2FA
+
     return render_template('index.html')
 
 
@@ -53,6 +56,9 @@ def maintenance():
     '''
     This function handles the maintenance page of the web application.
     '''
+    if not g.twofa_authenticated:
+        raise Invalid2FA
+
     list_em_id = list()
     for em in db.electricity_meter.find({}):
         logger.info(f'laaaaa {em["em_maintain"]}')
@@ -69,6 +75,9 @@ def maintenance_post():
     '''
     This function handles the maintenance page of the web application.
     '''
+    if not g.twofa_authenticated:
+        raise Invalid2FA
+    
     # logger.info("Hallo")
     # emmm = db.electricity_meter.find({'em_maintain': True})
     # logger.info("emmm", emmm)
@@ -110,6 +119,8 @@ def dashboard():
     '''
     This function handles the maintenance page of the web application.
     '''
+    if not g.twofa_authenticated:
+        raise Invalid2FA
 
     list_em_id = list()
     for em in db.electricity_meter.find({}):
