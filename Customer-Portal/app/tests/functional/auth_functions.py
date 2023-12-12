@@ -33,6 +33,7 @@ def register(client) -> None:
     :return: None
     '''
     request_data = {
+        "csrf_token": client.get('/register').data.decode("utf-8").split('name="csrf_token" value="')[1].split('"')[0],
         "email": "Pytest@test.test",
         "username": "pytest",
         "password": "PytestPytest123!"
@@ -54,6 +55,7 @@ def login_jwt(client):
     :return: Flask test client with JWT
     '''
     request_data = {
+        "csrf_token": client.get('/login').data.decode("utf-8").split('name="csrf_token" value="')[1].split('"')[0],
         "username": "pytest",
         "password": "PytestPytest123!",
     }
@@ -86,7 +88,7 @@ def activate_2fa(client) -> str:
     
     # Get otp from response data value of input id secret
     secret = response.data.decode("utf-8").split('id="secret" value="')[1].split('"')[0]
-
+    csrf_token = response.data.decode("utf-8").split('name="csrf_token" value="')[1].split('"')[0]
     set_secret(secret)
 
     # Generate otp from secret
@@ -94,12 +96,12 @@ def activate_2fa(client) -> str:
 
     # Set request data
     request_data_2fa_register = {
+        "csrf_token": csrf_token,
         "otp": otp
     }
 
     # Post otp to /register/2fa
     response = client.post('/register/2fa', data=request_data_2fa_register)
-    logger.info(response.data.decode("utf-8"))
     # Check if redirect to /login/2fa page
     assert response.status_code == 302
     assert response.headers['Location'] == '/login/2fa'
@@ -118,6 +120,7 @@ def validate_2fa(client, otp: str):
     :return: Flask test client with valid 2fa jwt token
     '''
     request_data_2fa_login = {
+        "csrf_token": client.get('/login/2fa').data.decode("utf-8").split('name="csrf_token" value="')[1].split('"')[0],
         "otp": otp
     }
 

@@ -49,6 +49,7 @@ class TestAuth2FARoutes:
 
         # Set request data
         request_data_2fa_register = {
+            "csrf_token": response.data.decode("utf-8").split('name="csrf_token" value="')[1].split('"')[0],
             "otp": "12345"
         }
 
@@ -61,10 +62,11 @@ class TestAuth2FARoutes:
 
     def test_post_register_2fa_otp_incorrect(self):
         # Get 2fa otp from /register/2fa
-        self.client.get('/register/2fa')
+        response = self.client.get('/register/2fa')
 
         # Set request data
         request_data_2fa_register = {
+            "csrf_token": response.data.decode("utf-8").split('name="csrf_token" value="')[1].split('"')[0],
             "otp": "123456"
         }
 
@@ -90,7 +92,8 @@ class TestAuth2FARoutes:
 
         # Set request data
         request_data_2fa_login = {
-            "otp": "12345"
+            "otp": "12345",
+            "csrf_token": self.client.get('/login/2fa').data.decode("utf-8").split('name="csrf_token" value="')[1].split('"')[0]
         }
 
         # Post otp to /login/2fa
@@ -106,6 +109,7 @@ class TestAuth2FARoutes:
 
         # Set request data
         request_data_2fa_login = {
+            "csrf_token": self.client.get('/login/2fa').data.decode("utf-8").split('name="csrf_token" value="')[1].split('"')[0],
             "otp": "123456"
         }
 
@@ -125,7 +129,7 @@ class TestAuth2FARoutes:
         validate_2fa(self.client, otp)
 
         # Post to /reset-2fa
-        response = self.client.post('/reset-2fa')
+        response = self.client.post('/reset-2fa', data={"csrf_token": self.client.get('/user-info').data.decode("utf-8").split('name="csrf_token" value="')[1].split('"')[0]})
 
         # Check if redirect to /login page
         assert response.status_code == 302
@@ -145,7 +149,8 @@ class TestAuth2FARoutes:
         self.user["backup_codes"] = backup_codes        
 
         request_data = {
-            "backup_code": backup_code
+            "backup_code": backup_code,
+            "csrf_token": self.client.get('/user-info').data.decode("utf-8").split('name="csrf_token" value="')[1].split('"')[0]
         }
 
         # Post to /reset-2fa
@@ -158,7 +163,7 @@ class TestAuth2FARoutes:
     # Reset 2fa route Fail
     def test_post_reset_2fa_without_2fa_and_backup_code(self):
         # Post to /reset-2fa
-        response = self.client.post('/reset-2fa')
+        response = self.client.post('/reset-2fa', data={"csrf_token": self.client.get('/user-info').data.decode("utf-8").split('name="csrf_token" value="')[1].split('"')[0]})
 
         # Check if redirect to /dashboard page
         assert response.status_code == 302
@@ -170,7 +175,8 @@ class TestAuth2FARoutes:
 
         # Set request data
         request_data = {
-            "backup_code": "12345"
+            "backup_code": "12345",
+            "csrf_token": self.client.get('/login/2fa').data.decode("utf-8").split('name="csrf_token" value="')[1].split('"')[0]
         }
 
         # Post to /reset-2fa
@@ -186,7 +192,8 @@ class TestAuth2FARoutes:
 
         # Set request data
         request_data = {
-            "backup_code": "123456"
+            "backup_code": "123456",
+            "csrf_token": self.client.get('/user-info').data.decode("utf-8").split('name="csrf_token" value="')[1].split('"')[0]
         }
 
         # Post to /reset-2fa

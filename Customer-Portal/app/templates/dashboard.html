@@ -27,6 +27,7 @@ Dashboard
     <h2>Add a contract</h2>
     <!-- Add a contract with em-id -->
     <form method="post" action="/add-contract" onsubmit="return confirm('Are you sure you want to submit this form?');">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
       <label for="">Electricity Meter ID</label>
       <input type="text" id="electricity_meter_id" name="electricity_meter_id">
       <label for="">PLZ</label>

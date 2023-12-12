@@ -33,6 +33,7 @@ Admin Panel
                         <td> <!-- TODO + Only show if user inactive(?) -->
                             {% if inactive_users %}
                             <form action="/admin/active-user" method="POST" onsubmit="return confirm('Are you sure you want to activate this user?');">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                                 <input type="hidden" name="username" value="{{ username }}">
                                 <button type="submit" name="action" value="activate">Activate</button>
                             </form>
@@ -86,6 +87,7 @@ Admin Panel
                         <td>{{ ip }}</td>
                         <td>
                             <form action="/admin/unblock-ip" method="POST" onsubmit="return confirm('Are you sure you want to unblock this IP?');">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                                 <input type="hidden" name="ip" value="{{ ip }}">
                                 <button type="submit" name="action" value="unblock">Unblock</button>
                             </form>
@@ -124,9 +126,11 @@ Admin Panel
                         <td>{{ contract.enddate }}</td>
                         <td>
                             <form action="/admin/confirm-contract-termination/{{ contract._id }}" method="POST" onsubmit="return confirm('Are you sure you want to confirm this earlier contract termination?');">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                                 <button type="submit" name="action" value="confirm">Confirm</button>
                             </form>
                             <form action="admin/decline-contract-termination/{{ contract._id }}" method="POST" onsubmit="return confirm('Are you sure you want to decline this earlier contract termination?');">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                                 <button type="submit" name="action" value="decline">Decline</button>
                             </form>
                         </td>

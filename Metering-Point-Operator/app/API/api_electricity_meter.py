@@ -1,4 +1,4 @@
-from app import app, db, logger
+from app import app, db, logger, csrf
 
 from flask import request, make_response
 
@@ -20,6 +20,7 @@ logger.info("Deleting all current electricity meters...")
 db.electricity_meter.delete_many({})
 
 @app.route('/api/heartbeat/<counter_id>', methods=['POST'])
+@csrf.exempt
 def post_counter_hearbeat(counter_id):
     try:
         if authorize(request.headers.get('Authorization')):

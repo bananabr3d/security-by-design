@@ -27,6 +27,9 @@ from app.tests.verify_env import verify_all
 # For cookie expiration handling
 from datetime import timedelta
 
+# CSRF Protection
+from flask_wtf.csrf import CSRFProtect
+
 
 # ===== Exception Classes =====
 class DBConnectionError(Exception):
@@ -118,10 +121,10 @@ app.config['JWT_COOKIE_SECURE'] = True # If True: Only allow JWT cookies sent wi
 # set cookie paths: Access Cookie
 app.config['JWT_ACCESS_COOKIE_PATH'] = '/'
 
-# Enable CSRF Protection
-app.config['JWT_COOKIE_CSRF_PROTECT'] = False #TODO try to do True -> error on post login/2fa
-app.config['JWT_CSRF_IN_COOKIES'] = True
-app.config['JWT_CSRF_CHECK_FORM'] = True
+# Disable CSRF Protection
+app.config['JWT_COOKIE_CSRF_PROTECT'] = False # Will be handled by flask-wtf
+# Enable Flask-WTF CSRF Protection
+csrf = CSRFProtect(app)
 
 # Cookie settings
 app.config['JWT_COOKIE_SAMESITE'] = "Strict"

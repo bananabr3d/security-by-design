@@ -144,6 +144,7 @@
 
             <div> <!-- Maintained EM id and time in minutes? -->
                 <form method="post" action="/maintenance">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                     <label for="em_id">Electricity Meter ID</label>
                     <input type="text" id="em_id" name="electricity_meter_id" required>
                     <div class="password-container">

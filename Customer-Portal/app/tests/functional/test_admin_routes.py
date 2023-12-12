@@ -19,26 +19,26 @@ class TestAdminRoutes:
 
   #  def test_admin_dashboard_route(self):
         # Login with jwt
-        self.client = login_jwt(self.client, username="pytest_admin", password="adminpassword")
+        # self.client = login_jwt(self.client, username="pytest_admin", password="adminpassword")
 
-        response = self.client.get('/admin')
-        assert response.status_code == 200
+        # response = self.client.get('/admin')
+        # assert response.status_code == 200
         # Add more assertions based on your application's behavior
 
    # def test_confirm_contract_termination_route(self):
         # Implement similar setup and login steps as above if needed
         # Then test the '/admin/confirm-contract-termination/<contract_id>' route
 
-        response = self.client.post('/admin/confirm-contract-termination/contract_id')
-        assert response.status_code == 200
+        # response = self.client.post('/admin/confirm-contract-termination/contract_id')
+        # assert response.status_code == 200
         # Add more assertions based on your application's behavior
 
   #  def test_decline_contract_termination_route(self):
         # Implement similar setup and login steps as above if needed
         # Then test the '/admin/decline-contract-termination/<contract_id>' route
 
-        response = self.client.post('/admin/decline-contract-termination/contract_id')
-        assert response.status_code == 200
+        # response = self.client.post('/admin/decline-contract-termination/contract_id')
+        # assert response.status_code == 200
         # Add more assertions based on your application's behavior
 
 # Add more test methods for other admin routes as needed

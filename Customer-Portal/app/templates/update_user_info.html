@@ -12,6 +12,7 @@ Update User Information
 <body>
     <h1>Update your additional information</h1>
     <form method="post", onsubmit="return confirm('Are you sure you want to submit this form?');">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
         {% if not_provided_information %}
         <h2>Not provided information</h2>
         <!-- Check for keys in not_provided_information and spawn div and label -->

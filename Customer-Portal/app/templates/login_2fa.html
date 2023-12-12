@@ -11,6 +11,7 @@
 <section>
     <h3>Login with 2fa</h3>
     <form method="post">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
         <label for="otp">OTP / 2FA Code:</label>
         <input type="text" id="otp" name="otp" required>
         <button type="submit">Login with 2 FA</button>

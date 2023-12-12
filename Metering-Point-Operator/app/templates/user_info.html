@@ -132,6 +132,7 @@
                     {% if twofa_authenticated %}
                     <div>
                         <form method="get" action="/export-user">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                             <button type="submit">Export User Information</button>
                         </form>
                         {% if user_information_json %}
@@ -146,6 +147,7 @@
                     <div> <!-- Set new password -->
                         <form method="post" action="/set-new-password"
                               onsubmit="return confirm('Are you sure you want to submit this form?');">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                             <label for="old_password">Old Password</label>
                             <input type="password" id="old_password" name="old_password" required>
                             <div class="password-container">
@@ -172,6 +174,7 @@
                     <!-- Reset 2FA Button with 2FA auth -->
                     <form method="post" action="/reset-2fa"
                           onsubmit="return confirm('Are you sure you want to submit this form?');">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                         <button type="submit">Reset 2FA</button>
                     </form>
                     {% else %}
@@ -179,6 +182,7 @@
                     <div>
                         <form method="post" action="/reset-2fa"
                               onsubmit="return confirm('Are you sure you want to submit this form?');">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                             <label for="">Backup Code</label>
                             <input type="text" id="backup_code" name="backup_code" required>
                             <button type="submit">Reset 2FA</button>
@@ -200,6 +204,7 @@
                     <div>
                         <h2>Add new Security Question</h2>
                         <form method="post" action="/add-security-question">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                             <label for="security_question">Security Question</label>
                             <select id="security_question" name="security_question" required>
                                 {% for question in security_questions %}
@@ -217,6 +222,7 @@
                     <div>
                         <h2>Remove Security Question</h2>
                         <form method="post" action="/remove-security-question">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                             <label for="security_question">Security Question</label>
                             <select id="security_question" name="security_question" required>
                                 {% for question in security_questions_user %}
@@ -234,6 +240,7 @@
                     <div>
                         <form method="post" action="/delete-user"
                               onsubmit="return confirm('Are you sure you want to submit this form?');">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                             <button type="submit">Delete Account</button>
                         </form>
                     </div>
