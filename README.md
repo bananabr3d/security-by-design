@@ -142,7 +142,6 @@ security-by-design/
 ```
 
 ### Website Structure
-#TODO
 ```
 https://voltwave.systems/
     ├── home/
@@ -166,15 +165,15 @@ https://systems.voltwave.systems/
     |    ├── 2fa/
     ├── login/
     |    ├── 2fa/
+    ├── user-info
     ├── dashboard/
-    |    ├── ...
+    ├── Overview/
+    ├── Maintenance/
 ```
 
 ## Installation and Usage
 ### Docker
 The 3 components are dockerized and can be deployed with the docker-compose.yml or docker-compose-localdb.yml file. Therefore it is important to edit the amount of deployed Electricity-Meter. (A electricity meter is only available to add to a user, if the em is deployed):
-
-(Representation will be added later) #TODO
 
 A nginx container is used as a reverse proxy and is also dockerized. It is used to redirect the traffic to the correct component. The nginx.conf file is used to configure the nginx container.
 
