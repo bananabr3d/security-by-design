@@ -15,6 +15,9 @@ from ..models.electricity_meter import em_exists, load_electricity_meter, Electr
 # Import app, logger and db object from app package
 from app import app, logger, db, Invalid2FA
 
+from os import getenv
+from hashlib import sha256
+
 # ===== Regex =====
 em_id_reg = re.compile(r'[A-Za-z0-9]{24}')
 duration_reg = re.compile(r'[0-9]{1,3}')
@@ -96,8 +99,10 @@ def maintenance_post():
         logger.info(f"em_ip: {em.get_em_ip()}")
         # logger.info(em)
         if not em.get_em_maintain():
+            h = sha256()
+            h.update(getenv("SECRET_MPO_EM").encode("utf-8"))
             logger.info(f"Duration: {request.form['duration_min']}")
-            post(f'http://{em.get_em_ip()}:5000/api/maintenance', json={'duration': request.form['duration_min']})
+            post(f'http://{em.get_em_ip()}:5000/api/maintenance', json={'duration': request.form['duration_min']}, headers={'Authorization': h.hexdigest()})
             em.toggle_maintain()
         else:
             flash('Electricity meter is already in maintenance mode.')
