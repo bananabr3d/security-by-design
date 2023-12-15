@@ -303,12 +303,10 @@ On the User-info Page ("https://voltwave.systems/user-info") you can see your us
 On the Admin Dashboard ("https://voltwave.systems/admin") you can see the current status of the system, like the amount of users, user activity and the requests for contracts to be terminated earlier. You can also see the current blocked IPs and whitelist them. Additionally you can see the current active and inactive users and activate or deactivate them.
 
 ### Technician Manual
-Coming soon...
-#TODO
+A technician can register and log in to the Metering Point Operator at https://www.voltwave.systems:8443/register and https://www.voltwave.systems:8443/login, respectively, to access an overview of electricity meters in a table on the Overview page. In this table, the meters are sorted by their Meter ID and include information such as Value, Availability, Maintained status, Manufacturer, Model, Serial Number, and Firmware Version.
 
 #### Maintain a Electricity Meter
-Coming soon...
-#TODO
+On the Maintain page, logged-in technicians can set a meter to "maintain" status for a specific duration using its ID. During this period, the meter is not available and does not send data. The meters currently in maintenance mode are listed in a left dropdown menu based on their meter ID. Additionally, the status of the meter on the overview page changes to "maintain."
 
 ## Coding Instructions
 ### Logging
