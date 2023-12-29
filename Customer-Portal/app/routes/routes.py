@@ -280,6 +280,9 @@ def update_user_info_post():
                 
                 keys.append(key)
 
+            elif key == 'csrf_token':
+                pass
+
             else:
                 flash('An error occurred.', 'error')
                 return redirect(url_for('update_user_info'))
